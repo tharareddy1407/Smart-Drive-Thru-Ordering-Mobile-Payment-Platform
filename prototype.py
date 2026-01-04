@@ -1,15 +1,22 @@
 # prototype.py
-# ✅ Drive-Thru Prototype (ONE person does POS + Agent in a single Cashier Console)
+# -----------------------------------------------------------------------------
+# Drive-Thru Prototype (ONE person does POS + Agent in a single Cashier Console)
+# -----------------------------------------------------------------------------
+# What this prototype demonstrates:
+# - Customer checks in to a lane (L1/L2)
+# - Customer enters a 4-digit lane code (valid 10 minutes)
+# - If code matches: an Order is created and lane code rotates immediately
+# - Customer + Cashier can chat (text) in real time
+# - Customer can initiate a LIVE VOICE CALL with agent (WebRTC audio) (Option A)
+# - Cashier can Accept/Reject/Hangup the call
+# - Cashier confirms total -> customer receives payment request
+# - Customer pays using saved card / new card / Google Pay / PayPal / other wallet
+# - Payment approved message + “move forward to pickup window” confirmation
 #
-# ✅ Includes everything requested:
-# 1) Lane code valid for 10 minutes
-# 2) Lane code rotates AFTER successful connect/order creation
-# 3) After customer clicks “I’m Here”, POPUP asks: “Please enter the code to connect with agent”
-# 4) Clear “✅ Connected” banner after connect
-# 5) Voice-to-text ordering (browser SpeechRecognition)
-# 6) Payment request -> customer chooses: saved cards / new card / Google Pay / PayPal / other wallet
-# 7) Payment success popup: “✅ Payment done — move forward to pickup window”
-# 8) ✅ Works on localhost AND hosted universal link (Render/Fly/Railway) because WS uses ws/wss auto-detect
+# Notes:
+# - WebRTC requires HTTPS (or localhost) for microphone permissions on most devices.
+# - Server handles only signaling for WebRTC (offer/answer/ice); audio is P2P.
+# - In-memory state is for demo only. Use Redis/DB for production & multi-instance.
 #
 # Pages:
 # - Home:           /                 (links)
@@ -23,39 +30,59 @@
 #
 # Deploy (Render):
 #   startCommand: uvicorn prototype:app --host 0.0.0.0 --port $PORT
+# -----------------------------------------------------------------------------
+
+from datetime import datetime, timedelta
+from typing import Dict, List, Optional
+from uuid import uuid4
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, JSONResponse
-from uuid import uuid4
-from datetime import datetime, timedelta
-from typing import Dict, List
 
-app = FastAPI(title="Drive-Thru Voice Ordering + Easy Payment (Cashier Combined)")
+app = FastAPI(title="Drive-Thru Demo: Chat + WebRTC Voice Call + Easy Payment")
 
-# -----------------------------
-# In-memory stores (use Redis/DB in production)
-# -----------------------------
-customer_home_ws: Dict[str, WebSocket] = {}         # customer_id -> ws (push-like events)
-order_customer_ws: Dict[str, WebSocket] = {}        # order_id -> ws (order chat)
-order_cashier_ws: Dict[str, WebSocket] = {}         # order_id -> ws (order chat)
+# -----------------------------------------------------------------------------
+# In-memory stores (demo only)
+# -----------------------------------------------------------------------------
+# Customer “home” websocket for push-like notifications (payment requests, info)
+customer_home_ws: Dict[str, WebSocket] = {}  # customer_id -> ws
 
-lane_codes: Dict[str, dict] = {}                    # lane_id -> {code, expires_at}
-checkins: Dict[str, dict] = {}                      # customer_id -> {lane_id, ts}
+# Order chat websockets (two parties)
+order_customer_ws: Dict[str, WebSocket] = {}  # order_id -> ws
+order_cashier_ws: Dict[str, WebSocket] = {}   # order_id -> ws
 
-orders: Dict[str, dict] = {}                        # order_id -> order state
-payments: Dict[str, dict] = {}                      # pay_session_id -> session state
+# Lane codes and check-ins
+lane_codes: Dict[str, dict] = {}  # lane_id -> {code, expires_at}
+checkins: Dict[str, dict] = {}    # customer_id -> {lane_id, ts}
 
-customer_cards: Dict[str, List[dict]] = {}          # demo saved cards
+# Orders + payments
+orders: Dict[str, dict] = {}      # order_id -> order
+payments: Dict[str, dict] = {}    # pay_session_id -> payment session
+
+# Demo saved cards per customer
+customer_cards: Dict[str, List[dict]] = {}  # customer_id -> list[card]
+
+# -----------------------------------------------------------------------------
+# ✅ WebRTC signaling websockets (server relays JSON between customer/cashier)
+# -----------------------------------------------------------------------------
+call_ws: Dict[str, Dict[str, WebSocket]] = {}  # order_id -> {"customer": ws, "cashier": ws}
 
 
-# -----------------------------
+# -----------------------------------------------------------------------------
 # Helpers
-# -----------------------------
+# -----------------------------------------------------------------------------
 def utcnow() -> datetime:
+    """Return the current UTC timestamp."""
     return datetime.utcnow()
 
 
+def money(cents: int) -> str:
+    """Format cents to dollars (string). Example: 1384 -> '13.84'."""
+    return f"{cents/100:.2f}"
+
+
 def ensure_demo_cards(customer_id: str) -> None:
+    """Seed demo saved cards for a customer (once)."""
     if customer_id in customer_cards:
         return
     customer_cards[customer_id] = [
@@ -64,20 +91,21 @@ def ensure_demo_cards(customer_id: str) -> None:
     ]
 
 
-def money(cents: int) -> str:
-    return f"{cents/100:.2f}"
-
-
 def rotate_lane_code(lane_id: str) -> dict:
-    """Force a new code immediately; valid for 10 minutes."""
-    code = f"{uuid4().int % 10000:04d}"  # 4-digit
+    """
+    Force a new 4-digit code immediately.
+    Code is valid for 10 minutes from creation.
+    """
+    code = f"{uuid4().int % 10000:04d}"
     rec = {"lane_id": lane_id, "code": code, "expires_at": utcnow() + timedelta(minutes=10)}
     lane_codes[lane_id] = rec
     return rec
 
 
 def current_lane_code(lane_id: str) -> dict:
-    """Code stays valid for 10 minutes unless rotated earlier."""
+    """
+    Return the current lane code if valid; otherwise rotate and return a new code.
+    """
     rec = lane_codes.get(lane_id)
     if rec and utcnow() < rec["expires_at"]:
         return rec
@@ -85,6 +113,10 @@ def current_lane_code(lane_id: str) -> dict:
 
 
 async def push_customer(customer_id: str, payload: dict) -> bool:
+    """
+    Send a JSON message to the customer's “home” websocket.
+    Returns False if no websocket is connected for that customer.
+    """
     ws = customer_home_ws.get(customer_id)
     if not ws:
         return False
@@ -93,6 +125,9 @@ async def push_customer(customer_id: str, payload: dict) -> bool:
 
 
 async def relay_order(order_id: str, payload: dict) -> None:
+    """
+    Broadcast a JSON message to both customer and cashier order websockets (if present).
+    """
     cws = order_customer_ws.get(order_id)
     pws = order_cashier_ws.get(order_id)
     if cws:
@@ -101,21 +136,36 @@ async def relay_order(order_id: str, payload: dict) -> None:
         await pws.send_json(payload)
 
 
-# -----------------------------
-# HTML PAGES
-# -----------------------------
+async def relay_call(order_id: str, sender_role: str, payload: dict) -> None:
+    """
+    Relay a WebRTC signaling payload from one role to the other.
+    Role must be 'customer' or 'cashier'.
+    """
+    peers = call_ws.get(order_id) or {}
+    target_role = "cashier" if sender_role == "customer" else "customer"
+    target_ws = peers.get(target_role)
+    if target_ws:
+        await target_ws.send_json(payload)
+
+
+# -----------------------------------------------------------------------------
+# HTML Pages
+# -----------------------------------------------------------------------------
 HOME_HTML = """
 <!doctype html>
 <html>
 <head><meta charset="utf-8"/><title>Drive-Thru Demo</title></head>
 <body style="font-family:Arial;margin:24px;">
-  <h2>Drive-Thru Demo (Universal Link Ready)</h2>
+  <h2>Drive-Thru Demo</h2>
   <ul>
     <li><a href="/customer">Customer Portal</a></li>
     <li><a href="/cashier">Cashier Console (POS + Agent)</a></li>
     <li>Lane display: <a href="/lane/L1">/lane/L1</a> or <a href="/lane/L2">/lane/L2</a></li>
   </ul>
-  <p style="color:#666">Tip: Open Customer on phone and Cashier on laptop for best demo.</p>
+  <p style="color:#666">
+    Tip: Open Customer on phone and Cashier on laptop for the best demo.
+    <br/>WebRTC voice call requires HTTPS (or localhost) for mic permission.
+  </p>
 </body>
 </html>
 """
@@ -142,13 +192,21 @@ LANE_HTML_TEMPLATE = """
     <div class="muted">Code rotates after a successful connect (order created).</div>
   </div>
   <script>
+    // Auto-refresh so the screen updates if/when the code rotates.
     setTimeout(()=>location.reload(), 5000);
   </script>
 </body>
 </html>
 """
 
-CASHIER_HTML = """
+# -----------------------------------------------------------------------------
+# CASHIER UI
+# - Join an order
+# - Chat with customer
+# - Confirm total -> send payment request
+# - WebRTC voice call: Incoming call -> Accept/Reject/Hangup
+# -----------------------------------------------------------------------------
+CASHIER_HTML = r"""
 <!doctype html>
 <html>
 <head>
@@ -168,10 +226,14 @@ CASHIER_HTML = """
     #log { white-space: pre-wrap; margin-top: 10px; background:#f7f7f7; padding:12px; border-radius:10px; }
     .muted { color:#666; font-size:12px; }
     .status { font-weight:bold; }
+    .callBox { margin-top:10px; padding:12px; border:1px solid #ddd; border-radius:12px; background:#fff; }
+    .callBanner { display:none; padding:10px; border-radius:10px; border:1px solid #ffe0a3; background:#fff7e6; font-weight:700; }
+    .callLive { display:none; padding:10px; border-radius:10px; border:1px solid #cce5cc; background:#f2fff2; font-weight:700; }
   </style>
 </head>
 <body>
   <h2>Cashier Console (POS + Agent)</h2>
+
   <div class="box">
     <div>
       <b>Cashier ID:</b> <span id="cashier"></span>
@@ -199,6 +261,7 @@ CASHIER_HTML = """
 
       <div class="col">
         <div class="muted">Order control</div>
+
         <label>Items (optional):</label>
         <textarea id="items" rows="6" placeholder="e.g., 1x Burger, 1x Fries, 1x Coke"></textarea>
 
@@ -210,6 +273,21 @@ CASHIER_HTML = """
         <div style="margin-top:10px;">
           <div class="muted">Current status:</div>
           <div class="status" id="statusLine">—</div>
+        </div>
+
+        <div class="callBox">
+          <div class="muted">Voice Call (WebRTC)</div>
+          <div id="incomingCall" class="callBanner">📞 Incoming call request…</div>
+          <div id="liveCall" class="callLive">✅ Call connected (audio live)</div>
+          <div style="margin-top:10px;">
+            <button id="btnAccept" onclick="acceptCall()" disabled>Accept</button>
+            <button id="btnReject" onclick="rejectCall()" disabled>Reject</button>
+            <button id="btnHangup" onclick="hangupCall()" disabled>Hang up</button>
+          </div>
+          <audio id="remoteAudio" autoplay playsinline></audio>
+          <div class="muted" style="margin-top:8px;">
+            Mic permission is requested when you Accept.
+          </div>
         </div>
       </div>
     </div>
@@ -227,6 +305,13 @@ const logEl = document.getElementById("log");
 const joinedPill = document.getElementById("joinedPill");
 const statusLine = document.getElementById("statusLine");
 
+const incomingCallEl = document.getElementById("incomingCall");
+const liveCallEl = document.getElementById("liveCall");
+const btnAccept = document.getElementById("btnAccept");
+const btnReject = document.getElementById("btnReject");
+const btnHangup = document.getElementById("btnHangup");
+const remoteAudio = document.getElementById("remoteAudio");
+
 function log(line){ logEl.textContent += `[${new Date().toLocaleTimeString()}] ${line}\\n`; }
 function chat(who, text){
   const div = document.createElement("div");
@@ -236,15 +321,19 @@ function chat(who, text){
   chatEl.scrollTop = chatEl.scrollHeight;
 }
 
+// Generate an ephemeral cashier ID for the demo session.
 const cashierId = "cashier_" + (crypto.randomUUID ? crypto.randomUUID().slice(0,8) : Math.random().toString(36).slice(2,10));
 document.getElementById("cashier").textContent = cashierId;
 
 let orderWs = null;
+let callSigWs = null;        // signaling websocket for WebRTC
+let pc = null;               // RTCPeerConnection
 let currentOrderId = null;
 
 async function refreshOrders(){
   const res = await fetch("/cashier/orders");
   const data = await res.json();
+
   orderSelect.innerHTML = "";
   (data.orders || []).forEach(o => {
     const opt = document.createElement("option");
@@ -252,6 +341,7 @@ async function refreshOrders(){
     opt.textContent = `Order ${o.order_id} | lane=${o.lane_id} | status=${o.status} | total=$${(o.total_cents/100).toFixed(2)}`;
     orderSelect.appendChild(opt);
   });
+
   if (!data.orders?.length){
     const opt = document.createElement("option");
     opt.value = "";
@@ -268,13 +358,18 @@ function joinSelected(){
 }
 
 function joinOrder(oid){
+  // Close previous sockets / call resources
   if (orderWs) { try { orderWs.close(); } catch(e){} }
+  if (callSigWs) { try { callSigWs.close(); } catch(e){} }
+  cleanupCallUI(true);
+
   currentOrderId = oid;
   chatEl.innerHTML = "";
   joinedPill.textContent = `Joined: ${oid}`;
   wsStateEl.textContent = "WS: connecting…";
   log(`Joining order ${oid}...`);
 
+  // Order chat WS
   orderWs = new WebSocket(`${WS_PROTO}://${location.host}/ws/order/${oid}/cashier?cashier_id=${encodeURIComponent(cashierId)}`);
 
   orderWs.onopen = () => { wsStateEl.textContent = "WS: connected"; log("Order WS connected"); };
@@ -283,6 +378,7 @@ function joinOrder(oid){
 
   orderWs.onmessage = (ev) => {
     const msg = JSON.parse(ev.data);
+
     if (msg.type === "chat") chat(msg.from, msg.text);
 
     if (msg.type === "order_state") {
@@ -298,6 +394,45 @@ function joinOrder(oid){
       log(JSON.stringify(msg));
     }
   };
+
+  // Call signaling WS
+  callSigWs = new WebSocket(`${WS_PROTO}://${location.host}/ws/call/${oid}/cashier`);
+  callSigWs.onopen = () => log("Call signaling WS connected");
+  callSigWs.onclose = () => log("Call signaling WS closed");
+  callSigWs.onerror = () => log("Call signaling WS error");
+
+  callSigWs.onmessage = async (ev) => {
+    const msg = JSON.parse(ev.data);
+
+    if (msg.type === "call_request") {
+      incomingCallEl.style.display = "block";
+      btnAccept.disabled = false;
+      btnReject.disabled = false;
+      chat("SYSTEM", "📞 Customer is requesting a voice call.");
+      return;
+    }
+
+    if (msg.type === "webrtc_offer") {
+      // Cashier is callee -> set remote offer, create/send answer.
+      await ensurePeerConnection();
+      await pc.setRemoteDescription(msg.offer);
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+      callSigWs.send(JSON.stringify({ type:"webrtc_answer", answer }));
+      return;
+    }
+
+    if (msg.type === "webrtc_ice" && msg.candidate) {
+      try { await pc?.addIceCandidate(msg.candidate); } catch(e) { log("ICE add error: " + e); }
+      return;
+    }
+
+    if (msg.type === "hangup") {
+      chat("SYSTEM", "Call ended.");
+      cleanupCallUI(false);
+      return;
+    }
+  };
 }
 
 function sendCashierMsg(){
@@ -310,6 +445,7 @@ function sendCashierMsg(){
 
 async function confirmTotal(){
   if (!currentOrderId) return alert("Join an order first");
+
   const items_text = document.getElementById("items").value.trim();
   const total = parseFloat(document.getElementById("total").value.trim());
   if (!Number.isFinite(total) || total <= 0) return alert("Enter a valid total like 13.84");
@@ -319,18 +455,107 @@ async function confirmTotal(){
     headers:{"Content-Type":"application/json"},
     body: JSON.stringify({ items_text, total_cents: Math.round(total*100) })
   });
+
   const data = await res.json();
   if (data.error) return alert(data.error);
+
   statusLine.textContent = "Payment request sent to customer…";
   chat("SYSTEM", "Payment request sent to customer.");
   refreshOrders();
+}
+
+// --------------------
+// WebRTC Voice Call (Cashier as callee)
+// --------------------
+async function ensurePeerConnection(){
+  if (pc) return;
+
+  // STUN server helps with NAT traversal (demo-level).
+  pc = new RTCPeerConnection({
+    iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+  });
+
+  // Play the remote audio stream when received.
+  pc.ontrack = (event) => {
+    remoteAudio.srcObject = event.streams[0];
+  };
+
+  // Send ICE candidates to the customer via signaling.
+  pc.onicecandidate = (event) => {
+    if (event.candidate && callSigWs?.readyState === 1) {
+      callSigWs.send(JSON.stringify({ type:"webrtc_ice", candidate: event.candidate }));
+    }
+  };
+
+  // Request microphone and attach audio track(s).
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+  stream.getAudioTracks().forEach(t => pc.addTrack(t, stream));
+}
+
+function cleanupCallUI(fullReset){
+  try { pc?.close(); } catch(e){}
+  pc = null;
+
+  incomingCallEl.style.display = "none";
+  liveCallEl.style.display = "none";
+  btnAccept.disabled = true;
+  btnReject.disabled = true;
+  btnHangup.disabled = true;
+  remoteAudio.srcObject = null;
+
+  if (fullReset){
+    // Reserved for any future hard reset behavior.
+  }
+}
+
+async function acceptCall(){
+  if (!callSigWs || !currentOrderId) return;
+
+  incomingCallEl.style.display = "none";
+  liveCallEl.style.display = "block";
+  btnHangup.disabled = false;
+  btnAccept.disabled = true;
+  btnReject.disabled = true;
+
+  // Notify customer to start offer flow.
+  callSigWs.send(JSON.stringify({ type:"call_accept" }));
+  chat("SYSTEM", "✅ Call accepted. Connecting audio…");
+
+  try {
+    await ensurePeerConnection();
+  } catch(e){
+    chat("SYSTEM", "❌ Microphone permission denied or unavailable.");
+    cleanupCallUI(false);
+    callSigWs.send(JSON.stringify({ type:"hangup" }));
+  }
+}
+
+function rejectCall(){
+  if (!callSigWs) return;
+  chat("SYSTEM", "Call rejected.");
+  callSigWs.send(JSON.stringify({ type:"call_reject" }));
+  cleanupCallUI(false);
+}
+
+function hangupCall(){
+  if (!callSigWs) return;
+  callSigWs.send(JSON.stringify({ type:"hangup" }));
+  chat("SYSTEM", "Call ended.");
+  cleanupCallUI(false);
 }
 </script>
 </body>
 </html>
 """
 
-CUSTOMER_HTML = """
+# -----------------------------------------------------------------------------
+# CUSTOMER UI
+# - Check-in & connect via lane code
+# - Chat (text)
+# - Initiate voice call (WebRTC) with agent
+# - Payment selection UI
+# -----------------------------------------------------------------------------
+CUSTOMER_HTML = r"""
 <!doctype html>
 <html>
 <head>
@@ -353,10 +578,12 @@ CUSTOMER_HTML = """
     .divider { height:1px; background:#e5e5e5; margin:12px 0; }
     .bannerOk { display:none; margin-top:10px; padding:10px; border-radius:10px; border:1px solid #cce5cc; background:#f2fff2; font-weight:700; }
     .bannerErr { display:none; margin-top:10px; padding:10px; border-radius:10px; border:1px solid #f0c2c2; background:#fff2f2; font-weight:700; }
+    .callLive { display:none; margin-top:10px; padding:10px; border-radius:10px; border:1px solid #cce5cc; background:#f2fff2; font-weight:700; }
   </style>
 </head>
 <body>
   <h2>Customer Portal (Drive-Thru Mode)</h2>
+
   <div class="box">
     <div>
       <b>Customer ID:</b> <span id="cust"></span>
@@ -382,7 +609,7 @@ CUSTOMER_HTML = """
           <button onclick="checkIn()">I’m Here</button>
         </div>
       </div>
-      <div class="muted">After check-in, you’ll be prompted to enter the station code to connect.</div>
+      <div class="muted">After check-in, you'll be prompted to enter the station code to connect.</div>
     </div>
 
     <div class="section">
@@ -401,17 +628,23 @@ CUSTOMER_HTML = """
     </div>
 
     <div class="section">
-      <h3>Step 3 — Order (Voice or Text)</h3>
+      <h3>Step 3 — Order + Voice Call</h3>
       <div class="row">
         <div class="col">
           <div class="chat" id="chat"></div>
           <input id="custMsg" placeholder="Type your order..." />
           <div>
             <button onclick="sendText()">Send Text</button>
-            <button onclick="startVoice()">🎙️ Voice to Text</button>
+            <button onclick="requestCall()">📞 Call Agent</button>
+            <button onclick="hangupCall()" id="btnHangup" disabled>Hang up</button>
           </div>
-          <div class="muted">Voice uses browser Speech-to-Text (Chrome best).</div>
+
+          <div id="callLive" class="callLive">✅ Call connected (audio live)</div>
+          <audio id="remoteAudio" autoplay playsinline></audio>
+
+          <div class="muted">Voice call uses WebRTC. Chrome recommended.</div>
         </div>
+
         <div class="col" style="flex:0.8">
           <div class="muted">Status:</div>
           <div id="status" style="font-weight:bold;">Not connected</div>
@@ -426,7 +659,7 @@ CUSTOMER_HTML = """
     </div>
   </div>
 
-  <!-- ✅ POPUP after "I'm Here" -->
+  <!-- Code modal (shown after check-in) -->
   <div id="codeModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6);
        align-items:center; justify-content:center; z-index:9998;">
     <div style="background:#fff; border-radius:16px; padding:20px; width:min(520px, 92vw);
@@ -445,7 +678,7 @@ CUSTOMER_HTML = """
     </div>
   </div>
 
-  <!-- ✅ Payment success modal -->
+  <!-- Payment success modal -->
   <div id="paidModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6);
        align-items:center; justify-content:center; z-index:9999;">
     <div style="background:#fff; border-radius:16px; padding:22px; width:min(520px, 92vw);
@@ -471,6 +704,10 @@ const chatEl = document.getElementById("chat");
 const statusEl = document.getElementById("status");
 const paymentArea = document.getElementById("paymentArea");
 
+const callLiveEl = document.getElementById("callLive");
+const btnHangup = document.getElementById("btnHangup");
+const remoteAudio = document.getElementById("remoteAudio");
+
 function clearBanners(){
   okBanner.style.display = "none";
   errBanner.style.display = "none";
@@ -486,7 +723,6 @@ function showOk(text){
   okBanner.style.display = "block";
   errBanner.style.display = "none";
 }
-
 function chat(who, text){
   const div = document.createElement("div");
   div.className = "msg";
@@ -495,7 +731,7 @@ function chat(who, text){
   chatEl.scrollTop = chatEl.scrollHeight;
 }
 
-// ✅ Code modal handlers
+// Code modal handlers
 function openCodeModal(){
   const modal = document.getElementById("codeModal");
   const input = document.getElementById("codeModalInput");
@@ -513,7 +749,7 @@ function connectFromModal(){
   connect();
 }
 
-// ✅ Payment modal handlers
+// Payment success modal handlers
 function showPaidModal(text){
   document.getElementById("paidText").textContent = text;
   document.getElementById("paidModal").style.display = "flex";
@@ -522,20 +758,26 @@ function closePaidModal(){
   document.getElementById("paidModal").style.display = "none";
 }
 
-// Random customer id every load
+// Create a random customer ID per load (demo)
 const customerId = "cust_" + (crypto.randomUUID ? crypto.randomUUID().slice(0,8) : Math.random().toString(36).slice(2,10));
 custEl.textContent = customerId;
 
-let homeWs = null;
-let orderWs = null;
+let homeWs = null;     // push notifications
+let orderWs = null;    // order chat
+let callSigWs = null;  // WebRTC signaling
+let pc = null;         // RTCPeerConnection
+
 let currentOrderId = null;
 let paySessionId = null;
 
-// Home WS for push payment request
+// Connect “home” websocket (push notifications like payment requests)
 homeWs = new WebSocket(`${WS_PROTO}://${location.host}/ws/customer/${customerId}`);
-homeWs.onopen = () => { wsStateEl.textContent = "WS: connected"; toastEl.textContent="Connected. Step 1: Tap ‘I’m Here’."; };
-homeWs.onerror = () => { wsStateEl.textContent = "WS: error"; toastEl.textContent="WebSocket error."; };
-homeWs.onclose = () => { wsStateEl.textContent = "WS: closed"; toastEl.textContent="Disconnected. Refresh."; };
+homeWs.onopen = () => {
+  wsStateEl.textContent = "WS: connected";
+  toastEl.textContent = "Connected. Step 1: Tap ‘I’m Here’.";
+};
+homeWs.onerror = () => { wsStateEl.textContent = "WS: error"; toastEl.textContent = "WebSocket error."; };
+homeWs.onclose = () => { wsStateEl.textContent = "WS: closed"; toastEl.textContent = "Disconnected. Refresh."; };
 
 homeWs.onmessage = (ev) => {
   const msg = JSON.parse(ev.data);
@@ -562,7 +804,7 @@ async function checkIn(){
   if (data.error) return showError(data.error);
 
   toastEl.textContent = `Checked in to ${data.lane_id}. Please enter the station code to connect.`;
-  openCodeModal(); // ✅ popup
+  openCodeModal();
 }
 
 async function connect(){
@@ -584,25 +826,31 @@ async function connect(){
   statusEl.textContent = `Connected (Order ${currentOrderId})`;
   toastEl.textContent = "Connected. Start ordering.";
   showOk("Connected to cashier. You can order now.");
+
   joinOrderWs(currentOrderId);
+  joinCallWs(currentOrderId);
 }
 
 function joinOrderWs(orderId){
   if (orderWs) { try { orderWs.close(); } catch(e){} }
   chatEl.innerHTML = "";
+
   orderWs = new WebSocket(`${WS_PROTO}://${location.host}/ws/order/${orderId}/customer?customer_id=${encodeURIComponent(customerId)}`);
 
   orderWs.onopen = () => chat("SYSTEM","Connected. Place your order.");
+  orderWs.onerror = () => showError("Order connection error. Try reconnecting.");
+
   orderWs.onmessage = (ev) => {
     const msg = JSON.parse(ev.data);
+
     if (msg.type === "chat") chat(msg.from, msg.text);
     if (msg.type === "order_state") statusEl.textContent = msg.status || statusEl.textContent;
+
     if (msg.type === "payment_status") {
       statusEl.textContent = "PAYMENT: " + msg.status;
       chat("SYSTEM", `Payment ${msg.status}. Method: ${msg.payment_method || "n/a"}`);
     }
   };
-  orderWs.onerror = () => showError("Order connection error. Try reconnecting.");
 }
 
 function sendText(){
@@ -613,28 +861,100 @@ function sendText(){
   document.getElementById("custMsg").value = "";
 }
 
-function startVoice(){
-  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)){
-    showError("Speech-to-text not supported. Use Chrome or type.");
-    return;
-  }
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const rec = new SR();
-  rec.lang = "en-US";
-  rec.interimResults = false;
+// --------------------
+// WebRTC Voice Call (Customer as caller)
+// --------------------
+function joinCallWs(orderId){
+  if (callSigWs) { try { callSigWs.close(); } catch(e){} }
+  cleanupCallUI();
 
-  toastEl.textContent = "Listening… speak your order.";
-  rec.onresult = (e) => {
-    const text = e.results[0][0].transcript;
-    document.getElementById("custMsg").value = text;
-    toastEl.textContent = "Sending voice order…";
-    sendText();
+  callSigWs = new WebSocket(`${WS_PROTO}://${location.host}/ws/call/${orderId}/customer`);
+
+  callSigWs.onopen = () => chat("SYSTEM", "Call channel ready.");
+  callSigWs.onerror = () => chat("SYSTEM", "❌ Call channel error.");
+
+  callSigWs.onmessage = async (ev) => {
+    const msg = JSON.parse(ev.data);
+
+    if (msg.type === "call_accept") {
+      chat("SYSTEM", "✅ Cashier accepted. Starting call…");
+      await startOffer();
+      return;
+    }
+    if (msg.type === "call_reject") {
+      chat("SYSTEM", "❌ Cashier rejected the call.");
+      cleanupCallUI();
+      return;
+    }
+    if (msg.type === "webrtc_answer") {
+      await pc.setRemoteDescription(msg.answer);
+      callLiveEl.style.display = "block";
+      btnHangup.disabled = false;
+      return;
+    }
+    if (msg.type === "webrtc_ice" && msg.candidate) {
+      try { await pc?.addIceCandidate(msg.candidate); } catch(e) {}
+      return;
+    }
+    if (msg.type === "hangup") {
+      chat("SYSTEM", "Call ended.");
+      cleanupCallUI();
+      return;
+    }
   };
-  rec.onerror = () => showError("Voice capture failed. Try again.");
-  rec.start();
 }
 
-// Payment UI
+function requestCall(){
+  if (!callSigWs || callSigWs.readyState !== 1) return showError("Call channel not ready. Connect first.");
+  chat("SYSTEM", "📞 Calling cashier…");
+  callSigWs.send(JSON.stringify({ type:"call_request" }));
+}
+
+async function ensurePeerConnection(){
+  if (pc) return;
+
+  pc = new RTCPeerConnection({
+    iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+  });
+
+  pc.ontrack = (event) => {
+    remoteAudio.srcObject = event.streams[0];
+  };
+
+  pc.onicecandidate = (event) => {
+    if (event.candidate && callSigWs?.readyState === 1) {
+      callSigWs.send(JSON.stringify({ type:"webrtc_ice", candidate: event.candidate }));
+    }
+  };
+
+  // Request mic and attach to peer connection
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+  stream.getAudioTracks().forEach(t => pc.addTrack(t, stream));
+}
+
+async function startOffer(){
+  await ensurePeerConnection();
+  const offer = await pc.createOffer();
+  await pc.setLocalDescription(offer);
+  callSigWs.send(JSON.stringify({ type:"webrtc_offer", offer }));
+}
+
+function hangupCall(){
+  if (callSigWs?.readyState === 1) callSigWs.send(JSON.stringify({ type:"hangup" }));
+  cleanupCallUI();
+}
+
+function cleanupCallUI(){
+  try { pc?.close(); } catch(e){}
+  pc = null;
+  callLiveEl.style.display = "none";
+  btnHangup.disabled = true;
+  remoteAudio.srcObject = null;
+}
+
+// --------------------
+// Payment UI (demo)
+// --------------------
 async function fetchCards(){
   const res = await fetch(`/customer/${customerId}/cards`);
   const data = await res.json();
@@ -680,14 +1000,17 @@ function renderPaymentUI(msg){
 async function loadCards(){
   const sel = document.getElementById("savedCardSelect");
   if (!sel) return;
+
   const cards = await fetchCards();
   sel.innerHTML = "";
+
   if (!cards.length){
     const opt = document.createElement("option");
     opt.value = ""; opt.textContent = "No saved cards";
     sel.appendChild(opt);
     return;
   }
+
   for (const c of cards){
     const opt = document.createElement("option");
     opt.value = c.card_id;
@@ -742,50 +1065,63 @@ async function doPay(payload){
 """
 
 
-# -----------------------------
+# -----------------------------------------------------------------------------
 # Routes
-# -----------------------------
+# -----------------------------------------------------------------------------
 @app.get("/", response_class=HTMLResponse)
-def home():
+def home() -> HTMLResponse:
+    """Landing page with quick links."""
     return HTMLResponse(HOME_HTML)
 
 
 @app.get("/lane/{lane_id}", response_class=HTMLResponse)
-def lane(lane_id: str):
+def lane(lane_id: str) -> HTMLResponse:
+    """Lane display page showing the current 4-digit code for the lane."""
     lane_id = lane_id.upper()
     if lane_id not in ("L1", "L2"):
         return HTMLResponse("Use L1 or L2", status_code=400)
 
     rec = current_lane_code(lane_id)
-    return HTMLResponse(LANE_HTML_TEMPLATE.format(
-        lane_id=lane_id,
-        code=rec["code"],
-        expires_at=rec["expires_at"].strftime("%H:%M:%S UTC")
-    ))
+    return HTMLResponse(
+        LANE_HTML_TEMPLATE.format(
+            lane_id=lane_id,
+            code=rec["code"],
+            expires_at=rec["expires_at"].strftime("%H:%M:%S UTC"),
+        )
+    )
 
 
 @app.get("/cashier", response_class=HTMLResponse)
-def cashier_page():
+def cashier_page() -> HTMLResponse:
+    """Cashier console (agent + POS controls)."""
     return HTMLResponse(CASHIER_HTML)
 
 
 @app.get("/customer", response_class=HTMLResponse)
-def customer_page():
+def customer_page() -> HTMLResponse:
+    """Customer portal (drive-thru experience)."""
     return HTMLResponse(CUSTOMER_HTML)
 
 
-# -----------------------------
+# -----------------------------------------------------------------------------
 # WebSockets
-# -----------------------------
+# -----------------------------------------------------------------------------
 @app.websocket("/ws/customer/{customer_id}")
 async def ws_customer(ws: WebSocket, customer_id: str):
+    """
+    Customer “home” websocket used for:
+    - info banners / push updates
+    - payment request delivery
+    """
     await ws.accept()
     customer_home_ws[customer_id] = ws
     ensure_demo_cards(customer_id)
+
     try:
         await ws.send_json({"type": "info", "text": "Connected. Step 1: Tap ‘I’m Here’."})
         while True:
-            # Keep socket alive; client doesn't need to send anything
+            # Client typically does not need to send anything;
+            # we keep the connection alive by receiving text.
             await ws.receive_text()
     except WebSocketDisconnect:
         if customer_home_ws.get(customer_id) is ws:
@@ -794,7 +1130,14 @@ async def ws_customer(ws: WebSocket, customer_id: str):
 
 @app.websocket("/ws/order/{order_id}/customer")
 async def ws_order_customer(ws: WebSocket, order_id: str, customer_id: str):
+    """
+    Customer order websocket:
+    - Validates order belongs to customer
+    - Receives customer chat messages
+    - Relays messages to cashier + customer
+    """
     await ws.accept()
+
     o = orders.get(order_id)
     if not o or o["customer_id"] != customer_id:
         await ws.send_json({"type": "chat", "from": "SYSTEM", "text": "Invalid order or customer mismatch."})
@@ -808,11 +1151,13 @@ async def ws_order_customer(ws: WebSocket, order_id: str, customer_id: str):
         while True:
             raw = await ws.receive_text()
             import json
+
             msg = json.loads(raw)
             if msg.get("type") == "chat":
                 text = str(msg.get("text", "")).strip()
                 if not text:
                     continue
+
                 o["messages"].append({"from": "CUSTOMER", "text": text, "ts": utcnow().isoformat()})
                 await relay_order(order_id, {"type": "chat", "from": "CUSTOMER", "text": text})
     except WebSocketDisconnect:
@@ -822,7 +1167,15 @@ async def ws_order_customer(ws: WebSocket, order_id: str, customer_id: str):
 
 @app.websocket("/ws/order/{order_id}/cashier")
 async def ws_order_cashier(ws: WebSocket, order_id: str, cashier_id: str):
+    """
+    Cashier order websocket:
+    - Validates order exists
+    - Marks order as cashier connected
+    - Receives cashier chat messages
+    - Relays messages to both sides
+    """
     await ws.accept()
+
     o = orders.get(order_id)
     if not o:
         await ws.send_json({"type": "chat", "from": "SYSTEM", "text": "Order not found."})
@@ -831,13 +1184,19 @@ async def ws_order_cashier(ws: WebSocket, order_id: str, cashier_id: str):
 
     order_cashier_ws[order_id] = ws
     o["status"] = "CASHIER_CONNECTED"
-    await relay_order(order_id, {
-        "type": "order_state",
-        "status": o["status"],
-        "items_text": o.get("items_text", ""),
-        "total_cents": o.get("total_cents"),
-    })
 
+    # Push order state to both parties
+    await relay_order(
+        order_id,
+        {
+            "type": "order_state",
+            "status": o["status"],
+            "items_text": o.get("items_text", ""),
+            "total_cents": o.get("total_cents"),
+        },
+    )
+
+    # Send the last N messages to cashier when they join.
     for m in o["messages"][-25:]:
         await ws.send_json({"type": "chat", "from": m["from"], "text": m["text"]})
 
@@ -845,11 +1204,13 @@ async def ws_order_cashier(ws: WebSocket, order_id: str, cashier_id: str):
         while True:
             raw = await ws.receive_text()
             import json
+
             msg = json.loads(raw)
             if msg.get("type") == "chat":
                 text = str(msg.get("text", "")).strip()
                 if not text:
                     continue
+
                 o["messages"].append({"from": "CASHIER", "text": text, "ts": utcnow().isoformat()})
                 await relay_order(order_id, {"type": "chat", "from": "CASHIER", "text": text})
     except WebSocketDisconnect:
@@ -857,11 +1218,46 @@ async def ws_order_cashier(ws: WebSocket, order_id: str, cashier_id: str):
             del order_cashier_ws[order_id]
 
 
-# -----------------------------
+@app.websocket("/ws/call/{order_id}/{role}")
+async def ws_call_signaling(ws: WebSocket, order_id: str, role: str):
+    """
+    WebRTC signaling websocket:
+    - role = 'customer' or 'cashier'
+    - server relays JSON messages between peers:
+      {type: call_request | call_accept | call_reject | webrtc_offer | webrtc_answer | webrtc_ice | hangup, ...}
+    """
+    role = role.strip().lower()
+    if role not in ("customer", "cashier"):
+        await ws.close()
+        return
+
+    await ws.accept()
+
+    call_ws.setdefault(order_id, {})
+    call_ws[order_id][role] = ws
+
+    try:
+        while True:
+            data = await ws.receive_json()
+            await relay_call(order_id, role, data)
+    except WebSocketDisconnect:
+        peers = call_ws.get(order_id) or {}
+        if peers.get(role) is ws:
+            del peers[role]
+        if not peers:
+            call_ws.pop(order_id, None)
+
+
+# -----------------------------------------------------------------------------
 # Customer APIs
-# -----------------------------
+# -----------------------------------------------------------------------------
 @app.post("/customer/checkin")
 async def customer_checkin(payload: dict):
+    """
+    Customer check-in:
+    - Stores lane selection for the customer
+    - Enables connect step for that lane
+    """
     customer_id = str(payload.get("customer_id", "")).strip()
     lane_id = str(payload.get("lane_id", "")).strip().upper()
 
@@ -877,6 +1273,12 @@ async def customer_checkin(payload: dict):
 
 @app.post("/customer/connect")
 async def customer_connect(payload: dict):
+    """
+    Customer connects using lane code:
+    - Validates customer checked-in to the lane
+    - Validates lane code is correct & not expired
+    - Creates an order and rotates lane code immediately after success
+    """
     customer_id = str(payload.get("customer_id", "")).strip()
     lane_id = str(payload.get("lane_id", "")).strip().upper()
     code = str(payload.get("code", "")).strip()
@@ -884,17 +1286,19 @@ async def customer_connect(payload: dict):
     if not customer_id or lane_id not in ("L1", "L2") or not code:
         return JSONResponse({"error": "customer_id, lane_id, and code required"}, status_code=400)
 
+    # Customer must have checked-in to that lane first.
     ci = checkins.get(customer_id)
     if not ci or ci["lane_id"] != lane_id:
         return JSONResponse({"error": "Please click ‘I’m Here’ for this lane first."}, status_code=400)
 
+    # Validate the current lane code.
     rec = current_lane_code(lane_id)
     if utcnow() >= rec["expires_at"]:
         return JSONResponse({"error": "Code expired. Enter the new code shown."}, status_code=400)
-
     if code != rec["code"]:
         return JSONResponse({"error": "Invalid code. Check the lane display and try again."}, status_code=400)
 
+    # Create a new order.
     order_id = f"ord_{uuid4().hex[:8]}"
     orders[order_id] = {
         "order_id": order_id,
@@ -908,7 +1312,7 @@ async def customer_connect(payload: dict):
         "pay_session_id": None,
     }
 
-    # ✅ Rotate lane code AFTER successful connect/order creation
+    # Rotate lane code only after successful connect + order creation.
     rotate_lane_code(lane_id)
 
     await push_customer(customer_id, {"type": "info", "text": f"Connected. Order {order_id} created. Start ordering."})
@@ -917,29 +1321,39 @@ async def customer_connect(payload: dict):
 
 @app.get("/customer/{customer_id}/cards")
 async def cards(customer_id: str):
+    """Return demo saved cards for the customer."""
     ensure_demo_cards(customer_id)
     return {"customer_id": customer_id, "cards": customer_cards.get(customer_id, [])}
 
 
-# -----------------------------
+# -----------------------------------------------------------------------------
 # Cashier APIs
-# -----------------------------
+# -----------------------------------------------------------------------------
 @app.get("/cashier/orders")
 async def cashier_orders():
+    """List orders for the cashier UI dropdown."""
     out = []
     for o in orders.values():
-        out.append({
-            "order_id": o["order_id"],
-            "lane_id": o["lane_id"],
-            "status": o["status"],
-            "total_cents": o["total_cents"] or 0,
-        })
+        out.append(
+            {
+                "order_id": o["order_id"],
+                "lane_id": o["lane_id"],
+                "status": o["status"],
+                "total_cents": o["total_cents"] or 0,
+            }
+        )
     out.sort(key=lambda x: x["order_id"], reverse=True)
     return {"orders": out}
 
 
 @app.post("/cashier/order/{order_id}/confirm_total")
 async def cashier_confirm_total(order_id: str, payload: dict):
+    """
+    Cashier confirms items + total:
+    - Updates the order state
+    - Creates a payment session
+    - Pushes a payment request to the customer portal
+    """
     o = orders.get(order_id)
     if not o:
         return JSONResponse({"error": "order not found"}, status_code=404)
@@ -954,14 +1368,16 @@ async def cashier_confirm_total(order_id: str, payload: dict):
     o["total_cents"] = total_cents
     o["status"] = "TOTAL_CONFIRMED_WAITING_PAYMENT"
 
-    await relay_order(order_id, {
-        "type": "order_state",
-        "status": o["status"],
-        "items_text": items_text,
-        "total_cents": total_cents,
-    })
-    await relay_order(order_id, {"type": "chat", "from": "CASHIER", "text": f"Total confirmed: ${money(total_cents)}. Please pay in the app."})
+    await relay_order(
+        order_id,
+        {"type": "order_state", "status": o["status"], "items_text": items_text, "total_cents": total_cents},
+    )
+    await relay_order(
+        order_id,
+        {"type": "chat", "from": "CASHIER", "text": f"Total confirmed: ${money(total_cents)}. Please pay in the app."},
+    )
 
+    # Create a payment session (demo).
     pay_session_id = f"pay_{uuid4().hex[:8]}"
     payments[pay_session_id] = {
         "pay_session_id": pay_session_id,
@@ -976,23 +1392,28 @@ async def cashier_confirm_total(order_id: str, payload: dict):
     }
     o["pay_session_id"] = pay_session_id
 
-    await push_customer(o["customer_id"], {
-        "type": "payment_request",
-        "pay_session_id": pay_session_id,
-        "order_id": order_id,
-        "merchant_name": "DriveThru Demo",
-        "amount_cents": total_cents,
-        "currency": "USD",
-    })
+    # Push payment request to customer.
+    await push_customer(
+        o["customer_id"],
+        {
+            "type": "payment_request",
+            "pay_session_id": pay_session_id,
+            "order_id": order_id,
+            "merchant_name": "DriveThru Demo",
+            "amount_cents": total_cents,
+            "currency": "USD",
+        },
+    )
 
     return {"order_id": order_id, "pay_session_id": pay_session_id, "status": "PAYMENT_REQUESTED"}
 
 
-# -----------------------------
+# -----------------------------------------------------------------------------
 # Payment APIs
-# -----------------------------
+# -----------------------------------------------------------------------------
 @app.post("/payment/{pay_session_id}/decline")
 async def payment_decline(pay_session_id: str):
+    """Mark a pending payment session as declined."""
     s = payments.get(pay_session_id)
     if not s:
         return JSONResponse({"error": "payment session not found"}, status_code=404)
@@ -1001,11 +1422,15 @@ async def payment_decline(pay_session_id: str):
         return {"pay_session_id": pay_session_id, "status": s["status"]}
 
     s["status"] = "DECLINED"
+
     o = orders.get(s["order_id"])
     if o:
         o["status"] = "PAYMENT_DECLINED"
         await relay_order(o["order_id"], {"type": "order_state", "status": o["status"]})
-        await relay_order(o["order_id"], {"type": "chat", "from": "SYSTEM", "text": "Payment declined. You can try again or pay at window."})
+        await relay_order(
+            o["order_id"],
+            {"type": "chat", "from": "SYSTEM", "text": "Payment declined. You can try again or pay at window."},
+        )
 
     await relay_order(s["order_id"], {"type": "payment_status", "status": "DECLINED", "payment_method": None})
     return {"pay_session_id": pay_session_id, "status": "DECLINED"}
@@ -1013,6 +1438,12 @@ async def payment_decline(pay_session_id: str):
 
 @app.post("/payment/{pay_session_id}/pay")
 async def payment_pay(pay_session_id: str, payload: dict):
+    """
+    Process a demo payment:
+    - Validates session, customer, expiry
+    - Supports modes: saved_card, new_card, google_pay, paypal, other_wallet
+    - Marks payment APPROVED and updates order status
+    """
     s = payments.get(pay_session_id)
     if not s:
         return JSONResponse({"error": "payment session not found"}, status_code=404)
@@ -1050,7 +1481,9 @@ async def payment_pay(pay_session_id: str, payload: dict):
 
         last4 = number[-4:]
         brand = "VISA" if number.startswith("4") else "CARD"
-        customer_cards[customer_id].append({"card_id": f"card_{uuid4().hex[:8]}", "brand": brand, "last4": last4, "exp": exp})
+        customer_cards[customer_id].append(
+            {"card_id": f"card_{uuid4().hex[:8]}", "brand": brand, "last4": last4, "exp": exp}
+        )
         s["payment_method"] = f"new_card:{brand}:{last4}"
 
     elif mode in ("google_pay", "paypal", "other_wallet"):
@@ -1059,6 +1492,7 @@ async def payment_pay(pay_session_id: str, payload: dict):
     else:
         return JSONResponse({"error": "unsupported mode"}, status_code=400)
 
+    # Approve (demo)
     s["status"] = "APPROVED"
 
     o = orders.get(s["order_id"])
