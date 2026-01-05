@@ -1,6 +1,6 @@
 # Smart Drive-Thru Ordering & Mobile Payment Platform (Order and Pay Without Opening the Car Window)
 
-**Project Overview**
+## Project Overview
 This project is a real-time drive-thru ordering and payment prototype designed to eliminate the need for customers to open their vehicle window for ordering or payment.
 Customers complete the entire ordering and payment process on their mobile phone while remaining inside the vehicle. The window is opened only once, at the pickup window, to collect the order.
 This approach represents a smarter, mobile-first alternative to traditional drive-thru systems that rely on outdoor microphones, cash handling, and in-person payment terminals.
