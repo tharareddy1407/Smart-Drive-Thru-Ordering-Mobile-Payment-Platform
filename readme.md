@@ -174,3 +174,4 @@ Everything happens on the phone, inside the vehicle.
 
 ## Disclaimer
 This project is a conceptual prototype intended for demonstration and idea validation only. It is not production-ready and does not process real payments.
+
