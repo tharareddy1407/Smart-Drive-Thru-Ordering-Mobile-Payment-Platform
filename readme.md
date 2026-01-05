@@ -1,19 +1,19 @@
 **Smart Drive-Thru Ordering & Mobile Payment Platform**
-Order and Pay Without Opening the Car Window
+**Order and Pay Without Opening the Car Window**
 
-Project Overview
+**Project Overview**
 This project is a real-time drive-thru ordering and payment prototype designed to eliminate the need for customers to open their vehicle window for ordering or payment.
 Customers complete the entire ordering and payment process on their mobile phone while remaining inside the vehicle. The window is opened only once, at the pickup window, to collect the order.
 This approach represents a smarter, mobile-first alternative to traditional drive-thru systems that rely on outdoor microphones, cash handling, and in-person payment terminals.
 
-Who This Project Is For
+**Who This Project Is For**
 This project is relevant for:
 * Quick-service restaurants (QSRs)
 * Drive-thru technology and product teams
 * Restaurant operations and innovation leaders
 * Engineers and architects exploring real-time, mobile-first systems
 
-Key Differentiator
+**Key Differentiator**
 No Window Interaction Until Pickup
 Customers do not need to open the car window to:
 * Place an order
@@ -25,7 +25,7 @@ This significantly improves:
 * Order accuracy in noisy environments
 * Speed and safety of the drive-thru experience
 
-Why This Is a Smarter Approach
+**Why This Is a Smarter Approach**
 Traditional Drive-Thru Systems Require:
 * Outdoor microphones and speakers
 * Verbal ordering through open windows
@@ -37,14 +37,14 @@ This System Replaces Those With:
 * In-app payment before pickup
 Result: A simpler, faster, and more reliable drive-thru workflow with fewer hardware dependencies.
 
-Updated User Flow
+**Updated User Flow**
 1. Customer enters the drive-thru lane
 2. Customer connects using the station code shown at the lane
 3. Customer orders food via mobile chat or voice call
 4. Customer completes payment on their phone
 5. Customer opens the window only at the pickup window to receive the order
 
-Use Case
+**Use Case**
 This solution is particularly effective for:
 * Cold or rainy weather conditions
 * High-noise drive-thru locations
@@ -52,7 +52,7 @@ This solution is particularly effective for:
 * Restaurants seeking to reduce hardware dependency
 It introduces a modern, contact-minimized drive-thru experience without requiring changes to customer behavior beyond using a smartphone.
 
-Technologies Used
+**Technologies Used**
 * FastAPI – Backend APIs and application server
 * WebSockets – Real-time chat, order updates, and payment status
 * WebRTC – Browser-based voice calls (no phone numbers required)
@@ -60,7 +60,7 @@ Technologies Used
 * HTML, CSS, JavaScript – Customer portal, cashier console, and lane display UI
 * STUN Server (Google) – WebRTC network connectivity support
 
-Steps: How This Project Was Created
+**Steps: How This Project Was Created**
 1. Requirement Analysis Identified limitations of traditional drive-thru systems such as window dependency, noise issues, and slow payment flow.
 2. Architecture Design Designed a mobile-first system where:
     * Customers connect using a lane code
@@ -96,7 +96,7 @@ Steps: How This Project Was Created
     * Verified mobile browser compatibility
     * Validated real-time communication between customer and cashier
 
-Live Demo
+**Live Demo**
 Website: 👉 https://easypay-kb8f.onrender.com
 Demo Pages
 * Customer Portal: https://easypay-kb8f.onrender.com/customer
@@ -105,7 +105,7 @@ Demo Pages
     * https://easypay-kb8f.onrender.com/lane/L1
     * https://easypay-kb8f.onrender.com/lane/L2
 
-Step-by-Step Guide (New Users)
+**Step-by-Step Guide**
 Step 1: Open the Lane Display
 Open one of the lane pages to view the 4-digit station code.
 Step 2: Open the Customer Portal (Phone)
@@ -128,7 +128,7 @@ Step 6: Pickup
 * Customer opens the window only at the pickup window
 * Order is already paid and confirmed
 
-Important Notes
+**Important Notes**
 * This is a demo / prototype
 * No real payments are processed
 * Data resets when the server restarts
@@ -137,12 +137,12 @@ Important Notes
     * Cashier → Laptop browser
 * Chrome recommended for voice calls
 
-Why This Is Different
+**Why This Is Different**
 Unlike traditional drive-thru systems:
 * No window opening for ordering
 * No shouting into microphones
 * No payment at the window
 Everything happens on the phone, inside the vehicle.
 
-Disclaimer
+**Disclaimer**
 This project is a conceptual prototype intended for demonstration and idea validation only. It is not production-ready and does not process real payments.
