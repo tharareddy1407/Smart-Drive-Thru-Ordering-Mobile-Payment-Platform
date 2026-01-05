@@ -39,7 +39,8 @@ from uuid import uuid4
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, JSONResponse
 
-app = FastAPI(title="Drive-Thru Demo: Chat + WebRTC Voice Call + Easy Payment")
+app = FastAPI(title="Drive-Thru Connect"
+                    "Mobile Voice Ordering & Payment Platform for Quick-Service Restaurants")
 
 # -----------------------------------------------------------------------------
 # In-memory stores (demo only)
