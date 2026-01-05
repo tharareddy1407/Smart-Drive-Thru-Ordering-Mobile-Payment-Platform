@@ -1,37 +1,3 @@
-
-# -----------------------------------------------------------------------------
-# Drive-Thru Prototype (ONE person does POS + Agent in a single Cashier Console)
-# -----------------------------------------------------------------------------
-# What this prototype demonstrates:
-# - Customer checks in to a lane (L1/L2)
-# - Customer enters a 4-digit lane code (valid 10 minutes)
-# - If code matches: an Order is created and lane code rotates immediately
-# - Customer + Cashier can chat (text) in real time
-# - Customer can initiate a LIVE VOICE CALL with agent (WebRTC audio) (Option A)
-# - Cashier can Accept/Reject/Hangup the call
-# - Cashier confirms total -> customer receives payment request
-# - Customer pays using saved card / new card / Google Pay / PayPal / other wallet
-# - Payment approved message + “move forward to pickup window” confirmation
-#
-# Notes:
-# - WebRTC requires HTTPS (or localhost) for microphone permissions on most devices.
-# - Server handles only signaling for WebRTC (offer/answer/ice); audio is P2P.
-# - In-memory state is for demo only. Use Redis/DB for production & multi-instance.
-#
-# Pages:
-# - Home:           /                 (links)
-# - Customer:       /customer
-# - Cashier:        /cashier
-# - Lane Display:   /lane/L1 or /lane/L2
-#
-# Run local:
-#   pip install "uvicorn[standard]" fastapi
-#   uvicorn prototype:app --reload --host 0.0.0.0 --port 8000
-#
-# Deploy (Render):
-#   startCommand: uvicorn prototype:app --host 0.0.0.0 --port $PORT
-# -----------------------------------------------------------------------------
-
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 from uuid import uuid4
