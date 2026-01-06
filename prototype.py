@@ -121,23 +121,46 @@ async def relay_call(order_id: str, sender_role: str, payload: dict) -> None:
 HOME_HTML = """
 <!doctype html>
 <html>
-<head><meta charset="utf-8"/><title>Smart Drive-Thru Ordering Platform
-                        Real-Time Voice Ordering, Secure Lane Connection & Mobile Payment</title></head>
-<body style="font-family:Arial;margin:24px;">
-  <h2>Smart Drive-Thru Ordering Platform
-                        Real-Time Voice Ordering, Secure Lane Connection & Mobile Payment</h2>
+<head>
+  <meta charset="utf-8"/>
+  <title>Smart Drive-Thru Ordering Platform</title>
+</head>
+<body style="font-family:Arial, sans-serif; margin:24px; max-width:900px;">
+
+  <h2>Smart Drive-Thru Ordering Platform</h2>
+  <p style="color:#444;">
+    Real-time voice ordering, secure lane-based connection, and mobile payment —
+    all without opening the car window until pickup.
+  </p>
+
+  <h3>Quick Demo Steps</h3>
+  <ol>
+    <li>Open a lane display to view the 4-digit station code.</li>
+    <li>Open the Customer Portal, click <b>“I’m Here”</b>, and enter the lane code.</li>
+    <li>Open the Cashier Console, refresh orders, and click <b>Join</b>.</li>
+    <li>Customer places the order via chat or voice call.</li>
+    <li>Cashier sends payment request → customer pays → order ready for pickup.</li>
+  </ol>
+
+  <h3>Demo Links</h3>
   <ul>
     <li><a href="/customer">Customer Portal</a></li>
     <li><a href="/cashier">Cashier Console (POS + Agent)</a></li>
-    <li>Lane display: <a href="/lane/L1">/lane/L1</a> or <a href="/lane/L2">/lane/L2</a></li>
+    <li>Lane Display:
+      <a href="/lane/L1">Lane L1</a> |
+      <a href="/lane/L2">Lane L2</a>
+    </li>
   </ul>
-  <p style="color:#666">
-    Tip: Open Customer on phone and Cashier on laptop for the best demo.
-    <br/>WebRTC voice call requires HTTPS (or localhost) for mic permission.
+
+  <p style="color:#666; font-size:14px;">
+    Tip: Use a phone for the Customer Portal and a laptop for the Cashier Console.<br/>
+    WebRTC voice calls require HTTPS (or localhost) for microphone access.
   </p>
+
 </body>
 </html>
 """
+
 
 LANE_HTML_TEMPLATE = """
 <!doctype html>
