@@ -127,6 +127,7 @@ HOME_HTML = """
 </head>
 <body style="font-family:Arial, sans-serif; margin:24px; max-width:900px;">
 
+
   <h2>Smart Drive-Thru Ordering Platform</h2>
   <p style="color:#444;">
     Real-time voice ordering, secure lane-based connection, and mobile payment —
