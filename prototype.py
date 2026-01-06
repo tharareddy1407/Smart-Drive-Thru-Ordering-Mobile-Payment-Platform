@@ -129,7 +129,7 @@ HOME_HTML = """
 
   <h2>Smart Drive-Thru Ordering Platform</h2>
   <p style="color:#444;">
-    Real-time voice ordering, secure lane-based connection, and mobile payment —
+    Real-time voice ordering, secure lane-based connection, and mobile payment,
     all without opening the car window until pickup.
   </p>
 
