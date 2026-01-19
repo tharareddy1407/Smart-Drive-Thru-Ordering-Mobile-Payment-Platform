@@ -344,11 +344,7 @@ HOME_HTML = """
 <body>
   <div class="page">
     <div class="wrap">
-      <h1 class="title">Smart Drive-Thru Ordering Platform</h1>
-      <p class="subtitle">
-        Real-time voice ordering, secure lane-based connection, and mobile payment —
-        all without opening the car window until pickup.
-      </p>
+    
 
       <div class="actions">
         <!-- Lane button opens lane picker -->
