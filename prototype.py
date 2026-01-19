@@ -297,10 +297,7 @@ HOME_HTML = """
   <div class="page">
     <div class="wrap">
 
-      <div class="headline">
-        <h1>Smart Drive-Thru Ordering Platform</h1>
-        <p>Real-time voice ordering, secure lane connection, and mobile payment — without opening the car window.</p>
-      </div>
+      
 
       <div class="grid">
 
