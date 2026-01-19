@@ -146,102 +146,83 @@ HOME_HTML = """
   <style>
     html, body { height: 100%; margin: 0; font-family: Arial, sans-serif; }
 
-    /* ✅ Background stays visible and aligned */
+    /* ✅ Always show the FULL image (no cropping) on all devices */
     body {
-      background: url('/static/Background.png?v=40') center top / cover no-repeat;
       background-color: #0b1220;
-      overflow-x: hidden;
+      background-image:
+        linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.35)),
+        url('/static/Background.png?v=60');
+      background-repeat: no-repeat;
+      background-size: contain;      /* ✅ key: no cropping */
+      background-position: center top;
     }
 
-    /* ✅ Layout: keep content at top area so bottom image doesn't feel misaligned */
+    /* ✅ Page layout */
     .page {
       min-height: 100vh;
-      padding: 28px 18px;
+      display: flex;
+      flex-direction: column;
+      padding: 14px 14px 28px 14px;
       box-sizing: border-box;
+    }
+
+    /* ✅ Buttons always at TOP */
+    .topbar {
+      width: min(1180px, 96vw);
+      margin: 0 auto;
+      padding-top: 10px;
+
       display: flex;
-      justify-content: center;
-      align-items: flex-start;
-    }
-
-    .wrap {
-      width: min(1100px, 96vw);
-      margin-top: 90px; /* pushes buttons below the SMART title */
-      text-align: center;
-    }
-
-    .title {
-      color: rgba(255,255,255,0.95);
-      font-size: clamp(24px, 4vw, 44px);
-      margin: 0 0 10px 0;
-      text-shadow: 0 10px 30px rgba(0,0,0,0.55);
-      letter-spacing: -0.6px;
-    }
-
-    .subtitle {
-      margin: 0 auto 22px auto;
-      max-width: 900px;
-      color: rgba(255,255,255,0.88);
-      font-size: clamp(14px, 2.2vw, 16px);
-      line-height: 1.45;
-      text-shadow: 0 10px 30px rgba(0,0,0,0.55);
-    }
-
-    /* ✅ Button row */
-    .actions {
-      display: flex;
-      gap: 14px;
+      gap: 12px;
       justify-content: center;
       flex-wrap: wrap;
+
+      position: sticky;
+      top: 0;
+      z-index: 50;
+
+      /* light glass strip behind buttons (still transparent) */
+      backdrop-filter: blur(16px) saturate(140%);
+      -webkit-backdrop-filter: blur(16px) saturate(140%);
     }
 
-    /* ✅ Big interactive glass buttons */
     .actionBtn {
-      width: min(320px, 92vw);
+      width: min(340px, 92vw);
       text-decoration: none;
       color: rgba(255,255,255,0.96);
       border-radius: 18px;
-      padding: 16px 18px;
+      padding: 14px 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 14px;
+      gap: 12px;
 
-      /* super transparent */
       background: rgba(255,255,255,0.10);
       border: 1px solid rgba(255,255,255,0.16);
+
       backdrop-filter: blur(22px) saturate(160%);
       -webkit-backdrop-filter: blur(22px) saturate(160%);
-      box-shadow: 0 16px 40px rgba(0,0,0,0.18);
 
-      transition: transform .12s ease, background .12s ease, border .12s ease, box-shadow .12s ease;
+      box-shadow: 0 14px 34px rgba(0,0,0,0.18);
+      transition: transform .12s ease, background .12s ease, border .12s ease;
     }
 
     .actionBtn:hover {
       transform: translateY(-2px);
       background: rgba(255,255,255,0.14);
-      border: 1px solid rgba(255,255,255,0.24);
-      box-shadow: 0 22px 55px rgba(0,0,0,0.26);
+      border: 1px solid rgba(255,255,255,0.22);
     }
 
     .left {
       display: flex;
       flex-direction: column;
-      align-items: flex-start;
       gap: 4px;
       text-align: left;
     }
 
-    .labelRow {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+    .labelRow { display: flex; align-items: center; gap: 10px; }
 
-    .label {
-      font-weight: 900;
-      font-size: 18px;
-      letter-spacing: -0.2px;
-    }
+    .label { font-weight: 900; font-size: 16px; letter-spacing: -0.2px; }
 
     .pill {
       font-size: 12px;
@@ -253,18 +234,19 @@ HOME_HTML = """
     }
 
     .desc {
-      font-size: 13px;
-      color: rgba(255,255,255,0.82);
+      font-size: 12.5px;
+      color: rgba(255,255,255,0.84);
       line-height: 1.25;
     }
 
-    .arrow {
-      font-size: 22px;
-      font-weight: 900;
-      opacity: 0.9;
+    .arrow { font-size: 20px; font-weight: 900; opacity: 0.9; }
+
+    /* ✅ Spacer so buttons don’t overlap the image top text */
+    .spacer {
+      height: 10px;
     }
 
-    /* ✅ Lane chooser (modal) */
+    /* ✅ Lane chooser modal */
     .modalBack {
       display: none;
       position: fixed;
@@ -334,56 +316,44 @@ HOME_HTML = """
       font-weight: 800;
     }
 
-    /* ✅ Mobile spacing */
-    @media (max-width: 980px) {
-      .wrap { margin-top: 60px; }
+    /* ✅ Mobile: keep full image visible + stack buttons nicely */
+    @media (max-width: 560px) {
+      .actionBtn { width: 94vw; }
+      .laneBtns { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 
 <body>
   <div class="page">
-    <div class="wrap">
-    
 
-      <div class="actions">
-        <!-- Lane button opens lane picker -->
-        <a class="actionBtn" href="#" onclick="openLanePicker(); return false;">
-          <div class="left">
-            <div class="labelRow">
-              <div class="label">Lane</div>
-              <div class="pill">Display</div>
-            </div>
-            <div class="desc">Open a lane screen to get the rotating station code.</div>
-          </div>
-          <div class="arrow">→</div>
-        </a>
+    <div class="topbar">
+      <a class="actionBtn" href="#" onclick="openLanePicker(); return false;">
+        <div class="left">
+          <div class="labelRow"><div class="label">Lane</div><div class="pill">Display</div></div>
+          <div class="desc">Open a lane screen to get the rotating station code.</div>
+        </div>
+        <div class="arrow">→</div>
+      </a>
 
-        <!-- Customer -->
-        <a class="actionBtn" href="/customer">
-          <div class="left">
-            <div class="labelRow">
-              <div class="label">Customer</div>
-              <div class="pill">Mobile</div>
-            </div>
-            <div class="desc">Check-in, enter code, chat/call, and pay securely.</div>
-          </div>
-          <div class="arrow">→</div>
-        </a>
+      <a class="actionBtn" href="/customer">
+        <div class="left">
+          <div class="labelRow"><div class="label">Customer</div><div class="pill">Mobile</div></div>
+          <div class="desc">Check-in, enter code, chat/call, and pay securely.</div>
+        </div>
+        <div class="arrow">→</div>
+      </a>
 
-        <!-- Cashier -->
-        <a class="actionBtn" href="/cashier">
-          <div class="left">
-            <div class="labelRow">
-              <div class="label">Cashier</div>
-              <div class="pill">POS + Agent</div>
-            </div>
-            <div class="desc">Join order, confirm total, and request payment.</div>
-          </div>
-          <div class="arrow">→</div>
-        </a>
-      </div>
+      <a class="actionBtn" href="/cashier">
+        <div class="left">
+          <div class="labelRow"><div class="label">Cashier</div><div class="pill">POS + Agent</div></div>
+          <div class="desc">Join order, confirm total, and request payment.</div>
+        </div>
+        <div class="arrow">→</div>
+      </a>
     </div>
+
+    <div class="spacer"></div>
   </div>
 
   <!-- Lane picker modal -->
@@ -407,13 +377,14 @@ HOME_HTML = """
     function openLanePicker() {
       document.getElementById("laneModal").style.display = "flex";
     }
-    function closeLanePicker(e) {
+    function closeLanePicker() {
       document.getElementById("laneModal").style.display = "none";
     }
   </script>
 </body>
 </html>
 """
+
 
 
 LANE_HTML_TEMPLATE = """
