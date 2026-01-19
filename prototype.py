@@ -137,51 +137,91 @@ async def relay_call(order_id: str, sender_role: str, payload: dict) -> None:
 # ----------------------------------------------------------------------------
 HOME_HTML = """
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Smart Drive-Thru Ordering Platform</title>
+
   <style>
-    body{
-      font-family: Arial, sans-serif;
+    html, body {
+      height: 100%;
       margin: 0;
-      min-height: 100vh;
+      font-family: Arial, sans-serif;
+    }
 
-      /* ✅ Background image */
-      background-image: url('/static/drive_thru_demo.png?v=1');
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-
-      /* fallback if image fails */
+    /* ✅ Full-page responsive background */
+    body {
+      background:
+        linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.65)),
+        url('/static/drive_thru_demo.png?v=2') center / cover no-repeat;
       background-color: #0b1220;
     }
 
-    /* ✅ Dark overlay so text is readable */
-    .overlay{
+    /* ✅ Fix for iOS Safari */
+    @media (max-width: 768px) {
+      body {
+        background-attachment: scroll;
+      }
+    }
+
+    /* ✅ Center content both horizontally & vertically */
+    .page {
       min-height: 100vh;
-      padding: 24px;
-      background: rgba(0,0,0,0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      box-sizing: border-box;
     }
 
-    .card{
-      max-width: 900px;
-      padding: 18px 18px;
-      border-radius: 16px;
-      background: rgba(255,255,255,0.92);
-      box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+    /* ✅ Card */
+    .card {
+      width: 100%;
+      max-width: 920px;
+      background: rgba(255,255,255,0.95);
+      border-radius: 20px;
+      padding: 24px 26px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.35);
     }
 
-    h2{ margin-top:0; }
-    .muted{ color:#666; font-size:14px; }
+    h2 {
+      margin-top: 0;
+      font-size: clamp(24px, 4vw, 34px);
+    }
+
+    p {
+      color: #444;
+      font-size: clamp(14px, 2.5vw, 16px);
+      line-height: 1.5;
+    }
+
+    h3 {
+      margin-top: 22px;
+    }
+
+    ul {
+      padding-left: 20px;
+    }
+
+    li {
+      margin-bottom: 6px;
+    }
+
+    .muted {
+      color: #666;
+      font-size: 14px;
+      margin-top: 14px;
+    }
   </style>
 </head>
 
 <body>
-  <div class="overlay">
+  <div class="page">
     <div class="card">
       <h2>Smart Drive-Thru Ordering Platform</h2>
-      <p style="color:#444;">
+
+      <p>
         Real-time voice ordering, secure lane-based connection, and mobile payment —
         all without opening the car window until pickup.
       </p>
@@ -190,7 +230,11 @@ HOME_HTML = """
       <ul>
         <li><a href="/customer">Customer Portal</a></li>
         <li><a href="/cashier">Cashier Console (POS + Agent)</a></li>
-        <li>Lane display: <a href="/lane/L1">/lane/L1</a> or <a href="/lane/L2">/lane/L2</a></li>
+        <li>
+          Lane display:
+          <a href="/lane/L1">/lane/L1</a> or
+          <a href="/lane/L2">/lane/L2</a>
+        </li>
       </ul>
 
       <p class="muted">
@@ -202,6 +246,7 @@ HOME_HTML = """
 </body>
 </html>
 """
+
 
 
 
