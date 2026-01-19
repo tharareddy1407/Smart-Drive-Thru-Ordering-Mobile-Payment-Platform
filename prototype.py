@@ -146,18 +146,18 @@ HOME_HTML = """
   <style>
     html, body { height: 100%; margin: 0; font-family: Arial, sans-serif; }
 
-    /* ✅ Background */
+    /* ✅ Background: lighter overlay so image stays visible */
     body {
       background-color: #0b1220;
       background-image:
-        linear-gradient(rgba(0,0,0,0.28), rgba(0,0,0,0.58)),
-        url('/static/drive_thru_demo.png?v=10');
+        radial-gradient(circle at 20% 10%, rgba(0,0,0,0.15), rgba(0,0,0,0.35) 55%, rgba(0,0,0,0.45)),
+        url('/static/Background.png?v=12');
       background-repeat: no-repeat;
       background-size: cover;
       background-position: center top;
     }
 
-    /* ✅ page layout */
+    /* ✅ Layout */
     .page {
       min-height: 100vh;
       padding: 28px 18px;
@@ -167,22 +167,19 @@ HOME_HTML = """
       justify-content: center;
     }
 
-    /* ✅ container */
-    .wrap {
-      width: min(1100px, 96vw);
-    }
+    .wrap { width: min(1180px, 96vw); }
 
-    /* ✅ title area */
+    /* ✅ Headline stays readable without hiding bg */
     .headline {
-      color: rgba(255,255,255,0.95);
       text-align: center;
       margin-bottom: 18px;
-      text-shadow: 0 8px 26px rgba(0,0,0,0.45);
+      color: rgba(255,255,255,0.92);
+      text-shadow: 0 10px 30px rgba(0,0,0,0.35);
     }
     .headline h1 {
       margin: 0 0 8px 0;
-      font-size: clamp(24px, 4vw, 40px);
-      letter-spacing: -0.4px;
+      font-size: clamp(26px, 4vw, 44px);
+      letter-spacing: -0.6px;
     }
     .headline p {
       margin: 0;
@@ -198,20 +195,21 @@ HOME_HTML = """
       gap: 16px;
     }
 
-    /* ✅ glass card */
+    /* ✅ Glass cards: MORE transparent + more blur */
     .card {
       border-radius: 18px;
       padding: 16px 16px;
-      background: rgba(255,255,255,0.22);
-      backdrop-filter: blur(16px) saturate(140%);
-      -webkit-backdrop-filter: blur(16px) saturate(140%);
-      border: 1px solid rgba(255,255,255,0.25);
-      box-shadow: 0 18px 46px rgba(0,0,0,0.35);
+      background: rgba(255,255,255,0.14);           /* 👈 more transparent */
+      backdrop-filter: blur(18px) saturate(155%);   /* 👈 more blur */
+      -webkit-backdrop-filter: blur(18px) saturate(155%);
+      border: 1px solid rgba(255,255,255,0.22);
+      box-shadow: 0 18px 46px rgba(0,0,0,0.25);
       color: rgba(255,255,255,0.92);
       position: relative;
       overflow: hidden;
     }
 
+    /* soft highlight */
     .card:before{
       content:"";
       position:absolute;
@@ -231,7 +229,7 @@ HOME_HTML = """
       font-size: 12px;
       padding: 3px 10px;
       border-radius: 999px;
-      background: rgba(0,0,0,0.25);
+      background: rgba(0,0,0,0.18);
       border: 1px solid rgba(255,255,255,0.18);
       margin-left: 8px;
       color: rgba(255,255,255,0.9);
@@ -252,7 +250,7 @@ HOME_HTML = """
       position: relative;
     }
 
-    /* ✅ clickable button links */
+    /* ✅ Buttons: lighter so bg shows through */
     .btn {
       display: flex;
       align-items: center;
@@ -261,9 +259,11 @@ HOME_HTML = """
       padding: 10px 12px;
       border-radius: 12px;
       text-decoration: none;
+
       color: rgba(255,255,255,0.95);
-      background: rgba(0,0,0,0.25);
-      border: 1px solid rgba(255,255,255,0.20);
+      background: rgba(0,0,0,0.12);     /* 👈 lighter */
+      border: 1px solid rgba(255,255,255,0.18);
+
       transition: transform .12s ease, background .12s ease, border .12s ease;
       font-weight: 700;
       font-size: 14px;
@@ -271,18 +271,18 @@ HOME_HTML = """
 
     .btn:hover {
       transform: translateY(-1px);
-      background: rgba(0,0,0,0.35);
-      border: 1px solid rgba(255,255,255,0.32);
+      background: rgba(0,0,0,0.18);
+      border: 1px solid rgba(255,255,255,0.28);
     }
 
-    .arrow { opacity: 0.8; font-weight: 900; }
+    .arrow { opacity: 0.85; font-weight: 900; }
 
     .mutedTip {
       margin-top: 14px;
       text-align: center;
       font-size: 13px;
-      color: rgba(255,255,255,0.80);
-      text-shadow: 0 8px 26px rgba(0,0,0,0.45);
+      color: rgba(255,255,255,0.82);
+      text-shadow: 0 10px 30px rgba(0,0,0,0.35);
     }
 
     /* ✅ responsive */
@@ -304,7 +304,6 @@ HOME_HTML = """
 
       <div class="grid">
 
-        <!-- ✅ LANE -->
         <div class="card">
           <h3>Lane <span class="badge">Display</span></h3>
           <p>Open a lane screen to get the rotating 4-digit station code.</p>
@@ -314,7 +313,6 @@ HOME_HTML = """
           </div>
         </div>
 
-        <!-- ✅ CUSTOMER -->
         <div class="card">
           <h3>Customer <span class="badge">Mobile</span></h3>
           <p>Check-in, enter the station code, chat/call, and pay securely.</p>
@@ -323,7 +321,6 @@ HOME_HTML = """
           </div>
         </div>
 
-        <!-- ✅ CASHIER -->
         <div class="card">
           <h3>Cashier <span class="badge">POS + Agent</span></h3>
           <p>Join the order, chat/call with the customer, confirm total, and request payment.</p>
@@ -343,6 +340,7 @@ HOME_HTML = """
 </body>
 </html>
 """
+
 
 
 
