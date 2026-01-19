@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional
+from typing import Dict, List
 from uuid import uuid4
 from pathlib import Path
 
@@ -8,25 +8,22 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 # -----------------------------------------------------------------------------
-# App
+# App (✅ create app FIRST)
 # -----------------------------------------------------------------------------
 app = FastAPI(
-    title="Smart Drive-Thru Ordering Platform "
-          "(Real-Time Voice Ordering, Secure Lane Connection & Mobile Payment)"
+    title="Smart Drive-Thru Ordering Platform (Real-Time Voice Ordering, Secure Lane Connection & Mobile Payment)"
 )
 
 # -----------------------------------------------------------------------------
-# Static files (Render-safe) ✅
+# Static files (✅ serve background image from /static)
 # Put your background image here:
-#   ./static/drive_thru_bg.jpg   (or .png)
+#   ./static/bg.jpg   (or bg.png)
 # -----------------------------------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
 
-# IMPORTANT: do NOT hide problems during debugging.
-# If STATIC_DIR doesn't exist on Render, you WANT to know.
+# ✅ Mount ALWAYS (so you notice issues early). If folder missing, create it.
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
-
 
 # -----------------------------------------------------------------------------
 # In-memory stores (demo only)
@@ -151,7 +148,7 @@ HOME_HTML = """
       min-height: 100vh;
 
       /* ✅ Background image */
-      background-image: url('/static/drive_thru_bg.jpg?v=1');
+      background-image: url('/static/drive_thru_demo.jpg?v=1');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
