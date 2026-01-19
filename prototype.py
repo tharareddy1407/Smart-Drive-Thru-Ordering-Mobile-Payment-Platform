@@ -150,15 +150,27 @@ HOME_HTML = """
       font-family: Arial, sans-serif;
     }
 
-    /* ✅ Full-page responsive background */
+    /* ✅ Background image: fits properly */
     body {
-      background:
-        linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.60)),
-        url('/static/drive_thru_demo.png?v=3') center / cover no-repeat;
       background-color: #0b1220;
+      background-image:
+        linear-gradient(rgba(0,0,0,0.30), rgba(0,0,0,0.55)),
+        url('/static/drive_thru_demo.png?v=5');
+
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-position: center top;
     }
 
-    /* ✅ Center content both horizontally & vertically + overlay layer */
+    /* ✅ On mobile/tablet show more image (avoid cropping text/logo) */
+    @media (max-width: 768px) {
+      body {
+        background-size: contain;
+        background-position: center top;
+      }
+    }
+
+    /* ✅ Center content */
     .page {
       min-height: 100vh;
       display: flex;
@@ -168,21 +180,21 @@ HOME_HTML = """
       box-sizing: border-box;
     }
 
-    /* ✅ Glass / blended card (merges with background) */
+    /* ✅ More transparent glass card */
     .card {
       width: 100%;
       max-width: 920px;
       padding: 26px 28px;
       border-radius: 22px;
 
-      background: rgba(255, 255, 255, 0.78);
-      backdrop-filter: blur(14px) saturate(120%);
-      -webkit-backdrop-filter: blur(14px) saturate(120%);
+      background: rgba(255, 255, 255, 0.50);
+      backdrop-filter: blur(16px) saturate(140%);
+      -webkit-backdrop-filter: blur(16px) saturate(140%);
 
-      border: 1px solid rgba(255,255,255,0.35);
+      border: 1px solid rgba(255,255,255,0.25);
       box-shadow:
         0 20px 50px rgba(0,0,0,0.35),
-        inset 0 1px 0 rgba(255,255,255,0.40);
+        inset 0 1px 0 rgba(255,255,255,0.30);
     }
 
     h2 {
@@ -216,7 +228,7 @@ HOME_HTML = """
     a {
       color: #4b2bd3;
       text-decoration: none;
-      font-weight: 600;
+      font-weight: 700;
     }
     a:hover { text-decoration: underline; }
 
@@ -226,9 +238,12 @@ HOME_HTML = """
       margin-top: 14px;
     }
 
-    /* ✅ Better spacing on small devices */
+    /* ✅ Mobile polish */
     @media (max-width: 520px) {
-      .card { padding: 20px; border-radius: 18px; }
+      .card {
+        padding: 20px;
+        border-radius: 18px;
+      }
       h3 { font-size: 20px; }
       li { font-size: 15px; }
     }
@@ -265,6 +280,7 @@ HOME_HTML = """
 </body>
 </html>
 """
+
 
 
 
