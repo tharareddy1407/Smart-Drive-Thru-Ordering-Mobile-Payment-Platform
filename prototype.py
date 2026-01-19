@@ -148,7 +148,7 @@ HOME_HTML = """
       min-height: 100vh;
 
       /* ✅ Background image */
-      background-image: url('/static/drive_thru_demo.jpg?v=1');
+      background-image: url('/static/drive_thru_demo.png?v=1');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
