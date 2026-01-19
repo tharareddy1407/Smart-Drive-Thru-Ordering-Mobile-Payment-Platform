@@ -146,161 +146,197 @@ HOME_HTML = """
   <style>
     html, body { height: 100%; margin: 0; font-family: Arial, sans-serif; }
 
-    /* ✅ Keep background fully visible (no heavy overlay) */
+    /* ✅ Background stays visible and aligned */
     body {
+      background: url('/static/Background.png?v=40') center top / cover no-repeat;
       background-color: #0b1220;
-      background-image: url('/static/Background.png?v=30');
-      background-repeat: no-repeat;
-      background-size: cover;
-      background-position: center top;
+      overflow-x: hidden;
     }
 
-    /* ✅ Layout */
+    /* ✅ Layout: keep content at top area so bottom image doesn't feel misaligned */
     .page {
       min-height: 100vh;
-      padding: 26px 18px;
+      padding: 28px 18px;
       box-sizing: border-box;
       display: flex;
-      align-items: flex-start;  /* keep title area visible */
       justify-content: center;
+      align-items: flex-start;
     }
 
     .wrap {
-      width: min(1180px, 96vw);
-      margin-top: 110px; /* pushes cards down a bit */
+      width: min(1100px, 96vw);
+      margin-top: 90px; /* pushes buttons below the SMART title */
+      text-align: center;
     }
 
-    /* ✅ Headline with shadow only */
-    .headline {
-      text-align: center;
-      margin-bottom: 18px;
-      color: rgba(255,255,255,0.96);
+    .title {
+      color: rgba(255,255,255,0.95);
+      font-size: clamp(24px, 4vw, 44px);
+      margin: 0 0 10px 0;
       text-shadow: 0 10px 30px rgba(0,0,0,0.55);
-    }
-    .headline h1 {
-      margin: 0 0 8px 0;
-      font-size: clamp(26px, 4vw, 44px);
       letter-spacing: -0.6px;
     }
-    .headline p {
-      margin: 0;
-      font-size: clamp(14px, 2.2vw, 16px);
+
+    .subtitle {
+      margin: 0 auto 22px auto;
+      max-width: 900px;
       color: rgba(255,255,255,0.88);
-      line-height: 1.4;
+      font-size: clamp(14px, 2.2vw, 16px);
+      line-height: 1.45;
       text-shadow: 0 10px 30px rgba(0,0,0,0.55);
     }
 
-    /* ✅ 3 cards grid */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-    }
-
-    /* ✅ Ultra transparent glass cards (background MUST show) */
-    .card {
-      border-radius: 18px;
-      padding: 16px 16px;
-
-      /* 🔥 key: very low alpha */
-      background: rgba(255,255,255,0.07);
-
-      backdrop-filter: blur(26px) saturate(170%);
-      -webkit-backdrop-filter: blur(26px) saturate(170%);
-
-      border: 1px solid rgba(255,255,255,0.14);
-      box-shadow: 0 18px 46px rgba(0,0,0,0.18);
-      color: rgba(255,255,255,0.95);
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* subtle highlight layer */
-    .card:before {
-      content:"";
-      position:absolute;
-      inset:0;
-      background: linear-gradient(135deg, rgba(255,255,255,0.10), rgba(255,255,255,0.01));
-      pointer-events:none;
-    }
-
-    .card h3 {
-      margin: 0 0 10px 0;
-      font-size: 18px;
-      position: relative;
-    }
-
-    .badge {
-      display:inline-block;
-      font-size: 12px;
-      padding: 3px 10px;
-      border-radius: 999px;
-      background: rgba(0,0,0,0.12);
-      border: 1px solid rgba(255,255,255,0.12);
-      margin-left: 8px;
-      color: rgba(255,255,255,0.9);
-      position: relative;
-    }
-
-    .card p {
-      margin: 0 0 12px 0;
-      font-size: 13px;
-      color: rgba(255,255,255,0.88);
-      line-height: 1.35;
-      position: relative;
-      text-shadow: 0 6px 18px rgba(0,0,0,0.35);
-    }
-
-    .links {
+    /* ✅ Button row */
+    .actions {
       display: flex;
-      flex-direction: column;
-      gap: 10px;
-      position: relative;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
     }
 
-    /* ✅ Buttons were blocking background — make them transparent too */
-    .btn {
+    /* ✅ Big interactive glass buttons */
+    .actionBtn {
+      width: min(320px, 92vw);
+      text-decoration: none;
+      color: rgba(255,255,255,0.96);
+      border-radius: 18px;
+      padding: 16px 18px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 14px;
+
+      /* super transparent */
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.16);
+      backdrop-filter: blur(22px) saturate(160%);
+      -webkit-backdrop-filter: blur(22px) saturate(160%);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.18);
+
+      transition: transform .12s ease, background .12s ease, border .12s ease, box-shadow .12s ease;
+    }
+
+    .actionBtn:hover {
+      transform: translateY(-2px);
+      background: rgba(255,255,255,0.14);
+      border: 1px solid rgba(255,255,255,0.24);
+      box-shadow: 0 22px 55px rgba(0,0,0,0.26);
+    }
+
+    .left {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+      text-align: left;
+    }
+
+    .labelRow {
+      display: flex;
+      align-items: center;
       gap: 10px;
+    }
+
+    .label {
+      font-weight: 900;
+      font-size: 18px;
+      letter-spacing: -0.2px;
+    }
+
+    .pill {
+      font-size: 12px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.14);
+      border: 1px solid rgba(255,255,255,0.14);
+      color: rgba(255,255,255,0.9);
+    }
+
+    .desc {
+      font-size: 13px;
+      color: rgba(255,255,255,0.82);
+      line-height: 1.25;
+    }
+
+    .arrow {
+      font-size: 22px;
+      font-weight: 900;
+      opacity: 0.9;
+    }
+
+    /* ✅ Lane chooser (modal) */
+    .modalBack {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      z-index: 9999;
+    }
+
+    .modal {
+      width: min(520px, 94vw);
+      border-radius: 18px;
+      padding: 18px;
+      background: rgba(255,255,255,0.14);
+      border: 1px solid rgba(255,255,255,0.18);
+      backdrop-filter: blur(22px) saturate(160%);
+      -webkit-backdrop-filter: blur(22px) saturate(160%);
+      box-shadow: 0 22px 60px rgba(0,0,0,0.35);
+      color: #fff;
+    }
+
+    .modalTitle {
+      font-weight: 900;
+      font-size: 18px;
+      margin: 0 0 10px 0;
+    }
+
+    .laneBtns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .laneBtn {
+      text-decoration: none;
+      color: rgba(255,255,255,0.96);
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(0,0,0,0.10);
+      border: 1px solid rgba(255,255,255,0.16);
+      text-align: center;
+      font-weight: 900;
+      transition: transform .12s ease, background .12s ease;
+    }
+
+    .laneBtn:hover {
+      transform: translateY(-1px);
+      background: rgba(0,0,0,0.18);
+    }
+
+    .modalFooter {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 12px;
+    }
+
+    .closeBtn {
+      background: rgba(0,0,0,0.18);
+      border: 1px solid rgba(255,255,255,0.16);
+      color: #fff;
       padding: 10px 12px;
       border-radius: 12px;
-      text-decoration: none;
-
-      /* 🔥 key: very low alpha */
-      background: rgba(0,0,0,0.04);
-      border: 1px solid rgba(255,255,255,0.12);
-      color: rgba(255,255,255,0.96);
-
-      transition: transform .12s ease, background .12s ease, border .12s ease;
+      cursor: pointer;
       font-weight: 800;
-      font-size: 14px;
     }
 
-    .btn:hover {
-      transform: translateY(-1px);
-      background: rgba(0,0,0,0.08);
-      border: 1px solid rgba(255,255,255,0.20);
-    }
-
-    .arrow { opacity: 0.85; font-weight: 900; }
-
-    .mutedTip {
-      margin-top: 14px;
-      text-align: center;
-      font-size: 13px;
-
-::contentReference[oaicite:0]{index=0}
- color: rgba(255,255,255,0.84);
-      text-shadow: 0 10px 30px rgba(0,0,0,0.55);
-    }
-
-    /* ✅ responsive */
+    /* ✅ Mobile spacing */
     @media (max-width: 980px) {
       .wrap { margin-top: 60px; }
-      .grid { grid-template-columns: 1fr; }
-      .headline { text-align: left; }
     }
   </style>
 </head>
@@ -308,47 +344,81 @@ HOME_HTML = """
 <body>
   <div class="page">
     <div class="wrap">
+      <h1 class="title">Smart Drive-Thru Ordering Platform</h1>
+      <p class="subtitle">
+        Real-time voice ordering, secure lane-based connection, and mobile payment —
+        all without opening the car window until pickup.
+      </p>
 
-      
-
-      <div class="grid">
-
-        <div class="card">
-          <h3>Lane <span class="badge">Display</span></h3>
-          <p>Open a lane screen to get the rotating 4-digit station code.</p>
-          <div class="links">
-            <a class="btn" href="/lane/L1">Lane L1 <span class="arrow">→</span></a>
-            <a class="btn" href="/lane/L2">Lane L2 <span class="arrow">→</span></a>
+      <div class="actions">
+        <!-- Lane button opens lane picker -->
+        <a class="actionBtn" href="#" onclick="openLanePicker(); return false;">
+          <div class="left">
+            <div class="labelRow">
+              <div class="label">Lane</div>
+              <div class="pill">Display</div>
+            </div>
+            <div class="desc">Open a lane screen to get the rotating station code.</div>
           </div>
-        </div>
+          <div class="arrow">→</div>
+        </a>
 
-        <div class="card">
-          <h3>Customer <span class="badge">Mobile</span></h3>
-          <p>Check-in, enter the station code, chat/call, and pay securely.</p>
-          <div class="links">
-            <a class="btn" href="/customer">Open Customer Portal <span class="arrow">→</span></a>
+        <!-- Customer -->
+        <a class="actionBtn" href="/customer">
+          <div class="left">
+            <div class="labelRow">
+              <div class="label">Customer</div>
+              <div class="pill">Mobile</div>
+            </div>
+            <div class="desc">Check-in, enter code, chat/call, and pay securely.</div>
           </div>
-        </div>
+          <div class="arrow">→</div>
+        </a>
 
-        <div class="card">
-          <h3>Cashier <span class="badge">POS + Agent</span></h3>
-          <p>Join the order, chat/call with the customer, confirm total, and request payment.</p>
-          <div class="links">
-            <a class="btn" href="/cashier">Open Cashier Console <span class="arrow">→</span></a>
+        <!-- Cashier -->
+        <a class="actionBtn" href="/cashier">
+          <div class="left">
+            <div class="labelRow">
+              <div class="label">Cashier</div>
+              <div class="pill">POS + Agent</div>
+            </div>
+            <div class="desc">Join order, confirm total, and request payment.</div>
           </div>
-        </div>
-
+          <div class="arrow">→</div>
+        </a>
       </div>
-
-      <div class="mutedTip">
-        Tip: Use phone for Customer and laptop for Cashier. WebRTC mic needs HTTPS (or localhost).
-      </div>
-
     </div>
   </div>
+
+  <!-- Lane picker modal -->
+  <div id="laneModal" class="modalBack" onclick="closeLanePicker(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modalTitle">Choose a Lane</div>
+      <div class="desc">Open the lane display to show the rotating 4-digit station code.</div>
+
+      <div class="laneBtns">
+        <a class="laneBtn" href="/lane/L1">Lane L1</a>
+        <a class="laneBtn" href="/lane/L2">Lane L2</a>
+      </div>
+
+      <div class="modalFooter">
+        <button class="closeBtn" onclick="closeLanePicker()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openLanePicker() {
+      document.getElementById("laneModal").style.display = "flex";
+    }
+    function closeLanePicker(e) {
+      document.getElementById("laneModal").style.display = "none";
+    }
+  </script>
 </body>
 </html>
 """
+
 
 LANE_HTML_TEMPLATE = """
 <!doctype html>
