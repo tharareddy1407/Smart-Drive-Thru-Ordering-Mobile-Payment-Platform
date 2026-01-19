@@ -1090,7 +1090,7 @@ async def ws_customer(ws: WebSocket, customer_id: str):
         await ws.send_json({"type": "info", "text": "Connected. Step 1: Tap ‘I’m Here’."})
         while True:
             # Client typically does not need to send anything;
-            # we keep the connection alive by receiving text.
+            # we keep the connection alive by receiving text
             await ws.receive_text()
     except WebSocketDisconnect:
         if customer_home_ws.get(customer_id) is ws:
