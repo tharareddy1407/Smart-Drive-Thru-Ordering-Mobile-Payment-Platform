@@ -16,14 +16,16 @@ app = FastAPI(
 )
 
 # -----------------------------------------------------------------------------
-# Static files (images, css, js)
+# Static files (Render-safe) ✅
+# Put your background image here:
+#   ./static/drive_thru_bg.jpg   (or .png)
 # -----------------------------------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
 
-# Mount static only if folder exists (safe for Render)
-if STATIC_DIR.exists():
-    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+# IMPORTANT: do NOT hide problems during debugging.
+# If STATIC_DIR doesn't exist on Render, you WANT to know.
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 
 # -----------------------------------------------------------------------------
@@ -142,39 +144,68 @@ HOME_HTML = """
 <head>
   <meta charset="utf-8"/>
   <title>Smart Drive-Thru Ordering Platform</title>
+  <style>
+    body{
+      font-family: Arial, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+
+      /* ✅ Background image */
+      background-image: url('/static/drive_thru_bg.jpg?v=1');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+
+      /* fallback if image fails */
+      background-color: #0b1220;
+    }
+
+    /* ✅ Dark overlay so text is readable */
+    .overlay{
+      min-height: 100vh;
+      padding: 24px;
+      background: rgba(0,0,0,0.45);
+    }
+
+    .card{
+      max-width: 900px;
+      padding: 18px 18px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.92);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+    }
+
+    h2{ margin-top:0; }
+    .muted{ color:#666; font-size:14px; }
+  </style>
 </head>
-<body style="font-family:Arial, sans-serif; margin:24px; max-width:900px;">
 
-  <h2>Smart Drive-Thru Ordering Platform</h2>
-  <p style="color:#444;">
-    Real-time voice ordering, secure lane-based connection, and mobile payment —
-    all without opening the car window until pickup.
-  </p>
+<body>
+  <div class="overlay">
+    <div class="card">
+      <h2>Smart Drive-Thru Ordering Platform</h2>
+      <p style="color:#444;">
+        Real-time voice ordering, secure lane-based connection, and mobile payment —
+        all without opening the car window until pickup.
+      </p>
 
-  <!-- ✅ Hero image -->
-  <div style="margin:18px 0;">
-    <img
-      src="/static/drive_thru_hero.png?v=1"
-      alt="Smart Drive-Thru Ordering Platform"
-      style="width:100%; max-width:860px; border-radius:16px; box-shadow:0 12px 30px rgba(0,0,0,0.15); display:block;"
-    />
+      <h3>Demo Links</h3>
+      <ul>
+        <li><a href="/customer">Customer Portal</a></li>
+        <li><a href="/cashier">Cashier Console (POS + Agent)</a></li>
+        <li>Lane display: <a href="/lane/L1">/lane/L1</a> or <a href="/lane/L2">/lane/L2</a></li>
+      </ul>
+
+      <p class="muted">
+        Tip: Open Customer on phone and Cashier on laptop for the best demo.<br/>
+        WebRTC voice call requires HTTPS (or localhost) for mic permission.
+      </p>
+    </div>
   </div>
-
-  <h3>Demo Links</h3>
-  <ul>
-    <li><a href="/customer">Customer Portal</a></li>
-    <li><a href="/cashier">Cashier Console (POS + Agent)</a></li>
-    <li>Lane display: <a href="/lane/L1">/lane/L1</a> or <a href="/lane/L2">/lane/L2</a></li>
-  </ul>
-
-  <p style="color:#666; font-size:14px;">
-    Tip: Open Customer on phone and Cashier on laptop for the best demo.<br/>
-    WebRTC voice call requires HTTPS (or localhost) for mic permission.
-  </p>
-
 </body>
 </html>
 """
+
 
 
 LANE_HTML_TEMPLATE = """
