@@ -146,12 +146,10 @@ HOME_HTML = """
   <style>
     html, body { height: 100%; margin: 0; font-family: Arial, sans-serif; }
 
-    /* ✅ Background: lighter overlay so image stays visible */
+    /* ✅ Keep background fully visible (no heavy overlay) */
     body {
       background-color: #0b1220;
-      background-image:
-        radial-gradient(circle at 20% 10%, rgba(0,0,0,0.15), rgba(0,0,0,0.35) 55%, rgba(0,0,0,0.45)),
-        url('/static/Background.png?v=12');
+      background-image: url('/static/Background.png?v=30');
       background-repeat: no-repeat;
       background-size: cover;
       background-position: center top;
@@ -160,21 +158,24 @@ HOME_HTML = """
     /* ✅ Layout */
     .page {
       min-height: 100vh;
-      padding: 28px 18px;
+      padding: 26px 18px;
       box-sizing: border-box;
       display: flex;
-      align-items: center;
+      align-items: flex-start;  /* keep title area visible */
       justify-content: center;
     }
 
-    .wrap { width: min(1180px, 96vw); }
+    .wrap {
+      width: min(1180px, 96vw);
+      margin-top: 110px; /* pushes cards down a bit */
+    }
 
-    /* ✅ Headline stays readable without hiding bg */
+    /* ✅ Headline with shadow only */
     .headline {
       text-align: center;
       margin-bottom: 18px;
-      color: rgba(255,255,255,0.92);
-      text-shadow: 0 10px 30px rgba(0,0,0,0.35);
+      color: rgba(255,255,255,0.96);
+      text-shadow: 0 10px 30px rgba(0,0,0,0.55);
     }
     .headline h1 {
       margin: 0 0 8px 0;
@@ -184,8 +185,9 @@ HOME_HTML = """
     .headline p {
       margin: 0;
       font-size: clamp(14px, 2.2vw, 16px);
-      color: rgba(255,255,255,0.85);
+      color: rgba(255,255,255,0.88);
       line-height: 1.4;
+      text-shadow: 0 10px 30px rgba(0,0,0,0.55);
     }
 
     /* ✅ 3 cards grid */
@@ -195,26 +197,30 @@ HOME_HTML = """
       gap: 16px;
     }
 
-    /* ✅ Glass cards: MORE transparent + more blur */
+    /* ✅ Ultra transparent glass cards (background MUST show) */
     .card {
       border-radius: 18px;
       padding: 16px 16px;
-      background: rgba(255,255,255,0.14);           /* 👈 more transparent */
-      backdrop-filter: blur(18px) saturate(155%);   /* 👈 more blur */
-      -webkit-backdrop-filter: blur(18px) saturate(155%);
-      border: 1px solid rgba(255,255,255,0.22);
-      box-shadow: 0 18px 46px rgba(0,0,0,0.25);
-      color: rgba(255,255,255,0.92);
+
+      /* 🔥 key: very low alpha */
+      background: rgba(255,255,255,0.07);
+
+      backdrop-filter: blur(26px) saturate(170%);
+      -webkit-backdrop-filter: blur(26px) saturate(170%);
+
+      border: 1px solid rgba(255,255,255,0.14);
+      box-shadow: 0 18px 46px rgba(0,0,0,0.18);
+      color: rgba(255,255,255,0.95);
       position: relative;
       overflow: hidden;
     }
 
-    /* soft highlight */
-    .card:before{
+    /* subtle highlight layer */
+    .card:before {
       content:"";
       position:absolute;
       inset:0;
-      background: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.02));
+      background: linear-gradient(135deg, rgba(255,255,255,0.10), rgba(255,255,255,0.01));
       pointer-events:none;
     }
 
@@ -229,18 +235,20 @@ HOME_HTML = """
       font-size: 12px;
       padding: 3px 10px;
       border-radius: 999px;
-      background: rgba(0,0,0,0.18);
-      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(0,0,0,0.12);
+      border: 1px solid rgba(255,255,255,0.12);
       margin-left: 8px;
       color: rgba(255,255,255,0.9);
+      position: relative;
     }
 
     .card p {
       margin: 0 0 12px 0;
       font-size: 13px;
-      color: rgba(255,255,255,0.82);
+      color: rgba(255,255,255,0.88);
       line-height: 1.35;
       position: relative;
+      text-shadow: 0 6px 18px rgba(0,0,0,0.35);
     }
 
     .links {
@@ -250,7 +258,7 @@ HOME_HTML = """
       position: relative;
     }
 
-    /* ✅ Buttons: lighter so bg shows through */
+    /* ✅ Buttons were blocking background — make them transparent too */
     .btn {
       display: flex;
       align-items: center;
@@ -260,19 +268,20 @@ HOME_HTML = """
       border-radius: 12px;
       text-decoration: none;
 
-      color: rgba(255,255,255,0.95);
-      background: rgba(0,0,0,0.12);     /* 👈 lighter */
-      border: 1px solid rgba(255,255,255,0.18);
+      /* 🔥 key: very low alpha */
+      background: rgba(0,0,0,0.04);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.96);
 
       transition: transform .12s ease, background .12s ease, border .12s ease;
-      font-weight: 700;
+      font-weight: 800;
       font-size: 14px;
     }
 
     .btn:hover {
       transform: translateY(-1px);
-      background: rgba(0,0,0,0.18);
-      border: 1px solid rgba(255,255,255,0.28);
+      background: rgba(0,0,0,0.08);
+      border: 1px solid rgba(255,255,255,0.20);
     }
 
     .arrow { opacity: 0.85; font-weight: 900; }
@@ -281,12 +290,15 @@ HOME_HTML = """
       margin-top: 14px;
       text-align: center;
       font-size: 13px;
-      color: rgba(255,255,255,0.82);
-      text-shadow: 0 10px 30px rgba(0,0,0,0.35);
+
+::contentReference[oaicite:0]{index=0}
+ color: rgba(255,255,255,0.84);
+      text-shadow: 0 10px 30px rgba(0,0,0,0.55);
     }
 
     /* ✅ responsive */
     @media (max-width: 980px) {
+      .wrap { margin-top: 60px; }
       .grid { grid-template-columns: 1fr; }
       .headline { text-align: left; }
     }
@@ -337,13 +349,6 @@ HOME_HTML = """
 </body>
 </html>
 """
-
-
-
-
-
-
-
 
 LANE_HTML_TEMPLATE = """
 <!doctype html>
