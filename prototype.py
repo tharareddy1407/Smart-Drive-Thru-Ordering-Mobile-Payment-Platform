@@ -141,7 +141,7 @@ HOME_HTML = """
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Smart Drive-Thru Ordering Platform</title>
+ 
 
   <style>
     html, body {
@@ -155,7 +155,7 @@ HOME_HTML = """
       background-color: #0b1220;
       background-image:
         linear-gradient(rgba(0,0,0,0.30), rgba(0,0,0,0.55)),
-        url('/static/drive_thru_demo.png?v=5');
+        url('/static/Background.png?v=5');
 
       background-repeat: no-repeat;
       background-size: cover;
@@ -253,12 +253,7 @@ HOME_HTML = """
 <body>
   <div class="page">
     <div class="card">
-      <h2>Smart Drive-Thru Ordering Platform</h2>
-
-      <p>
-        Real-time voice ordering, secure lane-based connection, and mobile payment —
-        all without opening the car window until pickup.
-      </p>
+     
 
       <h3>Demo Links</h3>
       <ul>
