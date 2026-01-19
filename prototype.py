@@ -1,17 +1,30 @@
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 from uuid import uuid4
+from pathlib import Path
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, JSONResponse
-from pathlib import Path
 from fastapi.staticfiles import StaticFiles
 
-BASE_DIR = Path(__file__).resolve().parent
-app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
+# -----------------------------------------------------------------------------
+# App
+# -----------------------------------------------------------------------------
+app = FastAPI(
+    title="Smart Drive-Thru Ordering Platform "
+          "(Real-Time Voice Ordering, Secure Lane Connection & Mobile Payment)"
+)
 
-app = FastAPI(title="Smart Drive-Thru Ordering Platform"
-                    "(Real-Time Voice Ordering, Secure Lane Connection & Mobile Payment)")
+# -----------------------------------------------------------------------------
+# Static files (images, css, js)
+# -----------------------------------------------------------------------------
+BASE_DIR = Path(__file__).resolve().parent
+STATIC_DIR = BASE_DIR / "static"
+
+# Mount static only if folder exists (safe for Render)
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
 
 # -----------------------------------------------------------------------------
 # In-memory stores (demo only)
