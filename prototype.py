@@ -141,140 +141,209 @@ HOME_HTML = """
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
- 
+  <title>Smart Drive-Thru Ordering Platform</title>
 
   <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      font-family: Arial, sans-serif;
-    }
+    html, body { height: 100%; margin: 0; font-family: Arial, sans-serif; }
 
-    /* ✅ Background image: fits properly */
+    /* ✅ Background */
     body {
       background-color: #0b1220;
       background-image:
-        linear-gradient(rgba(0,0,0,0.30), rgba(0,0,0,0.55)),
-        url('/static/Background.png?v=5');
-
+        linear-gradient(rgba(0,0,0,0.28), rgba(0,0,0,0.58)),
+        url('/static/drive_thru_demo.png?v=10');
       background-repeat: no-repeat;
       background-size: cover;
       background-position: center top;
     }
 
-    /* ✅ On mobile/tablet show more image (avoid cropping text/logo) */
-    @media (max-width: 768px) {
-      body {
-        background-size: contain;
-        background-position: center top;
-      }
-    }
-
-    /* ✅ Center content */
+    /* ✅ page layout */
     .page {
       min-height: 100vh;
+      padding: 28px 18px;
+      box-sizing: border-box;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
-      box-sizing: border-box;
     }
 
-    /* ✅ More transparent glass card */
-    .card {
-      width: 100%;
-      max-width: 920px;
-      padding: 26px 28px;
-      border-radius: 22px;
+    /* ✅ container */
+    .wrap {
+      width: min(1100px, 96vw);
+    }
 
-      background: rgba(255, 255, 255, 0.50);
+    /* ✅ title area */
+    .headline {
+      color: rgba(255,255,255,0.95);
+      text-align: center;
+      margin-bottom: 18px;
+      text-shadow: 0 8px 26px rgba(0,0,0,0.45);
+    }
+    .headline h1 {
+      margin: 0 0 8px 0;
+      font-size: clamp(24px, 4vw, 40px);
+      letter-spacing: -0.4px;
+    }
+    .headline p {
+      margin: 0;
+      font-size: clamp(14px, 2.2vw, 16px);
+      color: rgba(255,255,255,0.85);
+      line-height: 1.4;
+    }
+
+    /* ✅ 3 cards grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    /* ✅ glass card */
+    .card {
+      border-radius: 18px;
+      padding: 16px 16px;
+      background: rgba(255,255,255,0.22);
       backdrop-filter: blur(16px) saturate(140%);
       -webkit-backdrop-filter: blur(16px) saturate(140%);
-
       border: 1px solid rgba(255,255,255,0.25);
-      box-shadow:
-        0 20px 50px rgba(0,0,0,0.35),
-        inset 0 1px 0 rgba(255,255,255,0.30);
+      box-shadow: 0 18px 46px rgba(0,0,0,0.35);
+      color: rgba(255,255,255,0.92);
+      position: relative;
+      overflow: hidden;
     }
 
-    h2 {
+    .card:before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.02));
+      pointer-events:none;
+    }
+
+    .card h3 {
       margin: 0 0 10px 0;
-      font-size: clamp(24px, 4vw, 34px);
-      letter-spacing: -0.2px;
+      font-size: 18px;
+      position: relative;
     }
 
-    p {
-      color: rgba(20,20,20,0.88);
-      font-size: clamp(14px, 2.5vw, 16px);
-      line-height: 1.55;
-      margin: 0 0 14px 0;
+    .badge {
+      display:inline-block;
+      font-size: 12px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.18);
+      margin-left: 8px;
+      color: rgba(255,255,255,0.9);
     }
 
-    h3 {
-      margin: 18px 0 10px 0;
-      font-size: 22px;
-    }
-
-    ul {
-      padding-left: 20px;
+    .card p {
       margin: 0 0 12px 0;
+      font-size: 13px;
+      color: rgba(255,255,255,0.82);
+      line-height: 1.35;
+      position: relative;
     }
 
-    li {
-      margin-bottom: 6px;
-      font-size: 16px;
+    .links {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
     }
 
-    a {
-      color: #4b2bd3;
+    /* ✅ clickable button links */
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
       text-decoration: none;
+      color: rgba(255,255,255,0.95);
+      background: rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.20);
+      transition: transform .12s ease, background .12s ease, border .12s ease;
       font-weight: 700;
-    }
-    a:hover { text-decoration: underline; }
-
-    .muted {
-      color: rgba(40,40,40,0.70);
       font-size: 14px;
-      margin-top: 14px;
     }
 
-    /* ✅ Mobile polish */
-    @media (max-width: 520px) {
-      .card {
-        padding: 20px;
-        border-radius: 18px;
-      }
-      h3 { font-size: 20px; }
-      li { font-size: 15px; }
+    .btn:hover {
+      transform: translateY(-1px);
+      background: rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,255,255,0.32);
+    }
+
+    .arrow { opacity: 0.8; font-weight: 900; }
+
+    .mutedTip {
+      margin-top: 14px;
+      text-align: center;
+      font-size: 13px;
+      color: rgba(255,255,255,0.80);
+      text-shadow: 0 8px 26px rgba(0,0,0,0.45);
+    }
+
+    /* ✅ responsive */
+    @media (max-width: 980px) {
+      .grid { grid-template-columns: 1fr; }
+      .headline { text-align: left; }
     }
   </style>
 </head>
 
 <body>
   <div class="page">
-    <div class="card">
-     
+    <div class="wrap">
 
-      <h3>Demo Links</h3>
-      <ul>
-        <li><a href="/customer">Customer Portal</a></li>
-        <li><a href="/cashier">Cashier Console (POS + Agent)</a></li>
-        <li>
-          Lane display:
-          <a href="/lane/L1">/lane/L1</a> or
-          <a href="/lane/L2">/lane/L2</a>
-        </li>
-      </ul>
+      <div class="headline">
+        <h1>Smart Drive-Thru Ordering Platform</h1>
+        <p>Real-time voice ordering, secure lane connection, and mobile payment — without opening the car window.</p>
+      </div>
 
-      <p class="muted">
-        Tip: Open Customer on phone and Cashier on laptop for the best demo.<br/>
-        WebRTC voice call requires HTTPS (or localhost) for mic permission.
-      </p>
+      <div class="grid">
+
+        <!-- ✅ LANE -->
+        <div class="card">
+          <h3>Lane <span class="badge">Display</span></h3>
+          <p>Open a lane screen to get the rotating 4-digit station code.</p>
+          <div class="links">
+            <a class="btn" href="/lane/L1">Lane L1 <span class="arrow">→</span></a>
+            <a class="btn" href="/lane/L2">Lane L2 <span class="arrow">→</span></a>
+          </div>
+        </div>
+
+        <!-- ✅ CUSTOMER -->
+        <div class="card">
+          <h3>Customer <span class="badge">Mobile</span></h3>
+          <p>Check-in, enter the station code, chat/call, and pay securely.</p>
+          <div class="links">
+            <a class="btn" href="/customer">Open Customer Portal <span class="arrow">→</span></a>
+          </div>
+        </div>
+
+        <!-- ✅ CASHIER -->
+        <div class="card">
+          <h3>Cashier <span class="badge">POS + Agent</span></h3>
+          <p>Join the order, chat/call with the customer, confirm total, and request payment.</p>
+          <div class="links">
+            <a class="btn" href="/cashier">Open Cashier Console <span class="arrow">→</span></a>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="mutedTip">
+        Tip: Use phone for Customer and laptop for Cashier. WebRTC mic needs HTTPS (or localhost).
+      </div>
+
     </div>
   </div>
 </body>
 </html>
 """
+
 
 
 
