@@ -121,23 +121,43 @@ async def relay_call(order_id: str, sender_role: str, payload: dict) -> None:
 HOME_HTML = """
 <!doctype html>
 <html>
-<head><meta charset="utf-8"/><title>Smart Drive-Thru Ordering Platform
-                        Real-Time Voice Ordering, Secure Lane Connection & Mobile Payment</title></head>
-<body style="font-family:Arial;margin:24px;">
-  <h2>Smart Drive-Thru Ordering Platform
-                        Real-Time Voice Ordering, Secure Lane Connection & Mobile Payment</h2>
+<head>
+  <meta charset="utf-8"/>
+  <title>Smart Drive-Thru Ordering Platform</title>
+</head>
+<body style="font-family:Arial, sans-serif; margin:24px; max-width:900px;">
+
+  <h2>Smart Drive-Thru Ordering Platform</h2>
+  <p style="color:#444;">
+    Real-time voice ordering, secure lane-based connection, and mobile payment —
+    all without opening the car window until pickup.
+  </p>
+
+  <!-- ✅ Hero image -->
+  <div style="margin:18px 0;">
+    <img
+      src="/static/drive_thru_hero.png?v=1"
+      alt="Smart Drive-Thru Ordering Platform"
+      style="width:100%; max-width:860px; border-radius:16px; box-shadow:0 12px 30px rgba(0,0,0,0.15); display:block;"
+    />
+  </div>
+
+  <h3>Demo Links</h3>
   <ul>
     <li><a href="/customer">Customer Portal</a></li>
     <li><a href="/cashier">Cashier Console (POS + Agent)</a></li>
     <li>Lane display: <a href="/lane/L1">/lane/L1</a> or <a href="/lane/L2">/lane/L2</a></li>
   </ul>
-  <p style="color:#666">
-    Tip: Open Customer on phone and Cashier on laptop for the best demo.
-    <br/>WebRTC voice call requires HTTPS (or localhost) for mic permission.
+
+  <p style="color:#666; font-size:14px;">
+    Tip: Open Customer on phone and Cashier on laptop for the best demo.<br/>
+    WebRTC voice call requires HTTPS (or localhost) for mic permission.
   </p>
+
 </body>
 </html>
 """
+
 
 LANE_HTML_TEMPLATE = """
 <!doctype html>
