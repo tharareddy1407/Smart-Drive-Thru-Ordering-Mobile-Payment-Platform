@@ -4,6 +4,11 @@ from uuid import uuid4
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, JSONResponse
+from pathlib import Path
+from fastapi.staticfiles import StaticFiles
+
+BASE_DIR = Path(__file__).resolve().parent
+app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
 
 app = FastAPI(title="Smart Drive-Thru Ordering Platform"
                     "(Real-Time Voice Ordering, Secure Lane Connection & Mobile Payment)")
