@@ -153,19 +153,12 @@ HOME_HTML = """
     /* ✅ Full-page responsive background */
     body {
       background:
-        linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.65)),
-        url('/static/drive_thru_demo.png?v=2') center / cover no-repeat;
+        linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.60)),
+        url('/static/drive_thru_demo.png?v=3') center / cover no-repeat;
       background-color: #0b1220;
     }
 
-    /* ✅ Fix for iOS Safari */
-    @media (max-width: 768px) {
-      body {
-        background-attachment: scroll;
-      }
-    }
-
-    /* ✅ Center content both horizontally & vertically */
+    /* ✅ Center content both horizontally & vertically + overlay layer */
     .page {
       min-height: 100vh;
       display: flex;
@@ -175,43 +168,69 @@ HOME_HTML = """
       box-sizing: border-box;
     }
 
-    /* ✅ Card */
+    /* ✅ Glass / blended card (merges with background) */
     .card {
       width: 100%;
       max-width: 920px;
-      background: rgba(255,255,255,0.95);
-      border-radius: 20px;
-      padding: 24px 26px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+      padding: 26px 28px;
+      border-radius: 22px;
+
+      background: rgba(255, 255, 255, 0.78);
+      backdrop-filter: blur(14px) saturate(120%);
+      -webkit-backdrop-filter: blur(14px) saturate(120%);
+
+      border: 1px solid rgba(255,255,255,0.35);
+      box-shadow:
+        0 20px 50px rgba(0,0,0,0.35),
+        inset 0 1px 0 rgba(255,255,255,0.40);
     }
 
     h2 {
-      margin-top: 0;
+      margin: 0 0 10px 0;
       font-size: clamp(24px, 4vw, 34px);
+      letter-spacing: -0.2px;
     }
 
     p {
-      color: #444;
+      color: rgba(20,20,20,0.88);
       font-size: clamp(14px, 2.5vw, 16px);
-      line-height: 1.5;
+      line-height: 1.55;
+      margin: 0 0 14px 0;
     }
 
     h3 {
-      margin-top: 22px;
+      margin: 18px 0 10px 0;
+      font-size: 22px;
     }
 
     ul {
       padding-left: 20px;
+      margin: 0 0 12px 0;
     }
 
     li {
       margin-bottom: 6px;
+      font-size: 16px;
     }
 
+    a {
+      color: #4b2bd3;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    a:hover { text-decoration: underline; }
+
     .muted {
-      color: #666;
+      color: rgba(40,40,40,0.70);
       font-size: 14px;
       margin-top: 14px;
+    }
+
+    /* ✅ Better spacing on small devices */
+    @media (max-width: 520px) {
+      .card { padding: 20px; border-radius: 18px; }
+      h3 { font-size: 20px; }
+      li { font-size: 15px; }
     }
   </style>
 </head>
@@ -246,6 +265,7 @@ HOME_HTML = """
 </body>
 </html>
 """
+
 
 
 
