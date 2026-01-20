@@ -135,280 +135,151 @@ async def relay_call(order_id: str, sender_role: str, payload: dict) -> None:
 # ----------------------------------------------------------------------------
 # HTML Pages
 # ----------------------------------------------------------------------------
-HOME_HTML = """
-<!doctype html>
-<html lang="en">
+HOME_HTML = """"<!doctype html>
+<html>
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Smart Drive-Thru Ordering Platform</title>
+  <title>Smart Drive-Thru</title>
 
   <style>
-    :root{
-      --shadow: 0 20px 60px rgba(0,0,0,0.25);
-      --text: rgba(255,255,255,0.96);
-    }
-    *{ box-sizing: border-box; }
-    html, body{ height:100%; margin:0; font-family: Arial, sans-serif; }
-
-    /* ✅ Default (laptop/tablet): fill screen, no black borders */
-    body{
-      background-color:#0b1220;
-      background-image:
-        linear-gradient(rgba(0,0,0,0.10), rgba(0,0,0,0.22)),
-        url('/static/BG.png?v=500');
-      background-repeat:no-repeat;
-      background-size: cover;
-      background-position: center 18%;
-      overflow-x:hidden;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial;
     }
 
-    .page{
-      min-height:100vh;
-      display:flex;
-      justify-content:center;
-      align-items:flex-start;
-      padding: 18px;
+    body {
+      background: #0b1220;
+      overflow-x: hidden;
     }
 
-    .wrap{
-      width: min(1100px, 96vw);
-      margin-top: clamp(220px, 32vh, 360px);
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap: 10px;
+    /* HERO */
+    .hero {
+      min-height: 100svh; /* fixes mobile viewport bug */
+      width: 100%;
+      background-image: url("/static/drive_thru_bg.png");
+      background-size: contain;        /* IMPORTANT */
+      background-position: center top; /* keeps SMART visible */
+      background-repeat: no-repeat;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding-top: 5vh;
+      text-align: center;
     }
 
-    .circleRow{
-      display:flex;
-      gap: 18px;
-      align-items:center;
-      justify-content:center;
-      flex-wrap:wrap;
+    /* Title spacing is handled by image itself */
+
+    .subtitle {
+      max-width: 720px;
+      margin-top: 2rem;
+      padding: 0 1rem;
+      color: rgba(255,255,255,0.9);
+      font-size: clamp(14px, 2.5vw, 18px);
+      line-height: 1.5;
     }
 
-    .circleWrap{ position: relative; display:inline-flex; }
-
-    .circleBtn{
-      width: 86px;
-      height: 86px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.22);
-      background: rgba(0,0,0,0.30);
-      color: var(--text);
-      cursor: pointer;
-
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      text-align:center;
-
-      font-weight: 900;
-      font-size: 14px;
-
-      backdrop-filter: blur(16px) saturate(160%);
-      -webkit-backdrop-filter: blur(16px) saturate(160%);
-      box-shadow: 0 14px 34px rgba(0,0,0,0.22);
-
-      transition: transform .12s ease, background .12s ease, border .12s ease;
-      user-select:none;
-    }
-
-    .circleBtn:hover{
-      transform: translateY(-2px);
-      background: rgba(0,0,0,0.38);
-      border-color: rgba(255,255,255,0.32);
-    }
-
-    .circleBtn.active{
-      background: rgba(0,0,0,0.46);
-      border-color: rgba(255,255,255,0.40);
-    }
-
-    .popover{
-      position:absolute;
-      top: calc(100% + 12px);
-      left: 50%;
-      transform: translateX(-50%);
-      width: min(360px, 92vw);
-      padding: 12px;
-      border-radius: 14px;
-
-      background: rgba(0,0,0,0.70);
-      border: 1px solid rgba(255,255,255,0.18);
-      box-shadow: var(--shadow);
-
-      backdrop-filter: blur(14px) saturate(140%);
-      -webkit-backdrop-filter: blur(14px) saturate(140%);
-
-      color: var(--text);
-      display:none;
-      z-index: 9999;
-    }
-    .popover.show{ display:block; }
-
-    .popover:before{
-      content:"";
-      position:absolute;
-      top:-8px;
-      left: 50%;
-      transform: translateX(-50%) rotate(45deg);
-      width: 14px; height: 14px;
-      background: rgba(0,0,0,0.70);
-      border-left: 1px solid rgba(255,255,255,0.18);
-      border-top: 1px solid rgba(255,255,255,0.18);
-    }
-
-    .popTitle{ font-weight: 900; font-size: 14px; margin: 0 0 6px 0; }
-    .popText{ margin: 0; font-size: 13px; line-height: 1.35; color: rgba(255,255,255,0.90); }
-
-    .popActions{
-      margin-top: 10px;
-      display:flex;
-      gap: 8px;
+    /* BUTTON GROUP */
+    .role-buttons {
+      margin-top: 2rem;
+      display: flex;
+      gap: 1.2rem;
       flex-wrap: wrap;
+      justify-content: center;
     }
 
-    .popLink{
-      text-decoration:none;
-      color: rgba(255,255,255,0.96);
-      font-weight: 900;
-      font-size: 12.5px;
-      padding: 10px 12px;
-      border-radius: 12px;
-      background: rgba(255,255,255,0.10);
-      border: 1px solid rgba(255,255,255,0.16);
+    .role-btn {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.35);
+      background: rgba(15, 25, 40, 0.75);
+      backdrop-filter: blur(10px);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s ease;
     }
 
-    .tip{
-      margin-top: 10px;
+    .role-btn:hover {
+      transform: translateY(-4px) scale(1.04);
+      background: rgba(30, 60, 120, 0.85);
+    }
+
+    /* INFO PANEL */
+    .info {
+      margin-top: 1.5rem;
+      max-width: 720px;
+      padding: 0 1rem;
+      color: rgba(255,255,255,0.85);
+      font-size: 15px;
+      min-height: 40px;
+    }
+
+    .tip {
+      margin-top: auto;
+      padding: 1.5rem 1rem;
       font-size: 13px;
-      color: rgba(255,255,255,0.86);
-      text-shadow: 0 12px 28px rgba(0,0,0,0.45);
-      text-align:center;
+      color: rgba(255,255,255,0.65);
     }
 
-    /* ✅ PHONE FIX:
-       - show full image (no missing parts) using contain
-       - allow page to scroll if image is taller
-       - place buttons BELOW "car window until pickup" line using viewport-based top margin
-    */
-    @media (max-width: 520px){
-      body{
-        background-size: contain;            /* ✅ full image visible */
-        background-position: center top;
-        background-color:#0b1220;
+    /* MOBILE TWEAKS */
+    @media (max-width: 640px) {
+      .hero {
+        background-size: contain;
+        padding-top: 6vh;
       }
 
-      .page{
-        min-height: 100vh;
-        padding: 14px;
+      .role-btn {
+        width: 84px;
+        height: 84px;
+        font-size: 14px;
       }
-
-      /* 👇 This moves buttons below the center-line text on your image */
-      .wrap{
-        margin-top: 46vh;  /* ✅ buttons below “car window until pickup” line */
-      }
-
-      .circleBtn{ width: 78px; height: 78px; font-size: 13px; }
-
-      /* popover fixed at bottom so it never goes off screen */
-      .popover{
-        position: fixed;
-        left: 50%;
-        bottom: 18px;
-        top: auto;
-        transform: translateX(-50%);
-        width: min(420px, 92vw);
-      }
-      .popover:before{ display:none; }
     }
   </style>
 </head>
 
 <body>
-  <div class="page">
-    <div class="wrap">
+  <section class="hero">
 
-      <div class="circleRow">
-        <div class="circleWrap">
-          <button type="button" class="circleBtn" id="btnLane" onclick="togglePop(event,'lane')">Lane</button>
-          <div class="popover" id="popLane">
-            <div class="popTitle">Lane</div>
-            <p class="popText">Open a lane screen to get the rotating 4-digit station code.</p>
-            <div class="popActions">
-              <a class="popLink" href="/lane/L1">Open Lane L1 →</a>
-              <a class="popLink" href="/lane/L2">Open Lane L2 →</a>
-            </div>
-          </div>
-        </div>
-
-        <div class="circleWrap">
-          <button type="button" class="circleBtn" id="btnCustomer" onclick="togglePop(event,'customer')">Customer</button>
-          <div class="popover" id="popCustomer">
-            <div class="popTitle">Customer</div>
-            <p class="popText">Check-in, enter code, chat/call with cashier, and pay securely.</p>
-            <div class="popActions">
-              <a class="popLink" href="/customer">Open Customer Portal →</a>
-            </div>
-          </div>
-        </div>
-
-        <div class="circleWrap">
-          <button type="button" class="circleBtn" id="btnCashier" onclick="togglePop(event,'cashier')">Cashier</button>
-          <div class="popover" id="popCashier">
-            <div class="popTitle">Cashier</div>
-            <p class="popText">Join the order, confirm total, and send payment request.</p>
-            <div class="popActions">
-              <a class="popLink" href="/cashier">Open Cashier Console →</a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="tip">
-        Tip: Use phone for Customer and laptop for Cashier. WebRTC mic needs HTTPS (or localhost).
-      </div>
-
+    <div class="subtitle">
+      Ordering & mobile payment — all without opening the car window until pickup.
     </div>
-  </div>
+
+    <div class="role-buttons">
+      <button class="role-btn" onclick="showInfo('lane')">Lane</button>
+      <button class="role-btn" onclick="showInfo('customer')">Customer</button>
+      <button class="role-btn" onclick="showInfo('cashier')">Cashier</button>
+    </div>
+
+    <div class="info" id="info"></div>
+
+    <div class="tip">
+      Tip: Use phone for Customer and laptop for Cashier. WebRTC mic needs HTTPS (or localhost).
+    </div>
+
+  </section>
 
   <script>
-    function hideAll(){
-      document.getElementById("popLane").classList.remove("show");
-      document.getElementById("popCustomer").classList.remove("show");
-      document.getElementById("popCashier").classList.remove("show");
-      document.getElementById("btnLane").classList.remove("active");
-      document.getElementById("btnCustomer").classList.remove("active");
-      document.getElementById("btnCashier").classList.remove("active");
-    }
-
-    function togglePop(ev, which){
-      ev.stopPropagation();
-      const map = {
-        lane: ["btnLane","popLane"],
-        customer: ["btnCustomer","popCustomer"],
-        cashier: ["btnCashier","popCashier"]
-      };
-      const [btnId, popId] = map[which];
-      const pop = document.getElementById(popId);
-      const btn = document.getElementById(btnId);
-
-      const isOpen = pop.classList.contains("show");
-      hideAll();
-      if (!isOpen){
-        pop.classList.add("show");
-        btn.classList.add("active");
+    function showInfo(role) {
+      const info = document.getElementById("info");
+      if (role === "lane") {
+        info.innerHTML = "Open a lane screen to get the rotating 4-digit station code.";
+      } else if (role === "customer") {
+        info.innerHTML = "Check-in, enter code, chat/call with cashier, and pay securely.";
+      } else {
+        info.innerHTML = "Join the order, confirm total, and send payment request.";
       }
     }
-
-    document.addEventListener("click", () => hideAll());
-    document.addEventListener("keydown", (e) => { if (e.key === "Escape") hideAll(); });
   </script>
 </body>
 </html>
 """
+
 
 
 
