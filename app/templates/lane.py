@@ -8,11 +8,10 @@ LANE_HTML_TEMPLATE = """
 
   <style>
     :root{
-      /* “big brand QSR” neutral base */
+      /* Brand-neutral premium QSR look */
       --bgTop:#0b1220;
       --bgBottom:#0a0f1e;
 
-      /* subtle multi-accent (gold/red/green) */
       --gold:#ffb703;
       --red:#ff4d6d;
       --green:#22c55e;
@@ -23,6 +22,7 @@ LANE_HTML_TEMPLATE = """
       --card: rgba(255,255,255,.10);
       --stroke: rgba(255,255,255,.16);
       --shadow: 0 22px 70px rgba(0,0,0,.34);
+
       --radius: 22px;
     }
 
@@ -33,9 +33,11 @@ LANE_HTML_TEMPLATE = """
       margin:0;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
       color: var(--text);
-      overflow:hidden;
 
-      /* Clean modern QSR background (no photo) */
+      /* allow scrolling on small screens */
+      overflow-x:hidden;
+      overflow-y:auto;
+
       background:
         radial-gradient(900px 520px at 15% 20%, rgba(255,183,3,.18), transparent 60%),
         radial-gradient(900px 520px at 85% 25%, rgba(34,197,94,.14), transparent 60%),
@@ -43,12 +45,12 @@ LANE_HTML_TEMPLATE = """
         linear-gradient(180deg, var(--bgTop), var(--bgBottom));
     }
 
-    /* subtle texture (keeps it “premium” like KFC/Starbucks/McD screens) */
+    /* Subtle premium texture */
     .texture{
-      position:absolute; inset:0;
+      position:fixed; inset:0;
       background-image: radial-gradient(rgba(255,255,255,.10) 1px, transparent 1px);
       background-size: 28px 28px;
-      opacity:.14;
+      opacity:.12;
       pointer-events:none;
       mask-image: radial-gradient(700px 420px at 50% 35%, #000 45%, transparent 75%);
     }
@@ -61,14 +63,18 @@ LANE_HTML_TEMPLATE = """
       padding: 22px;
     }
 
+    /* Top bar */
     .topbar{
-      position:absolute;
-      top: 18px; left: 18px; right: 18px;
+      position:fixed;
+      top: 16px; left: 16px; right: 16px;
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:12px;
+      z-index: 5;
+      pointer-events:none; /* so card remains primary focus */
     }
+    .topbar > *{ pointer-events:auto; }
 
     .brandMark{
       display:flex;
@@ -77,9 +83,9 @@ LANE_HTML_TEMPLATE = """
       font-weight: 950;
       letter-spacing:.2px;
       opacity:.98;
+      user-select:none;
     }
 
-    /* “triple-dot” accent hint (gold/red/green) */
     .dots{
       display:flex;
       gap:6px;
@@ -105,6 +111,8 @@ LANE_HTML_TEMPLATE = """
       box-shadow: 0 12px 28px rgba(0,0,0,.22);
       color: var(--muted);
       font-size: 14px;
+      white-space:nowrap;
+      user-select:none;
     }
 
     .laneBadge{
@@ -116,6 +124,7 @@ LANE_HTML_TEMPLATE = """
       background: linear-gradient(135deg, var(--gold), var(--green));
     }
 
+    /* Main card */
     .card{
       width: min(920px, 100%);
       border-radius: var(--radius);
@@ -125,6 +134,7 @@ LANE_HTML_TEMPLATE = """
       backdrop-filter: blur(16px);
       overflow:hidden;
       position:relative;
+      margin-top: 58px; /* give space under fixed topbar */
     }
 
     .card::before{
@@ -150,7 +160,7 @@ LANE_HTML_TEMPLATE = """
     }
 
     .title{
-      margin:0 0 8px 0;
+      margin:0 0 6px 0;
       font-size: 30px;
       letter-spacing:.2px;
     }
@@ -162,6 +172,7 @@ LANE_HTML_TEMPLATE = """
       font-size: 16px;
     }
 
+    /* Code box (high-contrast, outdoor readable) */
     .codeBox{
       border-radius: 18px;
       padding: 18px;
@@ -197,12 +208,51 @@ LANE_HTML_TEMPLATE = """
       font-weight: 950;
       letter-spacing: 12px;
       line-height: 1.05;
-      font-size: clamp(58px, 7vw, 98px);
+      font-size: clamp(46px, 7vw, 98px);
       word-break: break-word;
+      text-align:center;
     }
 
-    @media (max-width: 420px){
-      .code{ letter-spacing: 6px; }
+    /* Tap-to-copy */
+    .copyRow{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:center;
+      margin-top: 12px;
+    }
+
+    .btn{
+      appearance:none;
+      border:none;
+      cursor:pointer;
+      font-weight: 900;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: rgba(0,0,0,.10);
+      border: 1px solid rgba(0,0,0,.10);
+      color: rgba(0,0,0,.82);
+      transition: transform .12s ease, filter .12s ease, background .12s ease;
+      user-select:none;
+    }
+    .btn:hover{ transform: translateY(-1px); filter: brightness(1.03); background: rgba(0,0,0,.12); }
+    .btn:active{ transform: translateY(0); }
+    .btnPrimary{
+      background: linear-gradient(135deg, rgba(34,197,94,.22), rgba(0,0,0,.10));
+      border-color: rgba(34,197,94,.35);
+    }
+
+    .hintBox{
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(0,0,0,.06);
+      border: 1px solid rgba(0,0,0,.08);
+      text-align:center;
+      font-size: 13px;
+      font-weight: 900;
+      color: rgba(0,0,0,.74);
     }
 
     .meta{
@@ -212,6 +262,7 @@ LANE_HTML_TEMPLATE = """
       gap: 10px;
       color: rgba(0,0,0,.68);
       font-size: 14px;
+      justify-content:center;
     }
 
     .metaItem{
@@ -225,7 +276,7 @@ LANE_HTML_TEMPLATE = """
       font-weight: 800;
     }
 
-    /* ✅ prevents “big clock icon” issue */
+    /* prevents “big clock icon” issue */
     .icon, .metaItem svg{
       width: 18px !important;
       height: 18px !important;
@@ -285,6 +336,35 @@ LANE_HTML_TEMPLATE = """
       background: var(--green);
       box-shadow: 0 0 0 7px rgba(34,197,94,.18);
     }
+
+    /* -------------------------
+       Mobile optimization
+    -------------------------- */
+    @media (max-width: 520px){
+      .wrap{ padding: 14px; place-items: start; }
+      .topbar{
+        position: sticky;
+        top: 10px;
+        left: 10px; right: 10px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+      .pill{ font-size: 12px; padding: 8px 12px; }
+      .card{ margin-top: 10px; border-radius: 16px; }
+      .inner{ padding: 18px; gap: 14px; }
+      .title{ font-size: 22px; }
+      .subtitle{ font-size: 14px; }
+      .codeBox{ padding: 14px; border-radius: 16px; }
+      .code{ font-size: 48px; letter-spacing: 6px; }
+      .meta{ font-size: 13px; }
+      .footer{ padding: 12px 16px; }
+    }
+
+    /* Make it even tighter on very small screens */
+    @media (max-width: 360px){
+      .code{ font-size: 44px; letter-spacing: 5px; }
+    }
   </style>
 </head>
 
@@ -311,11 +391,22 @@ LANE_HTML_TEMPLATE = """
       <div class="inner">
         <div>
           <h2 class="title">Customer Pairing Code</h2>
-          <p class="subtitle">Ask the customer to enter this code in the mobile app to connect to <b>Lane __LANE_ID__</b>.</p>
+          <p class="subtitle">
+            📱 <b>Copy this 4-digit code</b> and enter it in the <b>Customer UI</b> to connect to <b>Lane __LANE_ID__</b>.
+          </p>
 
           <div class="codeBox">
             <div class="codeLabel"><span class="pulse"></span> Active code</div>
-            <p class="code">__CODE__</p>
+            <p class="code" id="codeText">__CODE__</p>
+
+            <div class="copyRow">
+              <button class="btn btnPrimary" id="copyBtn" type="button">Copy Code</button>
+              <button class="btn" type="button" onclick="openCustomer()">Open Customer UI</button>
+            </div>
+
+            <div class="hintBox" id="copyHint">
+              👉 Copy this code → Open Customer UI → Paste & Connect
+            </div>
 
             <div class="meta">
               <div class="metaItem">
@@ -335,7 +426,7 @@ LANE_HTML_TEMPLATE = """
               </div>
             </div>
 
-            <div style="margin-top:10px; color:rgba(0,0,0,.62); font-weight:700;">
+            <div style="margin-top:10px; color:rgba(0,0,0,.62); font-weight:800; text-align:center;">
               Code rotates after a successful connect (order created).
             </div>
           </div>
@@ -344,7 +435,7 @@ LANE_HTML_TEMPLATE = """
         <div class="right">
           <div class="panel">
             <h4>How it works</h4>
-            <p>Once the customer connects and an order is created, this code rotates automatically for the next vehicle.</p>
+            <p>Customer enters the code in the Customer UI to securely pair with this lane and start ordering.</p>
           </div>
           <div class="panel">
             <h4>Visibility tip</h4>
@@ -402,6 +493,43 @@ LANE_HTML_TEMPLATE = """
 
     // Refresh for rotation updates
     setTimeout(()=>location.reload(), 5000);
+
+    // Open customer UI
+    function openCustomer(){
+      window.open("/customer", "_blank", "noopener,noreferrer");
+    }
+
+    // Copy code (clipboard API)
+    const copyBtn = document.getElementById("copyBtn");
+    const codeText = document.getElementById("codeText");
+    const copyHint = document.getElementById("copyHint");
+
+    async function copyCode(){
+      const code = (codeText?.textContent || "").trim();
+      if (!code) return;
+
+      try{
+        await navigator.clipboard.writeText(code);
+        copyHint.textContent = "✅ Copied! Now paste it in Customer UI to connect.";
+      }catch(e){
+        // Fallback
+        const ta = document.createElement("textarea");
+        ta.value = code;
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        ta.remove();
+        copyHint.textContent = "✅ Copied! Now paste it in Customer UI to connect.";
+      }
+
+      setTimeout(()=> {
+        copyHint.textContent = "👉 Copy this code → Open Customer UI → Paste & Connect";
+      }, 2200);
+    }
+
+    copyBtn?.addEventListener("click", copyCode);
   </script>
 </body>
 </html>
