@@ -159,7 +159,7 @@ HOME_HTML = """
         linear-gradient(rgba(0,0,0,0.10), rgba(0,0,0,0.22)),
         url('/static/BG.png?v=2');
       background-repeat:no-repeat;
-      background-size: auto;
+      background-size: 50% 50%;
       background-position: center center;
       overflow:hidden;
     }
