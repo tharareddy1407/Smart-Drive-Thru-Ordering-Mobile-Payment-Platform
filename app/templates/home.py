@@ -349,7 +349,7 @@ HOME_HTML = """
     </div>
 
     <div class="tip">
-      <b>Recommended setup:</b> Customer on phone • Cashier on laptop. WebRTC mic requires HTTPS (or localhost).
+      <b>Recommended setup:</b> For the best experience, use separate devices and allow microphone access to enable voice calls between customer and cashier.
     </div>
   </div>
 
