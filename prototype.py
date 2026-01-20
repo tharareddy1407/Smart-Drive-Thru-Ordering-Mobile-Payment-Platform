@@ -153,22 +153,16 @@ HOME_HTML = """
     *{ box-sizing:border-box; margin:0; padding:0; }
     html, body{ height:100%; font-family: Arial, sans-serif; }
 
-   body {
+  body {
   background-color: #0b1220;
   background-image:
     linear-gradient(rgba(0,0,0,0.10), rgba(0,0,0,0.22)),
     url('/static/BG.png?v=2');
   background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center;
+  background-size: contain;
+  background-position: center center;
 }
 
-/* Tall screens / mobile */
-@media (max-aspect-ratio: 4/3) {
-  body {
-    background-size: contain;
-  }
-}
 
 
     .hero{
