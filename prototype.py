@@ -145,241 +145,187 @@ HOME_HTML = """
 
   <style>
     :root{
-      --bg: #0b1220;
       --glass: rgba(255,255,255,0.10);
-      --glass2: rgba(255,255,255,0.14);
+      --glass2: rgba(255,255,255,0.16);
       --stroke: rgba(255,255,255,0.18);
-      --shadow: 0 18px 50px rgba(0,0,0,0.22);
-      --shadow2: 0 26px 70px rgba(0,0,0,0.28);
-      --radius: 18px;
-      --textOnDark: rgba(255,255,255,0.94);
-      --mutedOnDark: rgba(255,255,255,0.84);
+      --shadow: 0 20px 60px rgba(0,0,0,0.22);
+      --shadow2: 0 28px 80px rgba(0,0,0,0.30);
+      --text: rgba(255,255,255,0.95);
+      --muted: rgba(255,255,255,0.82);
     }
 
-    *{ box-sizing: border-box; }
-    html, body{ height: 100%; margin: 0; font-family: Arial, sans-serif; }
+    *{ box-sizing:border-box; }
+    html, body { height:100%; margin:0; font-family: Arial, sans-serif; }
 
     /* ✅ Background stays visible */
     body{
-      background-color: var(--bg);
+      background-color:#0b1220;
       background-image:
         radial-gradient(circle at 20% 10%, rgba(0,0,0,0.08), rgba(0,0,0,0.22) 55%, rgba(0,0,0,0.32)),
-        url('/static/Background.png?v=120');
-      background-repeat: no-repeat;
-      background-size: cover;
-      background-position: center top;
-      overflow-x: hidden;
+        url('/static/drive_thru_demo.png?v=140');
+      background-repeat:no-repeat;
+      background-size:cover;
+      background-position:center top;
+      overflow-x:hidden;
     }
 
-    /* ✅ Layout */
+    /* ✅ Place buttons near top (adjust if you want higher/lower) */
     .page{
-      min-height: 100vh;
-      padding: 28px 14px 40px 14px;
+      min-height:100vh;
+      padding: 18px;
       display:flex;
-      justify-content:center;
       align-items:flex-start;
+      justify-content:center;
     }
-
     .wrap{
-      width: min(1180px, 96vw);
-      margin-top: 130px; /* pushes content below SMART title */
+      width: min(1100px, 96vw);
+      margin-top: 120px; /* move buttons down/up */
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap: 18px;
     }
 
-    /* ✅ Headline (only this) */
-    .heroText{
-      color: var(--textOnDark);
-      text-shadow: 0 14px 34px rgba(0,0,0,0.45);
-      text-align: left;
-      max-width: 820px;
-    }
-    .heroText h1{
-      margin: 0 0 10px 0;
-      font-size: clamp(28px, 4.6vw, 54px);
-      letter-spacing: -0.9px;
-      line-height: 1.02;
-    }
-    .heroText p{
-      margin: 0 0 18px 0;
-      font-size: clamp(14px, 2.2vw, 18px);
-      line-height: 1.45;
-      color: var(--mutedOnDark);
+    /* ✅ Circle button row */
+    .circleRow{
+      display:flex;
+      gap: 18px;
+      align-items:center;
+      justify-content:center;
+      flex-wrap:wrap;
     }
 
-    /* ✅ Three tiles only */
-    .tiles{
-      margin-top: 10px;
-      display:grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
-    }
-
-    .tile{
-      border-radius: var(--radius);
-      padding: 16px;
-      text-decoration:none;
-      color: rgba(255,255,255,0.94);
-
-      background: var(--glass);
+    .circleBtn{
+      width: 92px;
+      height: 92px;
+      border-radius: 999px;
       border: 1px solid var(--stroke);
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+      cursor: pointer;
+
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+
+      font-weight: 900;
+      letter-spacing: -0.2px;
+      font-size: 14px;
+
+      backdrop-filter: blur(18px) saturate(160%);
+      -webkit-backdrop-filter: blur(18px) saturate(160%);
+      box-shadow: 0 14px 34px rgba(0,0,0,0.18);
+
+      transition: transform .12s ease, background .12s ease, border .12s ease, box-shadow .12s ease;
+      user-select:none;
+    }
+
+    .circleBtn:hover{
+      transform: translateY(-2px);
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(255,255,255,0.26);
+      box-shadow: 0 22px 55px rgba(0,0,0,0.26);
+    }
+
+    .circleBtn.active{
+      background: rgba(255,255,255,0.16);
+      border-color: rgba(255,255,255,0.32);
+      box-shadow: 0 28px 80px rgba(0,0,0,0.30);
+    }
+
+    /* ✅ Info panel (appears after click) */
+    .panel{
+      width: min(820px, 96vw);
+      border-radius: 22px;
+      padding: 18px 18px;
+
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.18);
+
       backdrop-filter: blur(22px) saturate(160%);
       -webkit-backdrop-filter: blur(22px) saturate(160%);
       box-shadow: var(--shadow);
 
-      position: relative;
-      overflow:hidden;
-
-      transition: transform .14s ease, box-shadow .14s ease, background .14s ease, border .14s ease;
+      color: var(--text);
+      display:none;
     }
 
-    .tile:before{
-      content:"";
-      position:absolute;
-      inset:0;
-      background: radial-gradient(circle at 20% 10%, rgba(255,255,255,0.14), rgba(255,255,255,0.02) 55%);
-      pointer-events:none;
-    }
+    .panel.show{ display:block; }
 
-    .tile:hover{
-      transform: translateY(-3px);
-      box-shadow: var(--shadow2);
-      background: var(--glass2);
-      border-color: rgba(255,255,255,0.24);
-    }
-
-    .tileTop{
+    .panelHead{
       display:flex;
-      align-items:flex-start;
-      justify-content: space-between;
-      gap: 10px;
-      position: relative;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+      margin-bottom: 10px;
     }
 
-    .tileTitle{
+    .panelTitle{
       font-size: 18px;
       font-weight: 900;
-      letter-spacing: -0.3px;
       margin: 0;
     }
 
-    .tag{
+    .pill{
       font-size: 12px;
       font-weight: 900;
       padding: 5px 10px;
       border-radius: 999px;
-      background: rgba(0,0,0,0.16);
+      background: rgba(0,0,0,0.18);
       border: 1px solid rgba(255,255,255,0.14);
-      color: rgba(255,255,255,0.9);
+      color: rgba(255,255,255,0.90);
       white-space: nowrap;
     }
 
-    .tileDesc{
-      margin: 10px 0 0 0;
-      font-size: 13px;
+    .panelText{
+      margin: 0 0 14px 0;
+      color: var(--muted);
       line-height: 1.35;
-      color: rgba(255,255,255,0.86);
-      position: relative;
-    }
-
-    .tileCTA{
-      margin-top: 14px;
-      display:flex;
-      align-items:center;
-      justify-content: space-between;
-      position: relative;
-      padding: 10px 12px;
-      border-radius: 14px;
-      background: rgba(0,0,0,0.10);
-      border: 1px solid rgba(255,255,255,0.12);
-      font-weight: 900;
-    }
-
-    .arrow{ font-size: 18px; font-weight: 900; opacity: 0.85; }
-
-    .tip{
-      margin-top: 12px;
-      color: rgba(255,255,255,0.82);
-      text-shadow: 0 14px 34px rgba(0,0,0,0.45);
-      font-size: 13px;
-    }
-
-    /* ✅ Modal */
-    .modalBack{
-      display:none;
-      position:fixed;
-      inset:0;
-      background: rgba(0,0,0,0.55);
-      align-items:center;
-      justify-content:center;
-      padding: 18px;
-      z-index: 9999;
-    }
-    .modal{
-      width: min(560px, 94vw);
-      border-radius: 18px;
-      padding: 18px;
-      background: rgba(255,255,255,0.14);
-      border: 1px solid rgba(255,255,255,0.18);
-      backdrop-filter: blur(22px) saturate(160%);
-      -webkit-backdrop-filter: blur(22px) saturate(160%);
-      box-shadow: 0 26px 80px rgba(0,0,0,0.45);
-      color: rgba(255,255,255,0.96);
-    }
-    .modalTitle{
-      margin: 0 0 6px 0;
-      font-weight: 900;
-      font-size: 18px;
-      letter-spacing: -0.2px;
-    }
-    .modalSub{
-      margin: 0 0 12px 0;
-      color: rgba(255,255,255,0.85);
       font-size: 14px;
-      line-height: 1.35;
+      text-shadow: 0 12px 28px rgba(0,0,0,0.35);
     }
-    .laneGrid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
+
+    .actions{
+      display:flex;
       gap: 10px;
+      flex-wrap: wrap;
     }
-    .laneBtn{
+
+    .actionLink{
       text-decoration:none;
       color: rgba(255,255,255,0.96);
+      font-weight: 900;
       padding: 12px 14px;
       border-radius: 14px;
-      background: rgba(0,0,0,0.14);
-      border: 1px solid rgba(255,255,255,0.16);
-      text-align:center;
-      font-weight: 900;
-      transition: transform .12s ease, background .12s ease, border .12s ease;
-    }
-    .laneBtn:hover{
-      transform: translateY(-1px);
-      background: rgba(0,0,0,0.20);
-      border-color: rgba(255,255,255,0.24);
-    }
-    .modalFooter{
-      display:flex;
-      justify-content:flex-end;
-      margin-top: 12px;
-    }
-    .closeBtn{
-      background: rgba(0,0,0,0.18);
+
+      background: rgba(0,0,0,0.12);
       border: 1px solid rgba(255,255,255,0.14);
-      color: rgba(255,255,255,0.95);
-      padding: 10px 12px;
-      border-radius: 12px;
-      cursor: pointer;
-      font-weight: 900;
+
+      transition: transform .12s ease, background .12s ease, border .12s ease;
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
     }
 
-    /* ✅ Responsive */
-    @media (max-width: 980px){
-      .wrap{ margin-top: 90px; }
-      .tiles{ grid-template-columns: 1fr; }
+    .actionLink:hover{
+      transform: translateY(-1px);
+      background: rgba(0,0,0,0.18);
+      border-color: rgba(255,255,255,0.22);
     }
-    @media (max-width: 560px){
-      .wrap{ margin-top: 70px; }
-      .laneGrid{ grid-template-columns: 1fr; }
+
+    .tip{
+      margin-top: 8px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.80);
+      text-shadow: 0 12px 28px rgba(0,0,0,0.45);
+      text-align:center;
+    }
+
+    @media (max-width: 520px){
+      .wrap{ margin-top: 80px; }
+      .circleBtn{ width: 84px; height: 84px; font-size: 13px; }
+      .panel{ padding: 16px; }
     }
   </style>
 </head>
@@ -388,41 +334,23 @@ HOME_HTML = """
   <div class="page">
     <div class="wrap">
 
-      <div class="heroText">
-        <h1>Order, Voice, Pay — Seamlessly</h1>
-        <p>
-          Real-time voice ordering, secure lane-based connection, and mobile payment —
-          all without opening the car window until pickup.
-        </p>
+      <!-- ✅ 3 circle buttons only -->
+      <div class="circleRow">
+        <button class="circleBtn" id="btnLane" onclick="showPanel('lane')">Lane</button>
+        <button class="circleBtn" id="btnCustomer" onclick="showPanel('customer')">Customer</button>
+        <button class="circleBtn" id="btnCashier" onclick="showPanel('cashier')">Cashier</button>
       </div>
 
-      <div class="tiles">
-        <a class="tile" href="#" onclick="openLanePicker(); return false;">
-          <div class="tileTop">
-            <p class="tileTitle">Lane</p>
-            <span class="tag">Display</span>
-          </div>
-          <p class="tileDesc">Open a lane screen to get the rotating 4-digit station code.</p>
-          <div class="tileCTA"><span>Open lane display</span><span class="arrow">→</span></div>
-        </a>
+      <!-- ✅ Info panel (changes based on click) -->
+      <div class="panel" id="panel">
+        <div class="panelHead">
+          <div class="panelTitle" id="panelTitle">—</div>
+          <div class="pill" id="panelPill">—</div>
+        </div>
 
-        <a class="tile" href="/customer">
-          <div class="tileTop">
-            <p class="tileTitle">Customer</p>
-            <span class="tag">Mobile</span>
-          </div>
-          <p class="tileDesc">Check-in, enter code, chat/call with cashier, and pay securely.</p>
-          <div class="tileCTA"><span>Open customer portal</span><span class="arrow">→</span></div>
-        </a>
+        <p class="panelText" id="panelText">—</p>
 
-        <a class="tile" href="/cashier">
-          <div class="tileTop">
-            <p class="tileTitle">Cashier</p>
-            <span class="tag">POS + Agent</span>
-          </div>
-          <p class="tileDesc">Join the order, confirm total, and send payment request.</p>
-          <div class="tileCTA"><span>Open cashier console</span><span class="arrow">→</span></div>
-        </a>
+        <div class="actions" id="panelActions"></div>
       </div>
 
       <div class="tip">
@@ -432,30 +360,72 @@ HOME_HTML = """
     </div>
   </div>
 
-  <!-- Lane picker modal -->
-  <div id="laneModal" class="modalBack" onclick="closeLanePicker(event)">
-    <div class="modal" onclick="event.stopPropagation()">
-      <div class="modalTitle">Choose a Lane</div>
-      <div class="modalSub">Open the lane display to show the rotating 4-digit station code.</div>
-
-      <div class="laneGrid">
-        <a class="laneBtn" href="/lane/L1">Lane L1</a>
-        <a class="laneBtn" href="/lane/L2">Lane L2</a>
-      </div>
-
-      <div class="modalFooter">
-        <button class="closeBtn" onclick="closeLanePicker()">Close</button>
-      </div>
-    </div>
-  </div>
-
   <script>
-    function openLanePicker(){ document.getElementById("laneModal").style.display = "flex"; }
-    function closeLanePicker(){ document.getElementById("laneModal").style.display = "none"; }
+    const panel = document.getElementById("panel");
+    const panelTitle = document.getElementById("panelTitle");
+    const panelPill = document.getElementById("panelPill");
+    const panelText = document.getElementById("panelText");
+    const panelActions = document.getElementById("panelActions");
+
+    const btnLane = document.getElementById("btnLane");
+    const btnCustomer = document.getElementById("btnCustomer");
+    const btnCashier = document.getElementById("btnCashier");
+
+    function setActive(which){
+      [btnLane, btnCustomer, btnCashier].forEach(b => b.classList.remove("active"));
+      if (which === "lane") btnLane.classList.add("active");
+      if (which === "customer") btnCustomer.classList.add("active");
+      if (which === "cashier") btnCashier.classList.add("active");
+    }
+
+    function setActions(actions){
+      panelActions.innerHTML = "";
+      actions.forEach(a => {
+        const link = document.createElement("a");
+        link.className = "actionLink";
+        link.href = a.href;
+        link.innerHTML = a.label + " <span style='opacity:0.85;font-weight:900;'>→</span>";
+        panelActions.appendChild(link);
+      });
+    }
+
+    function showPanel(which){
+      setActive(which);
+      panel.classList.add("show");
+
+      if (which === "lane"){
+        panelTitle.textContent = "Lane";
+        panelPill.textContent = "Display";
+        panelText.textContent = "Open a lane screen to get the rotating 4-digit station code.";
+        setActions([
+          { label: "Open Lane L1", href: "/lane/L1" },
+          { label: "Open Lane L2", href: "/lane/L2" }
+        ]);
+      }
+
+      if (which === "customer"){
+        panelTitle.textContent = "Customer";
+        panelPill.textContent = "Mobile";
+        panelText.textContent = "Check-in, enter the station code, chat/call with cashier, and pay securely.";
+        setActions([
+          { label: "Open Customer Portal", href: "/customer" }
+        ]);
+      }
+
+      if (which === "cashier"){
+        panelTitle.textContent = "Cashier";
+        panelPill.textContent = "POS + Agent";
+        panelText.textContent = "Join the order, confirm total, and send a payment request to the customer.";
+        setActions([
+          { label: "Open Cashier Console", href: "/cashier" }
+        ]);
+      }
+    }
   </script>
 </body>
 </html>
 """
+
 
 
 
