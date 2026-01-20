@@ -145,29 +145,23 @@ HOME_HTML = """
 
   <style>
     :root{
-      --glass: rgba(255,255,255,0.14);
-      --glass2: rgba(255,255,255,0.18);
-      --stroke: rgba(255,255,255,0.22);
       --shadow: 0 20px 60px rgba(0,0,0,0.25);
       --text: rgba(255,255,255,0.96);
-      --muted: rgba(255,255,255,0.85);
-      --dark: rgba(0,0,0,0.30);
     }
 
     *{ box-sizing: border-box; }
     html, body{ height:100%; margin:0; font-family: Arial, sans-serif; }
 
-    /* ✅ Background aligned properly */
+    /* ✅ background aligned */
     body{
       background-color:#0b1220;
-      background-image: url('/static/Background.png?v=200');
+      background-image: url('/static/drive_thru_demo.png?v=250');
       background-repeat:no-repeat;
       background-size: cover;
-      background-position: center center;   /* ✅ key: centered alignment */
+      background-position: center center;
       overflow-x:hidden;
     }
 
-    /* ✅ Put buttons BELOW the hero headline area (SMART/DRIVE-THRU in image) */
     .page{
       min-height:100vh;
       display:flex;
@@ -176,17 +170,16 @@ HOME_HTML = """
       padding: 18px;
     }
 
-    /* Adjust this value to move buttons up/down under the image title */
+    /* ✅ push buttons BELOW the image text lines */
     .wrap{
       width: min(1100px, 96vw);
-      margin-top: 220px; /* ✅ pushes below SMART headline */
+      margin-top: 320px;  /* 👈 increase/decrease if needed */
       display:flex;
       flex-direction:column;
       align-items:center;
       gap: 10px;
     }
 
-    /* Circle row */
     .circleRow{
       display:flex;
       gap: 18px;
@@ -206,8 +199,8 @@ HOME_HTML = """
       width: 86px;
       height: 86px;
       border-radius: 999px;
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.14);
       color: var(--text);
       cursor: pointer;
 
@@ -217,42 +210,39 @@ HOME_HTML = """
       text-align:center;
 
       font-weight: 900;
-      letter-spacing: -0.2px;
       font-size: 14px;
 
       backdrop-filter: blur(16px) saturate(160%);
       -webkit-backdrop-filter: blur(16px) saturate(160%);
       box-shadow: 0 14px 34px rgba(0,0,0,0.18);
 
-      transition: transform .12s ease, background .12s ease, border .12s ease, box-shadow .12s ease;
+      transition: transform .12s ease, background .12s ease, border .12s ease;
       user-select:none;
     }
 
     .circleBtn:hover{
       transform: translateY(-2px);
-      background: rgba(255,255,255,0.16);
-      border-color: rgba(255,255,255,0.30);
-      box-shadow: 0 22px 55px rgba(0,0,0,0.26);
+      background: rgba(255,255,255,0.18);
+      border-color: rgba(255,255,255,0.35);
     }
 
     .circleBtn.active{
-      background: rgba(255,255,255,0.20);
-      border-color: rgba(255,255,255,0.34);
+      background: rgba(255,255,255,0.22);
+      border-color: rgba(255,255,255,0.40);
     }
 
-    /* ✅ Tooltip popover (Google-apps style) */
+    /* ✅ popover */
     .popover{
       position:absolute;
       top: calc(100% + 12px);
       left: 50%;
       transform: translateX(-50%);
       width: min(360px, 92vw);
-
-      padding: 12px 12px;
+      padding: 12px;
       border-radius: 14px;
 
-      background: rgba(0,0,0,0.55);
-      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(0,0,0,0.62);
+      border: 1px solid rgba(255,255,255,0.18);
       box-shadow: var(--shadow);
 
       backdrop-filter: blur(14px) saturate(140%);
@@ -260,39 +250,34 @@ HOME_HTML = """
 
       color: var(--text);
       display:none;
-      z-index: 50;
+      z-index: 9999;
     }
 
     .popover.show{ display:block; }
 
-    /* arrow pointer */
     .popover:before{
       content:"";
       position:absolute;
       top:-8px;
       left: 50%;
-      transform: translateX(-50%);
-      width: 14px; height: 14px;
-      background: rgba(0,0,0,0.55);
-      border-left: 1px solid rgba(255,255,255,0.16);
-      border-top: 1px solid rgba(255,255,255,0.16);
       transform: translateX(-50%) rotate(45deg);
-      backdrop-filter: blur(14px) saturate(140%);
-      -webkit-backdrop-filter: blur(14px) saturate(140%);
+      width: 14px; height: 14px;
+      background: rgba(0,0,0,0.62);
+      border-left: 1px solid rgba(255,255,255,0.18);
+      border-top: 1px solid rgba(255,255,255,0.18);
     }
 
     .popTitle{
       font-weight: 900;
       font-size: 14px;
       margin: 0 0 6px 0;
-      letter-spacing: -0.1px;
     }
 
     .popText{
       margin: 0;
       font-size: 13px;
       line-height: 1.35;
-      color: rgba(255,255,255,0.88);
+      color: rgba(255,255,255,0.90);
     }
 
     .popActions{
@@ -307,13 +292,10 @@ HOME_HTML = """
       color: rgba(255,255,255,0.96);
       font-weight: 900;
       font-size: 12.5px;
-
       padding: 10px 12px;
       border-radius: 12px;
-
       background: rgba(255,255,255,0.10);
       border: 1px solid rgba(255,255,255,0.16);
-
       transition: transform .12s ease, background .12s ease, border .12s ease;
     }
 
@@ -324,18 +306,25 @@ HOME_HTML = """
     }
 
     .tip{
-      margin-top: 10px;
+      margin-top: 12px;
       font-size: 13px;
       color: rgba(255,255,255,0.82);
       text-shadow: 0 12px 28px rgba(0,0,0,0.45);
       text-align:center;
-      max-width: 900px;
     }
 
-    /* ✅ Mobile: keep popover visible and centered */
+    /* ✅ Mobile: render popovers fixed + centered so they never hide off-screen */
     @media (max-width: 520px){
-      .wrap{ margin-top: 170px; }
-      .circleBtn{ width: 80px; height: 80px; font-size: 13px; }
+      .wrap{ margin-top: 240px; }
+      .popover{
+        position: fixed;
+        left: 50%;
+        top: auto;
+        bottom: 18px;
+        transform: translateX(-50%);
+        width: min(420px, 92vw);
+      }
+      .popover:before{ display:none; }
     }
   </style>
 </head>
@@ -344,12 +333,11 @@ HOME_HTML = """
   <div class="page">
     <div class="wrap">
 
-      <!-- ✅ Only 3 circle buttons below the image headline -->
       <div class="circleRow">
 
-        <!-- Lane -->
         <div class="circleWrap">
-          <button class="circleBtn" id="btnLane" onclick="togglePop('lane')">Lane</button>
+          <button type="button" class="circleBtn" id="btnLane"
+                  onclick="togglePop(event, 'lane')">Lane</button>
           <div class="popover" id="popLane">
             <div class="popTitle">Lane</div>
             <p class="popText">Open a lane screen to get the rotating 4-digit station code.</p>
@@ -360,9 +348,9 @@ HOME_HTML = """
           </div>
         </div>
 
-        <!-- Customer -->
         <div class="circleWrap">
-          <button class="circleBtn" id="btnCustomer" onclick="togglePop('customer')">Customer</button>
+          <button type="button" class="circleBtn" id="btnCustomer"
+                  onclick="togglePop(event, 'customer')">Customer</button>
           <div class="popover" id="popCustomer">
             <div class="popTitle">Customer</div>
             <p class="popText">Check-in, enter code, chat/call with cashier, and pay securely.</p>
@@ -372,9 +360,9 @@ HOME_HTML = """
           </div>
         </div>
 
-        <!-- Cashier -->
         <div class="circleWrap">
-          <button class="circleBtn" id="btnCashier" onclick="togglePop('cashier')">Cashier</button>
+          <button type="button" class="circleBtn" id="btnCashier"
+                  onclick="togglePop(event, 'cashier')">Cashier</button>
           <div class="popover" id="popCashier">
             <div class="popTitle">Cashier</div>
             <p class="popText">Join the order, confirm total, and send payment request.</p>
@@ -403,7 +391,9 @@ HOME_HTML = """
       document.getElementById("btnCashier").classList.remove("active");
     }
 
-    function togglePop(which){
+    function togglePop(ev, which){
+      ev.stopPropagation();
+
       const map = {
         lane: ["btnLane","popLane"],
         customer: ["btnCustomer","popCustomer"],
@@ -413,8 +403,8 @@ HOME_HTML = """
       const [btnId, popId] = map[which];
       const pop = document.getElementById(popId);
       const btn = document.getElementById(btnId);
-      const isOpen = pop.classList.contains("show");
 
+      const isOpen = pop.classList.contains("show");
       hideAll();
 
       if (!isOpen){
@@ -423,20 +413,13 @@ HOME_HTML = """
       }
     }
 
-    // close when clicking outside
-    document.addEventListener("click", (e) => {
-      const inside = e.target.closest(".circleWrap");
-      if (!inside) hideAll();
-    });
-
-    // close on ESC
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") hideAll();
-    });
+    document.addEventListener("click", () => hideAll());
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") hideAll(); });
   </script>
 </body>
 </html>
 """
+
 
 
 
