@@ -359,53 +359,26 @@ LANE_HTML_TEMPLATE = """
 
   <style>
     :root{
-      /* default = neutral */
+      /* “big brand QSR” neutral base */
       --bgTop:#0b1220;
-      --bgBottom:#111a2e;
-      --card: rgba(255,255,255,.10);
-      --stroke: rgba(255,255,255,.16);
+      --bgBottom:#0a0f1e;
+
+      /* subtle multi-accent (gold/red/green) */
+      --gold:#ffb703;
+      --red:#ff4d6d;
+      --green:#22c55e;
+
       --text: rgba(255,255,255,.96);
       --muted: rgba(255,255,255,.78);
-      --accent:#7c5cff;
-      --accent2:#22c55e;
+
+      --card: rgba(255,255,255,.10);
+      --stroke: rgba(255,255,255,.16);
       --shadow: 0 22px 70px rgba(0,0,0,.34);
       --radius: 22px;
     }
 
-    /* ========= Brand Themes ========= */
-    /* McDonald's vibe (red + golden) */
-    body[data-brand="mcd"]{
-      --bgTop:#3b0b0b;
-      --bgBottom:#1a0707;
-      --accent:#ffb703;     /* golden */
-      --accent2:#fb8500;    /* orange */
-      --card: rgba(255,255,255,.10);
-      --stroke: rgba(255,255,255,.18);
-    }
-
-    /* Starbucks vibe (green + clean) */
-    body[data-brand”="starbucks"]{} /* (typo guard: ignore) */
-    body[data-brand="starbucks"]{
-      --bgTop:#0b2a1a;
-      --bgBottom:#06160e;
-      --accent:#22c55e;     /* green */
-      --accent2:#16a34a;    /* deeper green */
-      --card: rgba(255,255,255,.09);
-      --stroke: rgba(255,255,255,.16);
-    }
-
-    /* KFC vibe (red + white stripes feel) */
-    body[data-brand="kfc"]{
-      --bgTop:#3a0b13;
-      --bgBottom:#12070a;
-      --accent:#ff4d6d;     /* warm red/pink */
-      --accent2:#ffffff;    /* white */
-      --card: rgba(255,255,255,.10);
-      --stroke: rgba(255,255,255,.18);
-    }
-
     *{ box-sizing:border-box; }
-    html,body{ height:100%; }
+    html, body{ height:100%; }
 
     body{
       margin:0;
@@ -413,45 +386,19 @@ LANE_HTML_TEMPLATE = """
       color: var(--text);
       overflow:hidden;
 
+      /* Clean modern QSR background (no photo) */
       background:
-        radial-gradient(900px 520px at 15% 20%, color-mix(in srgb, var(--accent) 20%, transparent), transparent 60%),
-        radial-gradient(900px 520px at 85% 25%, color-mix(in srgb, var(--accent2) 18%, transparent), transparent 60%),
+        radial-gradient(900px 520px at 15% 20%, rgba(255,183,3,.18), transparent 60%),
+        radial-gradient(900px 520px at 85% 25%, rgba(34,197,94,.14), transparent 60%),
+        radial-gradient(900px 520px at 55% 95%, rgba(255,77,109,.12), transparent 60%),
         linear-gradient(180deg, var(--bgTop), var(--bgBottom));
     }
 
-    /* KFC subtle diagonal stripes */
-    body[data-brand="kfc"] .bgStripe{
-      position:absolute; inset:-40px;
-      background:
-        repeating-linear-gradient(
-          135deg,
-          rgba(255,255,255,.08) 0px,
-          rgba(255,255,255,.08) 18px,
-          rgba(255,255,255,0) 18px,
-          rgba(255,255,255,0) 44px
-        );
-      opacity:.22;
-      pointer-events:none;
-      mask-image: radial-gradient(700px 420px at 50% 35%, #000 45%, transparent 75%);
-    }
-
-    /* McD dotted texture */
-    body[data-brand="mcd"] .bgDots{
+    /* subtle texture (keeps it “premium” like KFC/Starbucks/McD screens) */
+    .texture{
       position:absolute; inset:0;
-      background-image: radial-gradient(rgba(255,255,255,.11) 1px, transparent 1px);
+      background-image: radial-gradient(rgba(255,255,255,.10) 1px, transparent 1px);
       background-size: 28px 28px;
-      opacity:.18;
-      pointer-events:none;
-      mask-image: radial-gradient(700px 420px at 50% 35%, #000 45%, transparent 75%);
-    }
-
-    /* Starbucks clean grid */
-    body[data-brand="starbucks"] .bgGrid{
-      position:absolute; inset:0;
-      background-image:
-        linear-gradient(to right, rgba(255,255,255,.07) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255,255,255,.07) 1px, transparent 1px);
-      background-size: 70px 70px;
       opacity:.14;
       pointer-events:none;
       mask-image: radial-gradient(700px 420px at 50% 35%, #000 45%, transparent 75%);
@@ -475,16 +422,27 @@ LANE_HTML_TEMPLATE = """
     }
 
     .brandMark{
-      display:flex; align-items:center; gap:10px;
-      font-weight: 900;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight: 950;
       letter-spacing:.2px;
       opacity:.98;
     }
-    .dot{
-      width: 12px; height: 12px; border-radius:999px;
-      background: radial-gradient(circle at 30% 30%, #fff, var(--accent));
-      box-shadow: 0 0 0 7px color-mix(in srgb, var(--accent) 22%, transparent);
+
+    /* “triple-dot” accent hint (gold/red/green) */
+    .dots{
+      display:flex;
+      gap:6px;
+      align-items:center;
     }
+    .d{
+      width:10px; height:10px; border-radius:999px;
+      box-shadow: 0 0 0 6px rgba(255,255,255,.06);
+    }
+    .d.gold{ background: radial-gradient(circle at 30% 30%, #fff, var(--gold)); }
+    .d.red{ background: radial-gradient(circle at 30% 30%, #fff, var(--red)); }
+    .d.green{ background: radial-gradient(circle at 30% 30%, #fff, var(--green)); }
 
     .pill{
       display:inline-flex;
@@ -506,7 +464,7 @@ LANE_HTML_TEMPLATE = """
       padding: 6px 10px;
       border-radius: 999px;
       color: #111;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      background: linear-gradient(135deg, var(--gold), var(--green));
     }
 
     .card{
@@ -524,8 +482,9 @@ LANE_HTML_TEMPLATE = """
       content:"";
       position:absolute; inset:-2px;
       background:
-        radial-gradient(700px 220px at 15% 0%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 60%),
-        radial-gradient(700px 220px at 90% 10%, color-mix(in srgb, var(--accent2) 18%, transparent), transparent 60%);
+        radial-gradient(700px 220px at 15% 0%, rgba(255,183,3,.18), transparent 60%),
+        radial-gradient(700px 220px at 90% 10%, rgba(34,197,94,.14), transparent 60%),
+        radial-gradient(700px 220px at 50% 110%, rgba(255,77,109,.10), transparent 60%);
       pointer-events:none;
     }
 
@@ -563,29 +522,25 @@ LANE_HTML_TEMPLATE = """
       box-shadow: 0 18px 45px rgba(0,0,0,.22);
     }
 
-    body[data-brand="starbucks"] .codeBox{
-      background: rgba(255,255,255,.92);
-    }
-
     .codeLabel{
       display:flex; align-items:center; gap:10px;
       font-size: 13px;
       text-transform: uppercase;
       letter-spacing: .4px;
       color: rgba(0,0,0,.65);
-      font-weight: 900;
+      font-weight: 950;
       margin-bottom: 10px;
     }
 
     .pulse{
       width: 10px; height: 10px; border-radius:999px;
-      background: var(--accent);
-      box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 35%, transparent);
+      background: var(--green);
+      box-shadow: 0 0 0 0 rgba(34,197,94,.35);
       animation: pulse 1.6s ease-out infinite;
     }
     @keyframes pulse{
-      0%{ box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 38%, transparent); }
-      100%{ box-shadow: 0 0 0 14px rgba(0,0,0,0); }
+      0%{ box-shadow: 0 0 0 0 rgba(34,197,94,.38); }
+      100%{ box-shadow: 0 0 0 14px rgba(34,197,94,0); }
     }
 
     .code{
@@ -618,10 +573,10 @@ LANE_HTML_TEMPLATE = """
       border-radius: 14px;
       background: rgba(0,0,0,.05);
       border: 1px solid rgba(0,0,0,.08);
-      font-weight: 750;
+      font-weight: 800;
     }
 
-    /* ✅ prevents “big clock” icon issue */
+    /* ✅ prevents “big clock icon” issue */
     .icon, .metaItem svg{
       width: 18px !important;
       height: 18px !important;
@@ -673,27 +628,29 @@ LANE_HTML_TEMPLATE = """
       display:inline-flex;
       align-items:center;
       gap: 10px;
-      font-weight: 900;
+      font-weight: 950;
     }
 
     .statusDot{
       width: 10px; height: 10px; border-radius:999px;
-      background: #22c55e;
+      background: var(--green);
       box-shadow: 0 0 0 7px rgba(34,197,94,.18);
     }
   </style>
 </head>
 
-<body data-brand="__BRAND__">
-  <div class="bgStripe"></div>
-  <div class="bgDots"></div>
-  <div class="bgGrid"></div>
+<body>
+  <div class="texture"></div>
 
   <div class="wrap">
     <div class="topbar">
       <div class="brandMark">
-        <span class="dot"></span>
-        <span id="brandTitle">Drive-Thru Pairing</span>
+        <div class="dots">
+          <span class="d gold"></span>
+          <span class="d red"></span>
+          <span class="d green"></span>
+        </div>
+        <span>Drive-Thru Pairing</span>
       </div>
       <div class="pill">
         <span class="laneBadge">LANE __LANE_ID__</span>
@@ -729,7 +686,7 @@ LANE_HTML_TEMPLATE = """
               </div>
             </div>
 
-            <div style="margin-top:10px; color:rgba(0,0,0,.62); font-weight:650;">
+            <div style="margin-top:10px; color:rgba(0,0,0,.62); font-weight:700;">
               Code rotates after a successful connect (order created).
             </div>
           </div>
@@ -741,31 +698,21 @@ LANE_HTML_TEMPLATE = """
             <p>Once the customer connects and an order is created, this code rotates automatically for the next vehicle.</p>
           </div>
           <div class="panel">
-            <h4>Tip</h4>
-            <p>Keep this screen fullscreen for best visibility. Press <b>F11</b> (desktop).</p>
+            <h4>Visibility tip</h4>
+            <p>Keep this screen fullscreen for best readability in the lane.</p>
           </div>
         </div>
       </div>
 
       <div class="footer">
         <div class="status"><span class="statusDot"></span> READY</div>
-        <div>Lane display • secure pairing</div>
+        <div>Secure lane pairing</div>
       </div>
     </div>
   </div>
 
   <script>
-    // Brand title
-    const brand = "__BRAND__";
-    const brandTitle = document.getElementById("brandTitle");
-    if (brandTitle){
-      if (brand === "mcd") brandTitle.textContent = "McDonald’s • Drive-Thru Pairing";
-      else if (brand === "starbucks") brandTitle.textContent = "Starbucks • Drive-Thru Pairing";
-      else if (brand === "kfc") brandTitle.textContent = "KFC • Drive-Thru Pairing";
-      else brandTitle.textContent = "Drive-Thru Pairing";
-    }
-
-    // Local clock (lane screen + phone)
+    // Local clock
     const clockEl = document.getElementById("clock");
     function tickClock(){
       const d = new Date();
@@ -773,8 +720,8 @@ LANE_HTML_TEMPLATE = """
     }
     tickClock(); setInterval(tickClock, 1000);
 
-    // Expiry: show in local time + countdown
-    const expiresIsoUtc = "__EXPIRES_AT__";  // must be ISO UTC like 2026-01-20T04:17:02Z
+    // Expiry (local time + countdown)
+    const expiresIsoUtc = "__EXPIRES_AT__"; // ISO UTC like 2026-01-20T04:17:02Z
     const expiresDate = new Date(expiresIsoUtc);
 
     const expiresLocalEl = document.getElementById("expiresLocal");
@@ -804,12 +751,13 @@ LANE_HTML_TEMPLATE = """
     updateExpiry();
     setInterval(updateExpiry, 1000);
 
-    // Keep your refresh for rotation
+    // Refresh for rotation updates
     setTimeout(()=>location.reload(), 5000);
   </script>
 </body>
 </html>
 """
+
 
 
 
@@ -831,98 +779,368 @@ CASHIER_HTML = r"""
 <head>
   <meta charset="utf-8"/>
   <title>Cashier Console</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <style>
-    body { font-family: Arial; margin: 24px; }
-    .box { padding: 14px; border: 1px solid #ddd; border-radius: 10px; max-width: 980px; }
-    .row { display:flex; gap:12px; }
-    .col { flex:1; }
-    select,input,textarea { padding:8px; width:100%; margin:6px 0 12px 0; }
-    button { padding:10px 14px; cursor:pointer; margin-right:10px; margin-top:6px; }
-    .pill { display:inline-block; padding:2px 8px; border:1px solid #ccc; border-radius:999px; font-size:12px; margin-left:8px; }
-    .chat { background:#fff; border:1px solid #ddd; border-radius:10px; padding:10px; height:260px; overflow:auto; }
-    .msg { margin:6px 0; }
-    .msg b { display:inline-block; width:88px; }
-    #log { white-space: pre-wrap; margin-top: 10px; background:#f7f7f7; padding:12px; border-radius:10px; }
-    .muted { color:#666; font-size:12px; }
-    .status { font-weight:bold; }
-    .callBox { margin-top:10px; padding:12px; border:1px solid #ddd; border-radius:12px; background:#fff; }
-    .callBanner { display:none; padding:10px; border-radius:10px; border:1px solid #ffe0a3; background:#fff7e6; font-weight:700; }
-    .callLive { display:none; padding:10px; border-radius:10px; border:1px solid #cce5cc; background:#f2fff2; font-weight:700; }
+    :root{
+      --bg:#0b1020;
+      --card:#111a33;
+      --card2:#0f1730;
+      --text:#e9ecf5;
+      --muted:#a9b3d1;
+      --line:rgba(255,255,255,.10);
+      --good:#22c55e;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+      --accent:#7c3aed;
+      --accent2:#06b6d4;
+      --chip:rgba(255,255,255,.08);
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 700px at 20% -10%, rgba(124,58,237,.35), transparent 55%),
+        radial-gradient(900px 600px at 90% 0%, rgba(6,182,212,.25), transparent 55%),
+        radial-gradient(900px 700px at 60% 110%, rgba(34,197,94,.12), transparent 60%),
+        var(--bg);
+      padding:18px;
+    }
+
+    /* Top bar */
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px; padding:14px 16px;
+      background:linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      position:sticky; top:12px; z-index:10;
+      backdrop-filter: blur(10px);
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+    }
+    .logo{
+      width:38px; height:38px; border-radius:12px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: 0 8px 24px rgba(124,58,237,.35);
+    }
+    .title{
+      line-height:1.1;
+    }
+    .title h2{margin:0; font-size:16px; font-weight:800; letter-spacing:.2px;}
+    .title .sub{margin-top:2px; font-size:12px; color:var(--muted);}
+    .meta{
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .chip{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:7px 10px; border-radius:999px;
+      background:var(--chip);
+      border:1px solid var(--line);
+      font-size:12px; color:var(--text);
+      white-space:nowrap;
+    }
+    .dot{
+      width:10px; height:10px; border-radius:50%;
+      background: #64748b;
+      box-shadow: 0 0 0 4px rgba(100,116,139,.15);
+    }
+    .dot.good{ background:var(--good); box-shadow:0 0 0 4px rgba(34,197,94,.15); }
+    .dot.warn{ background:var(--warn); box-shadow:0 0 0 4px rgba(245,158,11,.15); }
+    .dot.bad { background:var(--bad); box-shadow:0 0 0 4px rgba(239,68,68,.15); }
+
+    /* Layout */
+    .grid{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap:14px;
+    }
+    @media (max-width: 980px){
+      .grid{grid-template-columns:1fr;}
+      .topbar{position:static;}
+    }
+
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .cardHeader{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:12px 14px;
+      border-bottom:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+    }
+    .cardHeader .h{
+      font-size:13px; font-weight:800; letter-spacing:.2px;
+    }
+    .cardBody{ padding:14px; }
+
+    label{ display:block; font-size:12px; color:var(--muted); margin:10px 0 6px; }
+    select,input,textarea{
+      width:100%;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.25);
+      color:var(--text);
+      outline:none;
+    }
+    textarea{ min-height:120px; resize:vertical; }
+
+    .row{ display:flex; gap:10px; align-items:center; }
+    .row > *{ flex:1; }
+    .row.tight > *{ flex:0 0 auto; }
+
+    button{
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      cursor:pointer;
+      font-weight:700;
+      transition:.15s ease;
+      white-space:nowrap;
+    }
+    button:hover{ transform: translateY(-1px); background: rgba(255,255,255,.08); }
+    button:disabled{ opacity:.45; cursor:not-allowed; transform:none; }
+
+    .btnPrimary{
+      background: linear-gradient(135deg, rgba(124,58,237,.95), rgba(6,182,212,.75));
+      border: none;
+      box-shadow: 0 10px 24px rgba(124,58,237,.25);
+    }
+    .btnDanger{
+      background: rgba(239,68,68,.12);
+      border-color: rgba(239,68,68,.35);
+    }
+    .btnGhost{
+      background: transparent;
+    }
+    .helper{ font-size:12px; color:var(--muted); margin-top:6px; }
+
+    /* Order summary */
+    .summary{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+    .stat{
+      padding:10px 12px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background: rgba(0,0,0,.20);
+    }
+    .stat .k{ font-size:11px; color:var(--muted); }
+    .stat .v{ margin-top:4px; font-weight:900; font-size:14px; }
+
+    /* Chat */
+    .chat{
+      height:320px;
+      overflow:auto;
+      padding:10px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.20);
+    }
+    .bubbleWrap{
+      display:flex; margin:8px 0;
+    }
+    .bubble{
+      max-width: 78%;
+      padding:10px 12px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.05);
+      font-size:13px;
+      line-height:1.25;
+    }
+    .bubble small{
+      display:block;
+      margin-bottom:4px;
+      color:var(--muted);
+      font-size:11px;
+      font-weight:800;
+      letter-spacing:.2px;
+    }
+    .me{ justify-content:flex-end; }
+    .me .bubble{
+      background: rgba(124,58,237,.18);
+      border-color: rgba(124,58,237,.28);
+    }
+    .sys .bubble{
+      background: rgba(245,158,11,.10);
+      border-color: rgba(245,158,11,.25);
+    }
+
+    /* Call UI */
+    .callBanner{
+      display:none;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(245,158,11,.35);
+      background: rgba(245,158,11,.12);
+      font-weight:900;
+      margin-bottom:10px;
+    }
+    .callLive{
+      display:none;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(34,197,94,.35);
+      background: rgba(34,197,94,.10);
+      font-weight:900;
+      margin-bottom:10px;
+    }
+
+    /* Log */
+    #log{
+      margin-top:12px;
+      white-space: pre-wrap;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size:12px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.22);
+      border-radius:14px;
+      padding:12px;
+      max-height:180px;
+      overflow:auto;
+      color: #d6ddf5;
+    }
   </style>
 </head>
-<body>
-  <h2>Cashier Console (POS + Agent)</h2>
 
-  <div class="box">
-    <div>
-      <b>Cashier ID:</b> <span id="cashier"></span>
-      <span id="wsState" class="pill">WS: idle</span>
-      <span class="pill" id="joinedPill">No order joined</span>
+<body>
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo"></div>
+      <div class="title">
+        <h2>Cashier Console</h2>
+        <div class="sub">POS + Agent • Real-time chat • Payment request • WebRTC voice</div>
+      </div>
     </div>
 
-    <div class="row">
-      <div class="col">
-        <label>Orders:</label>
-        <div class="row">
-          <div class="col">
-            <select id="orderSelect"></select>
+    <div class="meta">
+      <div class="chip">
+        <span class="dot" id="wsDot"></span>
+        <span id="wsState">WS: idle</span>
+      </div>
+      <div class="chip"><b>Cashier</b>&nbsp;<span id="cashier"></span></div>
+      <div class="chip" id="joinedPill">No order joined</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- LEFT: Orders + Chat -->
+    <div class="card">
+      <div class="cardHeader">
+        <div class="h">Orders & Chat</div>
+        <div class="row tight" style="gap:8px;">
+          <button class="btnGhost" onclick="refreshOrders()">Refresh</button>
+          <button onclick="joinSelected()">Join</button>
+        </div>
+      </div>
+
+      <div class="cardBody">
+        <label>Orders</label>
+        <select id="orderSelect"></select>
+
+        <div class="summary">
+          <div class="stat">
+            <div class="k">Lane</div>
+            <div class="v" id="sumLane">—</div>
           </div>
-          <div class="col" style="flex:0.7">
-            <button onclick="refreshOrders()">Refresh</button>
-            <button onclick="joinSelected()">Join</button>
+          <div class="stat">
+            <div class="k">Status</div>
+            <div class="v" id="sumStatus">—</div>
+          </div>
+          <div class="stat">
+            <div class="k">Total</div>
+            <div class="v" id="sumTotal">—</div>
           </div>
         </div>
 
+        <label style="margin-top:12px;">Conversation</label>
         <div class="chat" id="chat"></div>
-        <input id="cashierMsg" placeholder="Message customer..." />
-        <button onclick="sendCashierMsg()">Send</button>
+
+        <div class="row" style="margin-top:10px;">
+          <input id="cashierMsg" placeholder="Type a message to the customer…" />
+          <button class="btnPrimary" style="flex:0 0 auto;" onclick="sendCashierMsg()">Send</button>
+        </div>
+
+        <div class="helper">Tip: Join an order first, then chat + confirm total to trigger a payment request.</div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Checkout + Call -->
+    <div class="card">
+      <div class="cardHeader">
+        <div class="h">Checkout & Call</div>
+        <div class="chip"><b>Current</b>&nbsp;<span id="statusLine">—</span></div>
       </div>
 
-      <div class="col">
-        <div class="muted">Order control</div>
-
-        <label>Items (optional):</label>
+      <div class="cardBody">
+        <label>Items (optional)</label>
         <textarea id="items" rows="6" placeholder="e.g., 1x Burger, 1x Fries, 1x Coke"></textarea>
 
-        <label>Set Total (USD):</label>
+        <label>Set Total (USD)</label>
         <input id="total" placeholder="e.g., 13.84" />
 
-        <button onclick="confirmTotal()">Confirm Total & Send Payment</button>
-
-        <div style="margin-top:10px;">
-          <div class="muted">Current status:</div>
-          <div class="status" id="statusLine">—</div>
+        <div class="row tight" style="gap:8px; flex-wrap:wrap; margin-top:8px;">
+          <button onclick="addAmount(1)">+ $1</button>
+          <button onclick="addAmount(5)">+ $5</button>
+          <button onclick="roundTotal()">Round</button>
+          <button class="btnPrimary" onclick="confirmTotal()">Confirm Total & Send Payment</button>
         </div>
 
-        <div class="callBox">
-          <div class="muted">Voice Call (WebRTC)</div>
+        <div style="margin-top:14px; border-top:1px solid var(--line); padding-top:14px;">
+          <div class="h" style="font-size:13px; font-weight:900; margin-bottom:8px;">Voice Call (WebRTC)</div>
+
           <div id="incomingCall" class="callBanner">📞 Incoming call request…</div>
           <div id="liveCall" class="callLive">✅ Call connected (audio live)</div>
-          <div style="margin-top:10px;">
-            <button id="btnAccept" onclick="acceptCall()" disabled>Accept</button>
-            <button id="btnReject" onclick="rejectCall()" disabled>Reject</button>
+
+          <div class="row tight" style="gap:8px; flex-wrap:wrap;">
+            <button id="btnAccept" class="btnPrimary" onclick="acceptCall()" disabled>Accept</button>
+            <button id="btnReject" class="btnDanger" onclick="rejectCall()" disabled>Reject</button>
             <button id="btnHangup" onclick="hangupCall()" disabled>Hang up</button>
           </div>
+
           <audio id="remoteAudio" autoplay playsinline></audio>
-          <div class="muted" style="margin-top:8px;">
-            Mic permission is requested when you Accept.
-          </div>
+          <div class="helper">Mic permission is requested when you press Accept.</div>
         </div>
+
+        <div id="log"></div>
       </div>
     </div>
-
-    <div id="log"></div>
   </div>
 
 <script>
 const WS_PROTO = location.protocol === "https:" ? "wss" : "ws";
 
 const wsStateEl = document.getElementById("wsState");
+const wsDot = document.getElementById("wsDot");
+
 const orderSelect = document.getElementById("orderSelect");
 const chatEl = document.getElementById("chat");
 const logEl = document.getElementById("log");
 const joinedPill = document.getElementById("joinedPill");
 const statusLine = document.getElementById("statusLine");
+
+const sumLane = document.getElementById("sumLane");
+const sumStatus = document.getElementById("sumStatus");
+const sumTotal = document.getElementById("sumTotal");
 
 const incomingCallEl = document.getElementById("incomingCall");
 const liveCallEl = document.getElementById("liveCall");
@@ -931,22 +1149,44 @@ const btnReject = document.getElementById("btnReject");
 const btnHangup = document.getElementById("btnHangup");
 const remoteAudio = document.getElementById("remoteAudio");
 
-function log(line){ logEl.textContent += `[${new Date().toLocaleTimeString()}] ${line}\\n`; }
-function chat(who, text){
-  const div = document.createElement("div");
-  div.className = "msg";
-  div.innerHTML = `<b>${who}:</b> ${text}`;
-  chatEl.appendChild(div);
+function setWsState(label, level){
+  wsStateEl.textContent = label;
+  wsDot.className = "dot " + (level || "");
+}
+function log(line){ logEl.textContent += `[${new Date().toLocaleTimeString()}] ${line}\\n`; logEl.scrollTop = logEl.scrollHeight; }
+
+function bubble(who, text){
+  const wrap = document.createElement("div");
+  wrap.className = "bubbleWrap";
+
+  const b = document.createElement("div");
+  b.className = "bubble";
+
+  let cls = "";
+  const w = (who || "").toUpperCase();
+  if (w.includes("CASHIER")) cls = "me";
+  else if (w.includes("SYSTEM")) cls = "sys";
+
+  wrap.classList.add(cls);
+  b.innerHTML = `<small>${who}</small>${escapeHtml(text)}`;
+  wrap.appendChild(b);
+  chatEl.appendChild(wrap);
   chatEl.scrollTop = chatEl.scrollHeight;
 }
 
-// Generate an ephemeral cashier ID for the demo session.
+function escapeHtml(s){
+  return (s ?? "").toString().replace(/[&<>"']/g, m => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[m]));
+}
+
+// Ephemeral cashier id
 const cashierId = "cashier_" + (crypto.randomUUID ? crypto.randomUUID().slice(0,8) : Math.random().toString(36).slice(2,10));
 document.getElementById("cashier").textContent = cashierId;
 
 let orderWs = null;
-let callSigWs = null;        // signaling websocket for WebRTC
-let pc = null;               // RTCPeerConnection
+let callSigWs = null;
+let pc = null;
 let currentOrderId = null;
 
 async function refreshOrders(){
@@ -958,6 +1198,9 @@ async function refreshOrders(){
     const opt = document.createElement("option");
     opt.value = o.order_id;
     opt.textContent = `Order ${o.order_id} | lane=${o.lane_id} | status=${o.status} | total=$${(o.total_cents/100).toFixed(2)}`;
+    opt.dataset.lane = o.lane_id ?? "";
+    opt.dataset.status = o.status ?? "";
+    opt.dataset.total = o.total_cents ?? 0;
     orderSelect.appendChild(opt);
   });
 
@@ -967,8 +1210,27 @@ async function refreshOrders(){
     opt.textContent = "No orders yet";
     orderSelect.appendChild(opt);
   }
+
+  // preview selected summary
+  updateSummaryFromSelected();
 }
 refreshOrders();
+
+orderSelect.addEventListener("change", updateSummaryFromSelected);
+
+function updateSummaryFromSelected(){
+  const opt = orderSelect.selectedOptions?.[0];
+  if (!opt || !opt.value){
+    sumLane.textContent = "—";
+    sumStatus.textContent = "—";
+    sumTotal.textContent = "—";
+    return;
+  }
+  sumLane.textContent = opt.dataset.lane || "—";
+  sumStatus.textContent = opt.dataset.status || "—";
+  const cents = parseInt(opt.dataset.total || "0", 10);
+  sumTotal.textContent = `$${(cents/100).toFixed(2)}`;
+}
 
 function joinSelected(){
   const oid = orderSelect.value;
@@ -977,7 +1239,6 @@ function joinSelected(){
 }
 
 function joinOrder(oid){
-  // Close previous sockets / call resources
   if (orderWs) { try { orderWs.close(); } catch(e){} }
   if (callSigWs) { try { callSigWs.close(); } catch(e){} }
   cleanupCallUI(true);
@@ -985,31 +1246,37 @@ function joinOrder(oid){
   currentOrderId = oid;
   chatEl.innerHTML = "";
   joinedPill.textContent = `Joined: ${oid}`;
-  wsStateEl.textContent = "WS: connecting…";
+  setWsState("WS: connecting…", "warn");
   log(`Joining order ${oid}...`);
 
   // Order chat WS
   orderWs = new WebSocket(`${WS_PROTO}://${location.host}/ws/order/${oid}/cashier?cashier_id=${encodeURIComponent(cashierId)}`);
 
-  orderWs.onopen = () => { wsStateEl.textContent = "WS: connected"; log("Order WS connected"); };
-  orderWs.onerror = () => { wsStateEl.textContent = "WS: error"; log("Order WS error"); };
-  orderWs.onclose = () => { wsStateEl.textContent = "WS: closed"; log("Order WS closed"); };
+  orderWs.onopen = () => { setWsState("WS: connected", "good"); log("Order WS connected"); };
+  orderWs.onerror = () => { setWsState("WS: error", "bad"); log("Order WS error"); };
+  orderWs.onclose = () => { setWsState("WS: closed", "bad"); log("Order WS closed"); };
 
   orderWs.onmessage = (ev) => {
     const msg = JSON.parse(ev.data);
 
-    if (msg.type === "chat") chat(msg.from, msg.text);
+    if (msg.type === "chat") bubble(msg.from, msg.text);
 
     if (msg.type === "order_state") {
       statusLine.textContent = msg.status || "—";
+      sumStatus.textContent = msg.status || "—";
+      if (msg.lane_id != null) sumLane.textContent = msg.lane_id;
+
       if (msg.items_text != null) document.getElementById("items").value = msg.items_text;
-      if (msg.total_cents != null) document.getElementById("total").value = (msg.total_cents/100).toFixed(2);
+      if (msg.total_cents != null){
+        document.getElementById("total").value = (msg.total_cents/100).toFixed(2);
+        sumTotal.textContent = `$${(msg.total_cents/100).toFixed(2)}`;
+      }
       log(JSON.stringify(msg));
     }
 
     if (msg.type === "payment_status") {
       statusLine.textContent = `PAYMENT: ${msg.status} (${msg.payment_method || "n/a"})`;
-      chat("SYSTEM", `Payment ${msg.status}. Method: ${msg.payment_method || "n/a"}`);
+      bubble("SYSTEM", `Payment ${msg.status}. Method: ${msg.payment_method || "n/a"}`);
       log(JSON.stringify(msg));
     }
   };
@@ -1027,12 +1294,11 @@ function joinOrder(oid){
       incomingCallEl.style.display = "block";
       btnAccept.disabled = false;
       btnReject.disabled = false;
-      chat("SYSTEM", "📞 Customer is requesting a voice call.");
+      bubble("SYSTEM", "📞 Customer is requesting a voice call.");
       return;
     }
 
     if (msg.type === "webrtc_offer") {
-      // Cashier is callee -> set remote offer, create/send answer.
       await ensurePeerConnection();
       await pc.setRemoteDescription(msg.offer);
       const answer = await pc.createAnswer();
@@ -1047,7 +1313,7 @@ function joinOrder(oid){
     }
 
     if (msg.type === "hangup") {
-      chat("SYSTEM", "Call ended.");
+      bubble("SYSTEM", "Call ended.");
       cleanupCallUI(false);
       return;
     }
@@ -1056,10 +1322,25 @@ function joinOrder(oid){
 
 function sendCashierMsg(){
   if (!orderWs || !currentOrderId) return;
-  const text = document.getElementById("cashierMsg").value.trim();
+  const inp = document.getElementById("cashierMsg");
+  const text = inp.value.trim();
   if (!text) return;
   orderWs.send(JSON.stringify({type:"chat", from:"CASHIER", text}));
-  document.getElementById("cashierMsg").value = "";
+  inp.value = "";
+  bubble("CASHIER", text);
+}
+
+function addAmount(x){
+  const el = document.getElementById("total");
+  const v = parseFloat(el.value || "0");
+  const next = (Number.isFinite(v) ? v : 0) + x;
+  el.value = next.toFixed(2);
+}
+function roundTotal(){
+  const el = document.getElementById("total");
+  const v = parseFloat(el.value || "0");
+  if (!Number.isFinite(v)) return;
+  el.value = Math.round(v).toFixed(2);
 }
 
 async function confirmTotal(){
@@ -1078,8 +1359,8 @@ async function confirmTotal(){
   const data = await res.json();
   if (data.error) return alert(data.error);
 
-  statusLine.textContent = "Payment request sent to customer…";
-  chat("SYSTEM", "Payment request sent to customer.");
+  statusLine.textContent = "Payment request sent…";
+  bubble("SYSTEM", "✅ Payment request sent to customer.");
   refreshOrders();
 }
 
@@ -1089,29 +1370,25 @@ async function confirmTotal(){
 async function ensurePeerConnection(){
   if (pc) return;
 
-  // STUN server helps with NAT traversal (demo-level).
   pc = new RTCPeerConnection({
     iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
   });
 
-  // Play the remote audio stream when received.
   pc.ontrack = (event) => {
     remoteAudio.srcObject = event.streams[0];
   };
 
-  // Send ICE candidates to the customer via signaling.
   pc.onicecandidate = (event) => {
     if (event.candidate && callSigWs?.readyState === 1) {
       callSigWs.send(JSON.stringify({ type:"webrtc_ice", candidate: event.candidate }));
     }
   };
 
-  // Request microphone and attach audio track(s).
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
   stream.getAudioTracks().forEach(t => pc.addTrack(t, stream));
 }
 
-function cleanupCallUI(fullReset){
+function cleanupCallUI(){
   try { pc?.close(); } catch(e){}
   pc = null;
 
@@ -1121,10 +1398,6 @@ function cleanupCallUI(fullReset){
   btnReject.disabled = true;
   btnHangup.disabled = true;
   remoteAudio.srcObject = null;
-
-  if (fullReset){
-    // Reserved for any future hard reset behavior.
-  }
 }
 
 async function acceptCall(){
@@ -1136,36 +1409,36 @@ async function acceptCall(){
   btnAccept.disabled = true;
   btnReject.disabled = true;
 
-  // Notify customer to start offer flow.
   callSigWs.send(JSON.stringify({ type:"call_accept" }));
-  chat("SYSTEM", "✅ Call accepted. Connecting audio…");
+  bubble("SYSTEM", "✅ Call accepted. Connecting audio…");
 
   try {
     await ensurePeerConnection();
   } catch(e){
-    chat("SYSTEM", "❌ Microphone permission denied or unavailable.");
-    cleanupCallUI(false);
+    bubble("SYSTEM", "❌ Microphone permission denied or unavailable.");
+    cleanupCallUI();
     callSigWs.send(JSON.stringify({ type:"hangup" }));
   }
 }
 
 function rejectCall(){
   if (!callSigWs) return;
-  chat("SYSTEM", "Call rejected.");
+  bubble("SYSTEM", "Call rejected.");
   callSigWs.send(JSON.stringify({ type:"call_reject" }));
-  cleanupCallUI(false);
+  cleanupCallUI();
 }
 
 function hangupCall(){
   if (!callSigWs) return;
   callSigWs.send(JSON.stringify({ type:"hangup" }));
-  chat("SYSTEM", "Call ended.");
-  cleanupCallUI(false);
+  bubble("SYSTEM", "Call ended.");
+  cleanupCallUI();
 }
 </script>
 </body>
 </html>
 """
+
 
 # -----------------------------------------------------------------------------
 # CUSTOMER UI
