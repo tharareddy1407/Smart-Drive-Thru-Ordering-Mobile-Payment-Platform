@@ -135,150 +135,214 @@ async def relay_call(order_id: str, sender_role: str, payload: dict) -> None:
 # ----------------------------------------------------------------------------
 # HTML Pages
 # ----------------------------------------------------------------------------
-HOME_HTML = """"<!doctype html>
-<html>
+HOME_HTML = """
+<!doctype html>
+<html lang="en">
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Smart Drive-Thru</title>
+  <title>Smart Drive-Thru Ordering Platform</title>
 
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial;
+    :root{
+      --text: rgba(255,255,255,0.96);
+      --muted: rgba(255,255,255,0.82);
+      --shadow: 0 22px 70px rgba(0,0,0,0.28);
     }
 
-    body {
-      background: #0b1220;
-      overflow-x: hidden;
+    *{ box-sizing:border-box; margin:0; padding:0; }
+    html, body{ height:100%; font-family: Arial, sans-serif; }
+
+    body{
+      background-color:#0b1220;
+      background-image:
+        linear-gradient(rgba(0,0,0,0.10), rgba(0,0,0,0.22)),
+        url('/static/drive_thru_bg.png?v=2');
+      background-repeat:no-repeat;
+      background-size: cover;
+      background-position: center center;
+      overflow:hidden;
     }
 
-    /* HERO */
-    .hero {
-      min-height: 100svh; /* fixes mobile viewport bug */
-      width: 100%;
-      background-image: url("/static/BG.png");
-      background-size: contain;        /* IMPORTANT */
-      background-position: center top; /* keeps SMART visible */
-      background-repeat: no-repeat;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      padding-top: 5vh;
-      text-align: center;
+    .hero{
+      min-height: 100svh;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      padding: 18px;
+      text-align:center;
+      position: relative;
     }
 
-    /* Title spacing is handled by image itself */
-
-    .subtitle {
-      max-width: 720px;
-      margin-top: 2rem;
-      padding: 0 1rem;
-      color: rgba(255,255,255,0.9);
-      font-size: clamp(14px, 2.5vw, 18px);
-      line-height: 1.5;
-    }
-
-    /* BUTTON GROUP */
-    .role-buttons {
-      margin-top: 2rem;
-      display: flex;
-      gap: 1.2rem;
+    .circleRow{
+      display:flex;
+      gap: 28px;
       flex-wrap: wrap;
-      justify-content: center;
+      align-items:center;
+      justify-content:center;
+      margin-top: 130px;
     }
 
-    .role-btn {
-      width: 96px;
-      height: 96px;
-      border-radius: 50%;
-      border: 1px solid rgba(255,255,255,0.35);
-      background: rgba(15, 25, 40, 0.75);
-      backdrop-filter: blur(10px);
-      color: #fff;
-      font-size: 15px;
-      font-weight: 600;
+    .circleBtn{
+      width: 160px;
+      height: 160px;
+      border-radius: 999px;
+
+      border: 2px solid rgba(255,255,255,0.20);
+      background: rgba(120,140,160,0.40);
+      backdrop-filter: blur(10px) saturate(140%);
+      -webkit-backdrop-filter: blur(10px) saturate(140%);
+
+      color: var(--text);
+      font-size: 22px;
+      font-weight: 800;
       cursor: pointer;
-      transition: all 0.25s ease;
+
+      box-shadow: var(--shadow);
+      transition: transform .16s ease, background .16s ease, border .16s ease;
     }
 
-    .role-btn:hover {
-      transform: translateY(-4px) scale(1.04);
-      background: rgba(30, 60, 120, 0.85);
+    .circleBtn:hover{
+      transform: translateY(-4px) scale(1.03);
+      background: rgba(120,140,160,0.55);
+      border-color: rgba(255,255,255,0.28);
     }
 
-    /* INFO PANEL */
-    .info {
-      margin-top: 1.5rem;
-      max-width: 720px;
-      padding: 0 1rem;
-      color: rgba(255,255,255,0.85);
-      font-size: 15px;
-      min-height: 40px;
+    .popover{
+      display:none;
+      margin-top: 16px;
+      width: min(680px, 92vw);
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: rgba(0,0,0,0.55);
+      border: 1px solid rgba(255,255,255,0.16);
+      color: rgba(255,255,255,0.90);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px) saturate(140%);
+      -webkit-backdrop-filter: blur(12px) saturate(140%);
+      line-height: 1.4;
+      font-size: 16px;
+    }
+    .popover.show{ display:block; }
+
+    .actions{
+      margin-top: 10px;
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content:center;
     }
 
-    .tip {
-      margin-top: auto;
-      padding: 1.5rem 1rem;
-      font-size: 13px;
-      color: rgba(255,255,255,0.65);
+    .linkBtn{
+      text-decoration:none;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-weight: 800;
+      color: rgba(255,255,255,0.92);
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.16);
+      transition: transform .12s ease, background .12s ease;
+    }
+    .linkBtn:hover{
+      transform: translateY(-1px);
+      background: rgba(255,255,255,0.14);
     }
 
-    /* MOBILE TWEAKS */
-    @media (max-width: 640px) {
-      .hero {
-        background-size: contain;
-        padding-top: 6vh;
+    .tip{
+      position: absolute;
+      bottom: 20px;
+      left: 0;
+      right: 0;
+      padding: 0 14px;
+      font-size: 14px;
+      color: var(--muted);
+      text-shadow: 0 10px 24px rgba(0,0,0,0.45);
+    }
+
+    @media (max-width: 520px){
+      body{ overflow:auto; }
+
+      .circleRow{
+        margin-top: 160px;
+        gap: 18px;
       }
 
-      .role-btn {
-        width: 84px;
-        height: 84px;
-        font-size: 14px;
+      .circleBtn{
+        width: 120px;
+        height: 120px;
+        font-size: 18px;
+      }
+
+      .tip{
+        position: static;
+        margin-top: 18px;
       }
     }
   </style>
 </head>
 
 <body>
-  <section class="hero">
+  <div class="hero">
 
-    <div class="subtitle">
-      Ordering & mobile payment — all without opening the car window until pickup.
+    <div class="circleRow">
+      <button type="button" class="circleBtn" data-role="lane">Lane</button>
+      <button type="button" class="circleBtn" data-role="customer">Customer</button>
+      <button type="button" class="circleBtn" data-role="cashier">Cashier</button>
     </div>
 
-    <div class="role-buttons">
-      <button class="role-btn" onclick="showInfo('lane')">Lane</button>
-      <button class="role-btn" onclick="showInfo('customer')">Customer</button>
-      <button class="role-btn" onclick="showInfo('cashier')">Cashier</button>
-    </div>
-
-    <div class="info" id="info"></div>
+    <div class="popover" id="infoBox"></div>
 
     <div class="tip">
       Tip: Use phone for Customer and laptop for Cashier. WebRTC mic needs HTTPS (or localhost).
     </div>
-
-  </section>
+  </div>
 
   <script>
-    function showInfo(role) {
-      const info = document.getElementById("info");
-      if (role === "lane") {
-        info.innerHTML = "Open a lane screen to get the rotating 4-digit station code.";
-      } else if (role === "customer") {
-        info.innerHTML = "Check-in, enter code, chat/call with cashier, and pay securely.";
-      } else {
-        info.innerHTML = "Join the order, confirm total, and send payment request.";
+    document.addEventListener("DOMContentLoaded", () => {
+      const box = document.getElementById("infoBox");
+      const buttons = document.querySelectorAll(".circleBtn");
+
+      function render(role){
+        box.classList.add("show");
+
+        if(role === "lane"){
+          box.innerHTML = `
+            <b>Lane:</b> Open a lane screen to get the rotating 4-digit station code.
+            <div class="actions">
+              <a class="linkBtn" href="/lane/L1">Open Lane L1 →</a>
+              <a class="linkBtn" href="/lane/L2">Open Lane L2 →</a>
+            </div>
+          `;
+        } else if(role === "customer"){
+          box.innerHTML = `
+            <b>Customer:</b> Check-in, enter code, chat/call with cashier, and pay securely.
+            <div class="actions">
+              <a class="linkBtn" href="/customer">Open Customer Portal →</a>
+            </div>
+          `;
+        } else if(role === "cashier"){
+          box.innerHTML = `
+            <b>Cashier:</b> Join the order, confirm total, and send payment request.
+            <div class="actions">
+              <a class="linkBtn" href="/cashier">Open Cashier Console →</a>
+            </div>
+          `;
+        }
       }
-    }
+
+      buttons.forEach(btn => {
+        btn.addEventListener("click", () => {
+          const role = btn.getAttribute("data-role");
+          render(role);
+        });
+      });
+    });
   </script>
 </body>
 </html>
 """
+
 
 
 
