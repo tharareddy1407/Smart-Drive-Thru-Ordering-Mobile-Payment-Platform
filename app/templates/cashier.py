@@ -12,11 +12,11 @@ CASHIER_HTML = r"""
   <meta charset="utf-8"/>
   <title>Cashier Console</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
   <style>
     :root{
       --bg:#0b1020;
       --card:#111a33;
-      --card2:#0f1730;
       --text:#e9ecf5;
       --muted:#a9b3d1;
       --line:rgba(255,255,255,.10);
@@ -29,7 +29,9 @@ CASHIER_HTML = r"""
       --shadow: 0 10px 30px rgba(0,0,0,.35);
       --radius:16px;
     }
+
     *{box-sizing:border-box}
+
     body{
       margin:0;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
@@ -44,28 +46,31 @@ CASHIER_HTML = r"""
 
     /* Top bar */
     .topbar{
-      display:flex; align-items:center; justify-content:space-between;
-      gap:12px; padding:14px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:14px 16px;
       background:linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
       border:1px solid var(--line);
       border-radius:var(--radius);
       box-shadow:var(--shadow);
-      position:sticky; top:12px; z-index:10;
+      position:sticky;
+      top:12px;
+      z-index:10;
       backdrop-filter: blur(10px);
     }
-    .brand{
-      display:flex; align-items:center; gap:10px;
-    }
+
+    .brand{display:flex; align-items:center; gap:10px;}
     .logo{
       width:38px; height:38px; border-radius:12px;
       background: linear-gradient(135deg, var(--accent), var(--accent2));
       box-shadow: 0 8px 24px rgba(124,58,237,.35);
     }
-    .title{
-      line-height:1.1;
-    }
-    .title h2{margin:0; font-size:16px; font-weight:800; letter-spacing:.2px;}
+    .title{line-height:1.1;}
+    .title h2{margin:0; font-size:16px; font-weight:900; letter-spacing:.2px;}
     .title .sub{margin-top:2px; font-size:12px; color:var(--muted);}
+
     .meta{
       display:flex; align-items:center; gap:10px; flex-wrap:wrap;
       justify-content:flex-end;
@@ -79,6 +84,7 @@ CASHIER_HTML = r"""
       font-size:12px; color:var(--text);
       white-space:nowrap;
     }
+
     .dot{
       width:10px; height:10px; border-radius:50%;
       background: #64748b;
@@ -87,6 +93,40 @@ CASHIER_HTML = r"""
     .dot.good{ background:var(--good); box-shadow:0 0 0 4px rgba(34,197,94,.15); }
     .dot.warn{ background:var(--warn); box-shadow:0 0 0 4px rgba(245,158,11,.15); }
     .dot.bad { background:var(--bad); box-shadow:0 0 0 4px rgba(239,68,68,.15); }
+
+    /* =========================
+       NEW: Cashier Progress Bar
+       ========================= */
+    .progressWrap{
+      margin-top: 14px;
+      padding: 10px 12px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.20);
+      border-radius: 14px;
+      backdrop-filter: blur(12px);
+    }
+    .progressTop{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.78);
+    }
+    .progressBar{
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.14);
+      overflow:hidden;
+      margin-top: 8px;
+    }
+    .progressFill{
+      height:100%;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(124,58,237,.95), rgba(6,182,212,.85), rgba(34,197,94,.75));
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.12) inset, 0 10px 24px rgba(0,0,0,.30);
+      transition: width .35s ease;
+    }
 
     /* Layout */
     .grid{
@@ -113,9 +153,7 @@ CASHIER_HTML = r"""
       border-bottom:1px solid var(--line);
       background: rgba(255,255,255,.03);
     }
-    .cardHeader .h{
-      font-size:13px; font-weight:800; letter-spacing:.2px;
-    }
+    .cardHeader .h{ font-size:13px; font-weight:900; letter-spacing:.2px; }
     .cardBody{ padding:14px; }
 
     label{ display:block; font-size:12px; color:var(--muted); margin:10px 0 6px; }
@@ -141,7 +179,7 @@ CASHIER_HTML = r"""
       background: rgba(255,255,255,.06);
       color:var(--text);
       cursor:pointer;
-      font-weight:700;
+      font-weight:800;
       transition:.15s ease;
       white-space:nowrap;
     }
@@ -157,9 +195,7 @@ CASHIER_HTML = r"""
       background: rgba(239,68,68,.12);
       border-color: rgba(239,68,68,.35);
     }
-    .btnGhost{
-      background: transparent;
-    }
+    .btnGhost{ background: transparent; }
     .helper{ font-size:12px; color:var(--muted); margin-top:6px; }
 
     /* Order summary */
@@ -187,9 +223,7 @@ CASHIER_HTML = r"""
       border:1px solid var(--line);
       background: rgba(0,0,0,.20);
     }
-    .bubbleWrap{
-      display:flex; margin:8px 0;
-    }
+    .bubbleWrap{ display:flex; margin:8px 0; }
     .bubble{
       max-width: 78%;
       padding:10px 12px;
@@ -204,7 +238,7 @@ CASHIER_HTML = r"""
       margin-bottom:4px;
       color:var(--muted);
       font-size:11px;
-      font-weight:800;
+      font-weight:900;
       letter-spacing:.2px;
     }
     .me{ justify-content:flex-end; }
@@ -274,6 +308,15 @@ CASHIER_HTML = r"""
     </div>
   </div>
 
+  <!-- NEW: progress bar -->
+  <div class="progressWrap">
+    <div class="progressTop">
+      <div id="progressText">Progress: 0/3</div>
+      <div id="progressHint" style="opacity:.85;">Start with “Refresh”.</div>
+    </div>
+    <div class="progressBar"><div class="progressFill" id="progressFill"></div></div>
+  </div>
+
   <div class="grid">
     <!-- LEFT: Orders + Chat -->
     <div class="card">
@@ -312,7 +355,7 @@ CASHIER_HTML = r"""
           <button class="btnPrimary" style="flex:0 0 auto;" onclick="sendCashierMsg()">Send</button>
         </div>
 
-        <div class="helper">Tip: Join an order first, then chat + confirm total to trigger a payment request.</div>
+        <div class="helper">Tip: Refresh → Join an order → Confirm total to send payment request.</div>
       </div>
     </div>
 
@@ -384,11 +427,38 @@ const btnHangup = document.getElementById("btnHangup");
 const remoteAudio = document.getElementById("remoteAudio");
 let callQueued = false;
 
+/* ----------------------------
+   NEW: Cashier Progress
+   Steps: 1) Refresh  2) Join  3) Send Payment
+-----------------------------*/
+const progressFill = document.getElementById("progressFill");
+const progressText = document.getElementById("progressText");
+const progressHint = document.getElementById("progressHint");
+
+const stepDone = { refresh:false, join:false, pay:false };
+
+function updateProgress(hint){
+  const total = 3;
+  const done = Object.values(stepDone).filter(Boolean).length;
+  const pct = Math.round((done/total) * 100);
+  if (progressFill) progressFill.style.width = pct + "%";
+  if (progressText) progressText.textContent = `Progress: ${done}/${total}`;
+  if (hint && progressHint) progressHint.textContent = hint;
+}
+function setStepDone(step, hint){
+  if (!stepDone[step]) stepDone[step] = true;
+  updateProgress(hint);
+}
+updateProgress("Start with “Refresh”.");
+
 function setWsState(label, level){
   wsStateEl.textContent = label;
   wsDot.className = "dot " + (level || "");
 }
-function log(line){ logEl.textContent += `[${new Date().toLocaleTimeString()}] ${line}\\n`; logEl.scrollTop = logEl.scrollHeight; }
+function log(line){
+  logEl.textContent += `[${new Date().toLocaleTimeString()}] ${line}\\n`;
+  logEl.scrollTop = logEl.scrollHeight;
+}
 
 function bubble(who, text){
   const wrap = document.createElement("div");
@@ -446,8 +516,10 @@ async function refreshOrders(){
     orderSelect.appendChild(opt);
   }
 
-  // preview selected summary
   updateSummaryFromSelected();
+
+  // ✅ progress
+  setStepDone("refresh", "Now select the order and click “Join”.");
 }
 refreshOrders();
 
@@ -479,6 +551,10 @@ function joinOrder(oid){
   cleanupCallUI(true);
 
   currentOrderId = oid;
+
+  // ✅ progress
+  setStepDone("join", "Connected. Confirm total to send payment.");
+
   chatEl.innerHTML = "";
   joinedPill.textContent = `Joined: ${oid}`;
   setWsState("WS: connecting…", "warn");
@@ -529,6 +605,7 @@ function joinOrder(oid){
       incomingCallEl.style.display = "block";
       btnAccept.disabled = false;
       btnReject.disabled = false;
+      btnQueue.disabled = false;
       bubble("SYSTEM", "📞 Customer is requesting a voice call.");
       return;
     }
@@ -596,12 +673,16 @@ async function confirmTotal(){
 
   statusLine.textContent = "Payment request sent…";
   bubble("SYSTEM", "✅ Payment request sent to customer.");
+
+  // ✅ progress
+  setStepDone("pay", "Payment request sent. Wait for customer approval.");
+
   refreshOrders();
 }
 
-// --------------------
-// WebRTC Voice Call (Cashier as callee)
-// --------------------
+/* --------------------
+   WebRTC Voice Call (Cashier as callee)
+---------------------*/
 async function ensurePeerConnection(){
   if (pc) return;
 
@@ -631,6 +712,7 @@ function cleanupCallUI(){
   liveCallEl.style.display = "none";
   btnAccept.disabled = true;
   btnReject.disabled = true;
+  btnQueue.disabled = true;
   btnHangup.disabled = true;
   remoteAudio.srcObject = null;
 }
@@ -643,6 +725,7 @@ async function acceptCall(){
   btnHangup.disabled = false;
   btnAccept.disabled = true;
   btnReject.disabled = true;
+  btnQueue.disabled = true;
 
   callSigWs.send(JSON.stringify({ type:"call_accept" }));
   bubble("SYSTEM", "✅ Call accepted. Connecting audio…");
@@ -664,9 +747,9 @@ function queueCall(){
   incomingCallEl.style.display = "block";
   incomingCallEl.textContent = "⏳ Call queued — customer waiting…";
 
-  btnAccept.disabled = false;   // accept later
-  btnReject.disabled = false;   // reject later
-  btnQueue.disabled  = true;    // already queued
+  btnAccept.disabled = false;
+  btnReject.disabled = false;
+  btnQueue.disabled  = true;
   btnHangup.disabled = false;
 
   callSigWs.send(JSON.stringify({
@@ -674,7 +757,7 @@ function queueCall(){
     message: "Please wait — cashier will join shortly."
   }));
 
-  chat("SYSTEM", "⏳ Call placed in queue. Customer asked to wait.");
+  bubble("SYSTEM", "⏳ Call placed in queue. Customer asked to wait.");
 }
 
 function rejectCall(){
