@@ -145,48 +145,48 @@ HOME_HTML = """
 
   <style>
     :root{
-      --glass: rgba(255,255,255,0.10);
-      --glass2: rgba(255,255,255,0.16);
-      --stroke: rgba(255,255,255,0.18);
-      --shadow: 0 20px 60px rgba(0,0,0,0.22);
-      --shadow2: 0 28px 80px rgba(0,0,0,0.30);
-      --text: rgba(255,255,255,0.95);
-      --muted: rgba(255,255,255,0.82);
+      --glass: rgba(255,255,255,0.14);
+      --glass2: rgba(255,255,255,0.18);
+      --stroke: rgba(255,255,255,0.22);
+      --shadow: 0 20px 60px rgba(0,0,0,0.25);
+      --text: rgba(255,255,255,0.96);
+      --muted: rgba(255,255,255,0.85);
+      --dark: rgba(0,0,0,0.30);
     }
 
-    *{ box-sizing:border-box; }
-    html, body { height:100%; margin:0; font-family: Arial, sans-serif; }
+    *{ box-sizing: border-box; }
+    html, body{ height:100%; margin:0; font-family: Arial, sans-serif; }
 
-    /* ✅ Background stays visible */
+    /* ✅ Background aligned properly */
     body{
       background-color:#0b1220;
-      background-image:
-        radial-gradient(circle at 20% 10%, rgba(0,0,0,0.08), rgba(0,0,0,0.22) 55%, rgba(0,0,0,0.32)),
-        url('/static/drive_thru_demo.png?v=140');
+      background-image: url('/static/drive_thru_demo.png?v=200');
       background-repeat:no-repeat;
-      background-size:cover;
-      background-position:center top;
+      background-size: cover;
+      background-position: center center;   /* ✅ key: centered alignment */
       overflow-x:hidden;
     }
 
-    /* ✅ Place buttons near top (adjust if you want higher/lower) */
+    /* ✅ Put buttons BELOW the hero headline area (SMART/DRIVE-THRU in image) */
     .page{
       min-height:100vh;
-      padding: 18px;
       display:flex;
-      align-items:flex-start;
       justify-content:center;
+      align-items:flex-start;
+      padding: 18px;
     }
+
+    /* Adjust this value to move buttons up/down under the image title */
     .wrap{
       width: min(1100px, 96vw);
-      margin-top: 120px; /* move buttons down/up */
+      margin-top: 220px; /* ✅ pushes below SMART headline */
       display:flex;
       flex-direction:column;
       align-items:center;
-      gap: 18px;
+      gap: 10px;
     }
 
-    /* ✅ Circle button row */
+    /* Circle row */
     .circleRow{
       display:flex;
       gap: 18px;
@@ -195,12 +195,19 @@ HOME_HTML = """
       flex-wrap:wrap;
     }
 
+    .circleWrap{
+      position: relative;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+    }
+
     .circleBtn{
-      width: 92px;
-      height: 92px;
+      width: 86px;
+      height: 86px;
       border-radius: 999px;
       border: 1px solid var(--stroke);
-      background: rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.12);
       color: var(--text);
       cursor: pointer;
 
@@ -213,8 +220,8 @@ HOME_HTML = """
       letter-spacing: -0.2px;
       font-size: 14px;
 
-      backdrop-filter: blur(18px) saturate(160%);
-      -webkit-backdrop-filter: blur(18px) saturate(160%);
+      backdrop-filter: blur(16px) saturate(160%);
+      -webkit-backdrop-filter: blur(16px) saturate(160%);
       box-shadow: 0 14px 34px rgba(0,0,0,0.18);
 
       transition: transform .12s ease, background .12s ease, border .12s ease, box-shadow .12s ease;
@@ -223,109 +230,112 @@ HOME_HTML = """
 
     .circleBtn:hover{
       transform: translateY(-2px);
-      background: rgba(255,255,255,0.12);
-      border-color: rgba(255,255,255,0.26);
+      background: rgba(255,255,255,0.16);
+      border-color: rgba(255,255,255,0.30);
       box-shadow: 0 22px 55px rgba(0,0,0,0.26);
     }
 
     .circleBtn.active{
-      background: rgba(255,255,255,0.16);
-      border-color: rgba(255,255,255,0.32);
-      box-shadow: 0 28px 80px rgba(0,0,0,0.30);
+      background: rgba(255,255,255,0.20);
+      border-color: rgba(255,255,255,0.34);
     }
 
-    /* ✅ Info panel (appears after click) */
-    .panel{
-      width: min(820px, 96vw);
-      border-radius: 22px;
-      padding: 18px 18px;
+    /* ✅ Tooltip popover (Google-apps style) */
+    .popover{
+      position:absolute;
+      top: calc(100% + 12px);
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(360px, 92vw);
 
-      background: rgba(255,255,255,0.10);
-      border: 1px solid rgba(255,255,255,0.18);
+      padding: 12px 12px;
+      border-radius: 14px;
 
-      backdrop-filter: blur(22px) saturate(160%);
-      -webkit-backdrop-filter: blur(22px) saturate(160%);
+      background: rgba(0,0,0,0.55);
+      border: 1px solid rgba(255,255,255,0.16);
       box-shadow: var(--shadow);
+
+      backdrop-filter: blur(14px) saturate(140%);
+      -webkit-backdrop-filter: blur(14px) saturate(140%);
 
       color: var(--text);
       display:none;
+      z-index: 50;
     }
 
-    .panel.show{ display:block; }
+    .popover.show{ display:block; }
 
-    .panelHead{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 12px;
-      margin-bottom: 10px;
+    /* arrow pointer */
+    .popover:before{
+      content:"";
+      position:absolute;
+      top:-8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 14px; height: 14px;
+      background: rgba(0,0,0,0.55);
+      border-left: 1px solid rgba(255,255,255,0.16);
+      border-top: 1px solid rgba(255,255,255,0.16);
+      transform: translateX(-50%) rotate(45deg);
+      backdrop-filter: blur(14px) saturate(140%);
+      -webkit-backdrop-filter: blur(14px) saturate(140%);
     }
 
-    .panelTitle{
-      font-size: 18px;
+    .popTitle{
       font-weight: 900;
-      margin: 0;
-    }
-
-    .pill{
-      font-size: 12px;
-      font-weight: 900;
-      padding: 5px 10px;
-      border-radius: 999px;
-      background: rgba(0,0,0,0.18);
-      border: 1px solid rgba(255,255,255,0.14);
-      color: rgba(255,255,255,0.90);
-      white-space: nowrap;
-    }
-
-    .panelText{
-      margin: 0 0 14px 0;
-      color: var(--muted);
-      line-height: 1.35;
       font-size: 14px;
-      text-shadow: 0 12px 28px rgba(0,0,0,0.35);
+      margin: 0 0 6px 0;
+      letter-spacing: -0.1px;
     }
 
-    .actions{
+    .popText{
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.35;
+      color: rgba(255,255,255,0.88);
+    }
+
+    .popActions{
+      margin-top: 10px;
       display:flex;
-      gap: 10px;
+      gap: 8px;
       flex-wrap: wrap;
     }
 
-    .actionLink{
+    .popLink{
       text-decoration:none;
       color: rgba(255,255,255,0.96);
       font-weight: 900;
-      padding: 12px 14px;
-      border-radius: 14px;
+      font-size: 12.5px;
 
-      background: rgba(0,0,0,0.12);
-      border: 1px solid rgba(255,255,255,0.14);
+      padding: 10px 12px;
+      border-radius: 12px;
+
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.16);
 
       transition: transform .12s ease, background .12s ease, border .12s ease;
-      display:inline-flex;
-      align-items:center;
-      gap: 8px;
     }
 
-    .actionLink:hover{
+    .popLink:hover{
       transform: translateY(-1px);
-      background: rgba(0,0,0,0.18);
+      background: rgba(255,255,255,0.14);
       border-color: rgba(255,255,255,0.22);
     }
 
     .tip{
-      margin-top: 8px;
+      margin-top: 10px;
       font-size: 13px;
-      color: rgba(255,255,255,0.80);
+      color: rgba(255,255,255,0.82);
       text-shadow: 0 12px 28px rgba(0,0,0,0.45);
       text-align:center;
+      max-width: 900px;
     }
 
+    /* ✅ Mobile: keep popover visible and centered */
     @media (max-width: 520px){
-      .wrap{ margin-top: 80px; }
-      .circleBtn{ width: 84px; height: 84px; font-size: 13px; }
-      .panel{ padding: 16px; }
+      .wrap{ margin-top: 170px; }
+      .circleBtn{ width: 80px; height: 80px; font-size: 13px; }
     }
   </style>
 </head>
@@ -334,23 +344,46 @@ HOME_HTML = """
   <div class="page">
     <div class="wrap">
 
-      <!-- ✅ 3 circle buttons only -->
+      <!-- ✅ Only 3 circle buttons below the image headline -->
       <div class="circleRow">
-        <button class="circleBtn" id="btnLane" onclick="showPanel('lane')">Lane</button>
-        <button class="circleBtn" id="btnCustomer" onclick="showPanel('customer')">Customer</button>
-        <button class="circleBtn" id="btnCashier" onclick="showPanel('cashier')">Cashier</button>
-      </div>
 
-      <!-- ✅ Info panel (changes based on click) -->
-      <div class="panel" id="panel">
-        <div class="panelHead">
-          <div class="panelTitle" id="panelTitle">—</div>
-          <div class="pill" id="panelPill">—</div>
+        <!-- Lane -->
+        <div class="circleWrap">
+          <button class="circleBtn" id="btnLane" onclick="togglePop('lane')">Lane</button>
+          <div class="popover" id="popLane">
+            <div class="popTitle">Lane</div>
+            <p class="popText">Open a lane screen to get the rotating 4-digit station code.</p>
+            <div class="popActions">
+              <a class="popLink" href="/lane/L1">Open Lane L1 →</a>
+              <a class="popLink" href="/lane/L2">Open Lane L2 →</a>
+            </div>
+          </div>
         </div>
 
-        <p class="panelText" id="panelText">—</p>
+        <!-- Customer -->
+        <div class="circleWrap">
+          <button class="circleBtn" id="btnCustomer" onclick="togglePop('customer')">Customer</button>
+          <div class="popover" id="popCustomer">
+            <div class="popTitle">Customer</div>
+            <p class="popText">Check-in, enter code, chat/call with cashier, and pay securely.</p>
+            <div class="popActions">
+              <a class="popLink" href="/customer">Open Customer Portal →</a>
+            </div>
+          </div>
+        </div>
 
-        <div class="actions" id="panelActions"></div>
+        <!-- Cashier -->
+        <div class="circleWrap">
+          <button class="circleBtn" id="btnCashier" onclick="togglePop('cashier')">Cashier</button>
+          <div class="popover" id="popCashier">
+            <div class="popTitle">Cashier</div>
+            <p class="popText">Join the order, confirm total, and send payment request.</p>
+            <div class="popActions">
+              <a class="popLink" href="/cashier">Open Cashier Console →</a>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <div class="tip">
@@ -361,70 +394,50 @@ HOME_HTML = """
   </div>
 
   <script>
-    const panel = document.getElementById("panel");
-    const panelTitle = document.getElementById("panelTitle");
-    const panelPill = document.getElementById("panelPill");
-    const panelText = document.getElementById("panelText");
-    const panelActions = document.getElementById("panelActions");
-
-    const btnLane = document.getElementById("btnLane");
-    const btnCustomer = document.getElementById("btnCustomer");
-    const btnCashier = document.getElementById("btnCashier");
-
-    function setActive(which){
-      [btnLane, btnCustomer, btnCashier].forEach(b => b.classList.remove("active"));
-      if (which === "lane") btnLane.classList.add("active");
-      if (which === "customer") btnCustomer.classList.add("active");
-      if (which === "cashier") btnCashier.classList.add("active");
+    function hideAll(){
+      document.getElementById("popLane").classList.remove("show");
+      document.getElementById("popCustomer").classList.remove("show");
+      document.getElementById("popCashier").classList.remove("show");
+      document.getElementById("btnLane").classList.remove("active");
+      document.getElementById("btnCustomer").classList.remove("active");
+      document.getElementById("btnCashier").classList.remove("active");
     }
 
-    function setActions(actions){
-      panelActions.innerHTML = "";
-      actions.forEach(a => {
-        const link = document.createElement("a");
-        link.className = "actionLink";
-        link.href = a.href;
-        link.innerHTML = a.label + " <span style='opacity:0.85;font-weight:900;'>→</span>";
-        panelActions.appendChild(link);
-      });
-    }
+    function togglePop(which){
+      const map = {
+        lane: ["btnLane","popLane"],
+        customer: ["btnCustomer","popCustomer"],
+        cashier: ["btnCashier","popCashier"]
+      };
 
-    function showPanel(which){
-      setActive(which);
-      panel.classList.add("show");
+      const [btnId, popId] = map[which];
+      const pop = document.getElementById(popId);
+      const btn = document.getElementById(btnId);
+      const isOpen = pop.classList.contains("show");
 
-      if (which === "lane"){
-        panelTitle.textContent = "Lane";
-        panelPill.textContent = "Display";
-        panelText.textContent = "Open a lane screen to get the rotating 4-digit station code.";
-        setActions([
-          { label: "Open Lane L1", href: "/lane/L1" },
-          { label: "Open Lane L2", href: "/lane/L2" }
-        ]);
-      }
+      hideAll();
 
-      if (which === "customer"){
-        panelTitle.textContent = "Customer";
-        panelPill.textContent = "Mobile";
-        panelText.textContent = "Check-in, enter the station code, chat/call with cashier, and pay securely.";
-        setActions([
-          { label: "Open Customer Portal", href: "/customer" }
-        ]);
-      }
-
-      if (which === "cashier"){
-        panelTitle.textContent = "Cashier";
-        panelPill.textContent = "POS + Agent";
-        panelText.textContent = "Join the order, confirm total, and send a payment request to the customer.";
-        setActions([
-          { label: "Open Cashier Console", href: "/cashier" }
-        ]);
+      if (!isOpen){
+        pop.classList.add("show");
+        btn.classList.add("active");
       }
     }
+
+    // close when clicking outside
+    document.addEventListener("click", (e) => {
+      const inside = e.target.closest(".circleWrap");
+      if (!inside) hideAll();
+    });
+
+    // close on ESC
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") hideAll();
+    });
   </script>
 </body>
 </html>
 """
+
 
 
 
