@@ -160,7 +160,7 @@ HOME_HTML = """
     /* ✅ Background aligned properly */
     body{
       background-color:#0b1220;
-      background-image: url('/static/drive_thru_demo.png?v=200');
+      background-image: url('/static/Background.png?v=200');
       background-repeat:no-repeat;
       background-size: cover;
       background-position: center center;   /* ✅ key: centered alignment */
@@ -437,6 +437,7 @@ HOME_HTML = """
 </body>
 </html>
 """
+
 
 
 
