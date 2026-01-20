@@ -389,56 +389,47 @@ LANE_HTML_TEMPLATE = """
 
   <style>
     :root {{
-      --bg1:#0b1220;
-      --bg2:#111a2e;
-      --accent:#7c5cff;
-      --accent2:#22c55e;
-      --text:#eaf0ff;
-      --muted: rgba(234,240,255,.72);
-      --card: rgba(255,255,255,.08);
-      --stroke: rgba(255,255,255,.16);
-      --shadow: 0 18px 50px rgba(0,0,0,.45);
+      /* Fast-food friendly palette (warm + welcoming) */
+      --bgTop: #3a2313;
+      --bgBottom: #1a0f08;
+
+      --accent: #ffb703;     /* warm yellow */
+      --accent2: #fb8500;    /* orange */
+
+      --text: #ffffff;
+      --muted: rgba(255,255,255,.78);
+
+      --card: rgba(255,255,255,.10);
+      --stroke: rgba(255,255,255,.18);
+      --shadow: 0 18px 55px rgba(0,0,0,.45);
+
       --radius: 22px;
     }}
 
     * {{ box-sizing: border-box; }}
+
     body {{
       margin: 0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
-      color: var(--text);
       min-height: 100vh;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      color: var(--text);
       overflow: hidden;
 
-      /* Option A: gradient-only background (no image needed) */
+      /* Warm, friendly background (no image needed) */
       background:
-        radial-gradient(1200px 600px at 20% 15%, rgba(124,92,255,.28), transparent 60%),
-        radial-gradient(900px 500px at 85% 25%, rgba(34,197,94,.22), transparent 55%),
-        radial-gradient(1000px 650px at 50% 110%, rgba(59,130,246,.18), transparent 60%),
-        linear-gradient(160deg, var(--bg1), var(--bg2));
-
-      /* Option B: use your lane background image (uncomment & set URL)
-      background:
-        linear-gradient(160deg, rgba(11,18,32,.88), rgba(17,26,46,.78)),
-        url("/static/lane-bg.jpg") center/cover no-repeat;
-      */
+        radial-gradient(900px 520px at 15% 20%, rgba(255,183,3,.20), transparent 60%),
+        radial-gradient(900px 520px at 85% 25%, rgba(251,133,0,.18), transparent 60%),
+        linear-gradient(180deg, var(--bgTop), var(--bgBottom));
     }}
 
-    /* subtle moving grid */
-    .grid {{
+    /* subtle decorative dots */
+    .sprinkle {{
       position: absolute; inset: 0;
-      background-image:
-        linear-gradient(to right, rgba(255,255,255,.06) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255,255,255,.06) 1px, transparent 1px);
-      background-size: 70px 70px;
+      background-image: radial-gradient(rgba(255,255,255,.10) 1px, transparent 1px);
+      background-size: 28px 28px;
       opacity: .18;
-      transform: translate3d(0,0,0);
-      animation: drift 14s linear infinite;
       pointer-events: none;
-      mask-image: radial-gradient(700px 400px at 50% 30%, #000 40%, transparent 70%);
-    }}
-    @keyframes drift {{
-      0% {{ transform: translate(0,0); }}
-      100% {{ transform: translate(-70px, -70px); }}
+      mask-image: radial-gradient(700px 420px at 50% 35%, #000 45%, transparent 75%);
     }}
 
     .wrap {{
@@ -451,23 +442,26 @@ LANE_HTML_TEMPLATE = """
 
     .topbar {{
       position: absolute;
-      top: 22px; left: 22px; right: 22px;
+      top: 18px; left: 18px; right: 18px;
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
       gap: 12px;
     }}
 
     .brand {{
-      display: flex; align-items: center; gap: 10px;
-      font-weight: 700;
-      letter-spacing: .3px;
-      opacity: .95;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      letter-spacing: .2px;
+      opacity: .98;
     }}
-    .dot {{
-      width: 12px; height: 12px; border-radius: 99px;
-      background: radial-gradient(circle at 30% 30%, #fff, var(--accent));
-      box-shadow: 0 0 0 6px rgba(124,92,255,.14);
+
+    .logo {{
+      width: 14px; height: 14px; border-radius: 999px;
+      background: radial-gradient(circle at 30% 30%, #fff, var(--accent2));
+      box-shadow: 0 0 0 7px rgba(251,133,0,.18);
     }}
 
     .pill {{
@@ -475,31 +469,31 @@ LANE_HTML_TEMPLATE = """
       align-items: center;
       gap: 10px;
       padding: 10px 14px;
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.06);
       border-radius: 999px;
-      backdrop-filter: blur(12px);
-      box-shadow: 0 10px 30px rgba(0,0,0,.22);
-      font-size: 14px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.16);
+      backdrop-filter: blur(10px);
       color: var(--muted);
+      font-size: 14px;
+      box-shadow: 0 12px 28px rgba(0,0,0,.22);
     }}
+
     .laneBadge {{
-      color: var(--text);
-      font-weight: 800;
-      letter-spacing: .8px;
+      font-weight: 900;
+      letter-spacing: .9px;
       padding: 6px 10px;
       border-radius: 999px;
-      background: linear-gradient(135deg, rgba(124,92,255,.35), rgba(34,197,94,.22));
-      border: 1px solid rgba(255,255,255,.18);
+      color: #1a0f08;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
     }}
 
     .card {{
-      width: min(860px, 100%);
+      width: min(920px, 100%);
       border-radius: var(--radius);
       background: var(--card);
       border: 1px solid var(--stroke);
       box-shadow: var(--shadow);
-      backdrop-filter: blur(18px);
+      backdrop-filter: blur(16px);
       overflow: hidden;
       position: relative;
     }}
@@ -507,79 +501,84 @@ LANE_HTML_TEMPLATE = """
     .card::before {{
       content:"";
       position:absolute; inset:-2px;
-      background: radial-gradient(600px 180px at 20% 10%, rgba(124,92,255,.22), transparent 60%),
-                  radial-gradient(520px 180px at 90% 30%, rgba(34,197,94,.18), transparent 60%);
+      background:
+        radial-gradient(700px 220px at 15% 0%, rgba(255,183,3,.22), transparent 60%),
+        radial-gradient(700px 220px at 90% 10%, rgba(251,133,0,.18), transparent 60%);
       pointer-events:none;
     }}
 
-    .cardInner {{
+    .inner {{
       position: relative;
       padding: 34px;
       display: grid;
       grid-template-columns: 1.2fr .8fr;
-      gap: 26px;
+      gap: 22px;
     }}
 
-    @media (max-width: 820px) {{
-      .cardInner {{ grid-template-columns: 1fr; }}
+    @media (max-width: 860px) {{
+      .inner {{ grid-template-columns: 1fr; }}
     }}
 
     .title {{
-      font-size: 28px;
-      margin: 0 0 6px 0;
+      margin: 0 0 8px 0;
+      font-size: 30px;
       letter-spacing: .2px;
     }}
+
     .subtitle {{
       margin: 0 0 18px 0;
       color: var(--muted);
-      line-height: 1.45;
+      line-height: 1.5;
+      font-size: 16px;
     }}
 
     .codeBox {{
       border-radius: 18px;
-      border: 1px solid rgba(255,255,255,.16);
-      background: rgba(0,0,0,.20);
-      padding: 18px 18px 16px 18px;
-      position: relative;
-      overflow: hidden;
+      padding: 18px;
+      background: rgba(255,255,255,.92);
+      color: #1a0f08;
+      border: 1px solid rgba(0,0,0,.08);
+      box-shadow: 0 18px 45px rgba(0,0,0,.22);
     }}
 
     .codeLabel {{
+      display: flex;
+      align-items: center;
+      gap: 10px;
       font-size: 13px;
-      color: rgba(234,240,255,.78);
-      letter-spacing: .35px;
       text-transform: uppercase;
+      letter-spacing: .4px;
+      color: rgba(26,15,8,.75);
       margin-bottom: 10px;
-      display:flex;
-      align-items:center;
-      gap:10px;
+      font-weight: 800;
     }}
+
     .pulse {{
-      width: 10px; height: 10px; border-radius: 99px;
+      width: 10px; height: 10px; border-radius: 999px;
       background: var(--accent2);
-      box-shadow: 0 0 0 0 rgba(34,197,94,.45);
+      box-shadow: 0 0 0 0 rgba(251,133,0,.35);
       animation: pulse 1.6s ease-out infinite;
     }}
+
     @keyframes pulse {{
-      0% {{ box-shadow: 0 0 0 0 rgba(34,197,94,.45); }}
-      100% {{ box-shadow: 0 0 0 14px rgba(34,197,94,0); }}
+      0% {{ box-shadow: 0 0 0 0 rgba(251,133,0,.40); }}
+      100% {{ box-shadow: 0 0 0 14px rgba(251,133,0,0); }}
     }}
 
     .code {{
-      font-size: clamp(56px, 7vw, 92px);
-      font-weight: 900;
-      letter-spacing: 10px;
-      line-height: 1.05;
       margin: 0;
-      text-shadow: 0 10px 25px rgba(0,0,0,.35);
+      font-weight: 950;
+      letter-spacing: 12px;
+      line-height: 1.05;
+      font-size: clamp(58px, 7vw, 98px);
     }}
 
     .meta {{
-      display: flex;
-      gap: 14px;
-      flex-wrap: wrap;
       margin-top: 14px;
-      color: var(--muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      color: rgba(26,15,8,.75);
       font-size: 14px;
     }}
 
@@ -589,8 +588,9 @@ LANE_HTML_TEMPLATE = """
       gap: 8px;
       padding: 10px 12px;
       border-radius: 14px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(26,15,8,.06);
+      border: 1px solid rgba(26,15,8,.08);
+      font-weight: 650;
     }}
 
     .icon {{
@@ -607,17 +607,17 @@ LANE_HTML_TEMPLATE = """
 
     .panel {{
       border-radius: 18px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.06);
       padding: 16px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.14);
     }}
 
     .panel h4 {{
       margin: 0 0 8px 0;
-      font-size: 14px;
-      letter-spacing: .3px;
-      color: rgba(234,240,255,.9);
+      font-size: 13px;
       text-transform: uppercase;
+      letter-spacing: .35px;
+      color: rgba(255,255,255,.92);
     }}
 
     .panel p {{
@@ -627,36 +627,51 @@ LANE_HTML_TEMPLATE = """
       font-size: 14px;
     }}
 
-    .footer {{
-      padding: 14px 22px;
-      border-top: 1px solid rgba(255,255,255,.10);
-      display:flex;
-      align-items:center;
-      justify-content: space-between;
-      color: rgba(234,240,255,.65);
-      font-size: 13px;
-      gap: 10px;
-    }}
-
     .kbd {{
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
       background: rgba(0,0,0,.25);
       border: 1px solid rgba(255,255,255,.14);
       padding: 4px 8px;
       border-radius: 10px;
-      color: rgba(234,240,255,.85);
+      color: rgba(255,255,255,.85);
+    }}
+
+    .footer {{
+      position: relative;
+      padding: 14px 22px;
+      border-top: 1px solid rgba(255,255,255,.10);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      color: rgba(255,255,255,.70);
+      font-size: 13px;
+    }}
+
+    .status {{
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }}
+
+    .statusDot {{
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 0 7px rgba(34,197,94,.18);
     }}
   </style>
 </head>
 
 <body>
-  <div class="grid"></div>
+  <div class="sprinkle"></div>
 
   <div class="wrap">
     <div class="topbar">
       <div class="brand">
-        <span class="dot"></span>
-        <span>EasyPay • Drive-Thru Station</span>
+        <span class="logo"></span>
+        <span>Drive-Thru Pairing</span>
       </div>
       <div class="pill">
         <span class="laneBadge">LANE {lane_id}</span>
@@ -665,11 +680,11 @@ LANE_HTML_TEMPLATE = """
     </div>
 
     <div class="card">
-      <div class="cardInner">
+      <div class="inner">
         <div>
-          <h2 class="title">Customer Pairing Code</h2>
+          <h2 class="title">Connect on Mobile</h2>
           <p class="subtitle">
-            Ask the customer to enter this code in the mobile app to connect to <b>Lane {lane_id}</b>.
+            Ask the customer to enter this code in the app to connect to <b>Lane {lane_id}</b>.
           </p>
 
           <div class="codeBox">
@@ -677,6 +692,7 @@ LANE_HTML_TEMPLATE = """
               <span class="pulse"></span>
               Active code
             </div>
+
             <p class="code">{code}</p>
 
             <div class="meta">
@@ -693,7 +709,7 @@ LANE_HTML_TEMPLATE = """
                   <path d="M4 12a8 8 0 1 0 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                   <path d="M4 4v6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                 </svg>
-                <span>Auto-refresh <span class="kbd">5s</span></span>
+                <span>Auto-refresh every <span class="kbd">5s</span></span>
               </div>
             </div>
           </div>
@@ -702,27 +718,22 @@ LANE_HTML_TEMPLATE = """
         <div class="right">
           <div class="panel">
             <h4>How it works</h4>
-            <p>After a successful connect (order created), the code rotates automatically for the next vehicle.</p>
+            <p>Once a customer connects and an order is created, the code rotates automatically for the next vehicle.</p>
           </div>
 
           <div class="panel">
-            <h4>Tip</h4>
-            <p>Keep this page fullscreen on the lane display for best visibility. (Press <span class="kbd">F11</span>)</p>
+            <h4>Lane tip</h4>
+            <p>Keep this display fullscreen for best visibility. Press <span class="kbd">F11</span>.</p>
           </div>
-
-          <!-- Optional: you can add a QR block later if you want -->
-          <!--
-          <div class="panel">
-            <h4>Quick Connect</h4>
-            <p>Scan QR in the app (optional feature).</p>
-          </div>
-          -->
         </div>
       </div>
 
       <div class="footer">
-        <span>Status: <b style="color:rgba(34,197,94,.95)">READY</b></span>
-        <span class="muted">Lane display • secure pairing</span>
+        <div class="status">
+          <span class="statusDot"></span>
+          <span>Status: <b>READY</b></span>
+        </div>
+        <span>Secure lane pairing • EasyPay</span>
       </div>
     </div>
   </div>
@@ -746,6 +757,7 @@ LANE_HTML_TEMPLATE = """
 </body>
 </html>
 """
+
 
 
 # -----------------------------------------------------------------------------
