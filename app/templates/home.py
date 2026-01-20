@@ -303,37 +303,6 @@ HOME_HTML = """
 <body>
   <div class="hero">
 
-    <!-- Pitch / positioning for companies -->
-    <div class="pitch" role="region" aria-label="Pitch">
-      <div class="pitchTitle">
-        <h1>Smart Drive-Thru Ordering & Mobile Payment Platform</h1>
-        <div class="badgeRow">
-          <span class="badge"><span class="dot warn"></span> Prototype</span>
-          <span class="badge"><span class="dot ok"></span> Real-time (Chat + Voice + Payment)</span>
-        </div>
-      </div>
-
-      <div class="pitchCopy">
-        A <b>mobile-first drive-thru experience</b> that reduces ordering friction by enabling customers to
-        <b>connect securely via a rotating lane code</b>, <b>talk to an agent</b>, and <b>pay on their phone</b> — without relying on
-        traditional speaker/window workflows.
-      </div>
-
-      <div class="kpiRow" aria-label="Why companies care">
-        <div class="kpi">
-          <div class="k">Why this matters</div>
-          <div class="v">Helps reduce speaker/mic failures, window delays, and payment handoff friction.</div>
-        </div>
-        <div class="kpi">
-          <div class="k">Operational value</div>
-          <div class="v">Improves order accuracy and throughput with a clear, guided customer flow.</div>
-        </div>
-        <div class="kpi">
-          <div class="k">Scalable design</div>
-          <div class="v">Lane-based pairing supports multi-lane setups with secure session handoffs.</div>
-        </div>
-      </div>
-    </div>
 
     <!-- Buttons + popover -->
     <div class="interactionArea">
