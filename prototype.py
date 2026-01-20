@@ -154,14 +154,26 @@ HOME_HTML = """
     html, body{ height:100%; font-family: Arial, sans-serif; }
 
     body{
-      background-color:#0b1220;
-      background-image:
-        linear-gradient(rgba(0,0,0,0.10), rgba(0,0,0,0.22)),
-        url('/static/BG.png?v=2');
-      background-repeat:no-repeat;
-      background-size: contain;
-      background-position: center center;
-    }
+  background-color:#0b1220;
+  background-image:
+    linear-gradient(rgba(0,0,0,0.10), rgba(0,0,0,0.22)),
+    url('/static/BG-desktop.png');
+  background-repeat:no-repeat;
+  background-size: contain;
+  background-position: center center;
+}
+
+/* Mobile background */
+@media (max-width: 768px){
+  body{
+    background-image:
+      linear-gradient(rgba(0,0,0,0.10), rgba(0,0,0,0.22)),
+      url('/static/BG-mobile.png');
+    background-size: contain;
+    background-position: center top;
+  }
+}
+
 
     .hero{
       min-height: 100svh;
