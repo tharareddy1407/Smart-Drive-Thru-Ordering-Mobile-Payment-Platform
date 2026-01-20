@@ -355,104 +355,133 @@ LANE_HTML_TEMPLATE = """
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Lane {lane_id} Code</title>
+  <title>Lane __LANE_ID__</title>
 
   <style>
-    /* keep your existing CSS... */
+    body { margin:0; font-family: Arial; background:#111a2e; color:#fff; padding:24px; }
+    h2 { margin:0 0 16px 0; }
 
-    /* Phone-safe tweaks */
-    .code { letter-spacing: 10px; word-break: break-word; }
+    .box {
+      max-width: 720px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.08);
+      border-radius: 18px;
+      padding: 18px;
+      backdrop-filter: blur(12px);
+    }
+
+    .big {
+      font-size: clamp(56px, 8vw, 96px);
+      font-weight: 900;
+      letter-spacing: 10px;
+      margin: 10px 0;
+      word-break: break-word;
+    }
+
+    .muted { color: rgba(255,255,255,.78); }
+
+    .meta { display:flex; gap:12px; flex-wrap:wrap; margin-top:12px; }
+    .metaItem {
+      display:flex; align-items:center; gap:8px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(0,0,0,.22);
+      border: 1px solid rgba(255,255,255,.12);
+      font-size: 14px;
+    }
+
+    /* ✅ prevents the “big clock” issue */
+    .icon, .metaItem svg {
+      width: 18px !important;
+      height: 18px !important;
+      flex: 0 0 18px;
+      display: inline-block;
+    }
+
     @media (max-width: 420px){
-      .code { letter-spacing: 6px; }
+      .big { letter-spacing: 6px; }
+      body { padding: 16px; }
     }
   </style>
 </head>
 
 <body>
-  <!-- keep your existing HTML... -->
+  <h2>Drive-Thru Station — Lane __LANE_ID__ <span class="muted" style="font-size:14px" id="clock"></span></h2>
 
-  <!-- Replace your expires element with these ids -->
-  <div class="meta">
-    <div class="metaItem">
-      <svg class="icon" viewBox="0 0 24 24" fill="none">
-        <path d="M12 8v5l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="2"/>
-      </svg>
-      <span>Expires at <b id="expiresLocal">--</b></span>
+  <div class="box">
+    <div class="muted">Enter this code in the app to connect:</div>
+    <div class="big">__CODE__</div>
+
+    <div class="meta">
+      <div class="metaItem">
+        <svg class="icon" viewBox="0 0 24 24" fill="none">
+          <path d="M12 8v5l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        <span>Expires at <b id="expiresLocal">--</b></span>
+      </div>
+
+      <div class="metaItem">
+        <svg class="icon" viewBox="0 0 24 24" fill="none">
+          <path d="M4 12a8 8 0 1 0 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M4 4v6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span>Expires in <b id="expiresIn">--:--</b></span>
+      </div>
     </div>
 
-    <div class="metaItem">
-      <svg class="icon" viewBox="0 0 24 24" fill="none">
-        <path d="M4 12a8 8 0 1 0 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <path d="M4 4v6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-      </svg>
-      <span>Expires in <b id="expiresIn">--:--</b></span>
-    </div>
+    <div class="muted" style="margin-top:10px;">Code rotates after a successful connect (order created).</div>
   </div>
 
   <script>
-    // ---- 1) Local clock (works on phone + lane screen)
+    // Local clock (works on phone too)
     const clockEl = document.getElementById("clock");
     function tickClock() {
       const d = new Date();
-      const hh = String(d.getHours()).padStart(2,"0");
-      const mm = String(d.getMinutes()).padStart(2,"0");
-      const ss = String(d.getSeconds()).padStart(2,"0");
-      if (clockEl) clockEl.textContent = `${hh}:${mm}:${ss}`;
+      clockEl.textContent = " • " + d.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"});
     }
     tickClock();
     setInterval(tickClock, 1000);
 
-    // ---- 2) Expires time: convert UTC ISO to LOCAL time in the browser
-    // IMPORTANT: backend should pass ISO UTC, e.g. 2026-01-20T04:17:02Z
-    const expiresIsoUtc = "{expires_at}";
-    const expiresDate = new Date(expiresIsoUtc); // browser converts to local automatically
+    // ✅ expires_at must be ISO UTC like: 2026-01-20T04:17:02Z
+    const expiresIsoUtc = "__EXPIRES_AT__";
+    const expiresDate = new Date(expiresIsoUtc);
 
     const expiresLocalEl = document.getElementById("expiresLocal");
     const expiresInEl = document.getElementById("expiresIn");
 
-    function formatLocal(dt) {
-      // Uses device locale + timezone (phone-safe)
-      return dt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-    }
-
     function formatMMSS(totalSeconds) {
       const s = Math.max(0, Math.floor(totalSeconds));
-      const mm = String(Math.floor(s / 60)).padStart(2, "0");
-      const ss = String(s % 60).padStart(2, "0");
+      const mm = String(Math.floor(s/60)).padStart(2,"0");
+      const ss = String(s%60).padStart(2,"0");
       return `${mm}:${ss}`;
     }
 
     function updateExpiry() {
       if (isNaN(expiresDate.getTime())) {
-        // If parsing fails, show raw string so it's obvious
-        if (expiresLocalEl) expiresLocalEl.textContent = expiresIsoUtc;
-        if (expiresInEl) expiresInEl.textContent = "--:--";
+        expiresLocalEl.textContent = expiresIsoUtc; // fallback
+        expiresInEl.textContent = "--:--";
         return;
       }
 
-      if (expiresLocalEl) expiresLocalEl.textContent = formatLocal(expiresDate);
+      expiresLocalEl.textContent = expiresDate.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"});
 
-      const now = new Date();
-      const diffSec = (expiresDate.getTime() - now.getTime()) / 1000;
-      if (expiresInEl) expiresInEl.textContent = formatMMSS(diffSec);
+      const diffSec = (expiresDate.getTime() - Date.now()) / 1000;
+      expiresInEl.textContent = formatMMSS(diffSec);
 
-      // Optional: if expired, refresh sooner
-      if (diffSec <= 0) {
-        // Try to fetch the rotated code quickly
-        setTimeout(() => location.reload(), 800);
-      }
+      if (diffSec <= 0) setTimeout(()=>location.reload(), 800);
     }
 
     updateExpiry();
     setInterval(updateExpiry, 1000);
 
-    // ---- 3) Keep your 5s refresh (still fine)
+    // refresh for rotation
     setTimeout(()=>location.reload(), 5000);
   </script>
 </body>
 </html>
 """
+
 
 
 
