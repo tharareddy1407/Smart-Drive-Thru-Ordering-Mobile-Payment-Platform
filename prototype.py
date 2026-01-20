@@ -355,7 +355,7 @@ LANE_HTML_TEMPLATE = """
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Lane {lane_id} Code</title>
+  <title>Lane __LANE_ID__ Code</title>
 
   <style>
     /* keep your existing CSS... */
@@ -405,7 +405,7 @@ LANE_HTML_TEMPLATE = """
 
     // ---- 2) Expires time: convert UTC ISO to LOCAL time in the browser
     // IMPORTANT: backend should pass ISO UTC, e.g. 2026-01-20T04:17:02Z
-    const expiresIsoUtc = "{expires_at}";
+    const expiresIsoUtc = "__EXPIRES_AT__";
     const expiresDate = new Date(expiresIsoUtc); // browser converts to local automatically
 
     const expiresLocalEl = document.getElementById("expiresLocal");
@@ -1340,13 +1340,15 @@ def lane(lane_id: str) -> HTMLResponse:
         return HTMLResponse("Use L1 or L2", status_code=400)
 
     rec = current_lane_code(lane_id)
-    return HTMLResponse(
-        LANE_HTML_TEMPLATE.format(
-            lane_id=lane_id,
-            code=rec["code"],
-            expires_at=rec["expires_at"].strftime("%H:%M:%S UTC"),
-        )
+    expires_iso = rec["expires_at"].isoformat() + "Z"
+    html = (
+        LANE_HTML_TEMPLATE
+        .replace("__LANE_ID__", lane_id)
+        .replace("__EXPIRES_AT__", expires_iso)
+        .replace("__CODE__", rec["code"])
     )
+
+    return HTMLResponse(html)
 
 
 @app.get("/cashier", response_class=HTMLResponse)
