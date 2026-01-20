@@ -157,7 +157,7 @@ HOME_HTML = """
       background-color:#0b1220;
       background-image:
         linear-gradient(rgba(0,0,0,0.10), rgba(0,0,0,0.22)),
-        url('/static/drive_thru_bg.png?v=2');
+        url('/static/BG.png?v=2');
       background-repeat:no-repeat;
       background-size: cover;
       background-position: center center;
