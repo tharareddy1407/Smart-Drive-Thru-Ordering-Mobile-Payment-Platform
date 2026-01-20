@@ -431,6 +431,19 @@ CUSTOMER_HTML = r"""
     .toastPulse{
       animation: toastPop .24s ease-out;
     }
+    
+        .footerCopyright{
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: rgba(255,255,255,0.55);
+  letter-spacing: .2px;
+  z-index: 999;
+  pointer-events: none;
+}
+
     @keyframes toastPop{
       0%{ transform: translateY(-6px); opacity: .6; }
       100%{ transform: translateY(0); opacity: 1; }
@@ -1093,7 +1106,12 @@ document.getElementById("custMsg").addEventListener("keydown", (e)=>{
   if(e.key === "Enter"){ e.preventDefault(); sendText(); }
 });
 </script>
-
+<footer class="footerCopyright">
+  © <span id="year"></span> Thara Reddy Kankanala. All rights reserved.
+</footer>
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
 </body>
 </html>
 """

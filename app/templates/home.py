@@ -428,7 +428,9 @@ HOME_HTML = """
   <footer class="footerCopyright">
   © <span id="year"></span> Thara Reddy Kankanala. All rights reserved.
 </footer>
-
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
 </body>
 </html>
 """

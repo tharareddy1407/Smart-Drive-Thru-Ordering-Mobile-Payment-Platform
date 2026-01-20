@@ -336,7 +336,17 @@ LANE_HTML_TEMPLATE = """
       background: var(--green);
       box-shadow: 0 0 0 7px rgba(34,197,94,.18);
     }
-
+        .footerCopyright{
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: rgba(255,255,255,0.55);
+  letter-spacing: .2px;
+  z-index: 999;
+  pointer-events: none;
+}
     /* -------------------------
        Mobile optimization
     -------------------------- */
@@ -531,6 +541,12 @@ LANE_HTML_TEMPLATE = """
 
     copyBtn?.addEventListener("click", copyCode);
   </script>
+ <footer class="footerCopyright">
+  © <span id="year"></span> Thara Reddy Kankanala. All rights reserved.
+</footer>
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
 </body>
 </html>
 """

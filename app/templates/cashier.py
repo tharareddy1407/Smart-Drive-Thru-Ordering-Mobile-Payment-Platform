@@ -270,7 +270,17 @@ CASHIER_HTML = r"""
       font-weight:900;
       margin-bottom:10px;
     }
-
+        .footerCopyright{
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: rgba(255,255,255,0.55);
+  letter-spacing: .2px;
+  z-index: 999;
+  pointer-events: none;
+}
     /* Log */
     #log{
       margin-top:12px;
@@ -773,6 +783,12 @@ function hangupCall(){
   bubble("SYSTEM", "Call ended.");
   cleanupCallUI();
 }
+</script>
+<footer class="footerCopyright">
+  © <span id="year"></span> Thara Reddy Kankanala. All rights reserved.
+</footer>
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
 </script>
 </body>
 </html>
