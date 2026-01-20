@@ -1114,6 +1114,7 @@ CASHIER_HTML = r"""
           <div class="row tight" style="gap:8px; flex-wrap:wrap;">
             <button id="btnAccept" class="btnPrimary" onclick="acceptCall()" disabled>Accept</button>
             <button id="btnReject" class="btnDanger" onclick="rejectCall()" disabled>Reject</button>
+            <button id="btnQueue" onclick="queueCall()" disabled>Put in queue</button>
             <button id="btnHangup" onclick="hangupCall()" disabled>Hang up</button>
           </div>
 
@@ -1146,8 +1147,10 @@ const incomingCallEl = document.getElementById("incomingCall");
 const liveCallEl = document.getElementById("liveCall");
 const btnAccept = document.getElementById("btnAccept");
 const btnReject = document.getElementById("btnReject");
+const btnQueue = document.getElementById("btnQueue");
 const btnHangup = document.getElementById("btnHangup");
 const remoteAudio = document.getElementById("remoteAudio");
+let callQueued = false;
 
 function setWsState(label, level){
   wsStateEl.textContent = label;
@@ -1421,6 +1424,27 @@ async function acceptCall(){
   }
 }
 
+function queueCall(){
+  if (!callSigWs) return;
+
+  callQueued = true;
+
+  incomingCallEl.style.display = "block";
+  incomingCallEl.textContent = "⏳ Call queued — customer waiting…";
+
+  btnAccept.disabled = false;   // accept later
+  btnReject.disabled = false;   // reject later
+  btnQueue.disabled  = true;    // already queued
+  btnHangup.disabled = false;
+
+  callSigWs.send(JSON.stringify({
+    type: "call_queue",
+    message: "Please wait — cashier will join shortly."
+  }));
+
+  chat("SYSTEM", "⏳ Call placed in queue. Customer asked to wait.");
+}
+
 function rejectCall(){
   if (!callSigWs) return;
   bubble("SYSTEM", "Call rejected.");
@@ -1440,12 +1464,6 @@ function hangupCall(){
 """
 
 
-# -----------------------------------------------------------------------------
-# CUSTOMER UI (Responsive, modern, “QSR-style”)
-# - Mobile-first (sticky action bar, bottom sheets feel)
-# - Desktop: 2-column layout for Order/Status
-# - Clean glass/gradient background + accessible contrast
-# -----------------------------------------------------------------------------
 CUSTOMER_HTML = r"""
 <!doctype html>
 <html>
@@ -1788,6 +1806,118 @@ CUSTOMER_HTML = r"""
     /* Tiny helpers */
     .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
     .sp{ height: 8px; }
+
+    /* =========================
+       NEW: Progress + Toast + Confetti + Motion BG
+       ========================= */
+
+    /* Motion background layers */
+    body::before{
+      content:"";
+      position:fixed; inset:-40%;
+      background:
+        radial-gradient(600px 420px at 20% 10%, rgba(124,58,237,.26), transparent 60%),
+        radial-gradient(560px 420px at 85% 18%, rgba(34,211,238,.20), transparent 62%),
+        radial-gradient(520px 520px at 48% 110%, rgba(34,197,94,.14), transparent 60%);
+      filter: blur(18px);
+      opacity:.9;
+      animation: floatGlow 14s ease-in-out infinite alternate;
+      pointer-events:none;
+      z-index:-2;
+    }
+    body::after{
+      content:"";
+      position:fixed; inset:0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.18'/%3E%3C/svg%3E");
+      mix-blend-mode: overlay;
+      opacity:.12;
+      pointer-events:none;
+      z-index:-1;
+    }
+    @keyframes floatGlow{
+      0%   { transform: translate3d(-2%, -1%, 0) scale(1.00); }
+      100% { transform: translate3d(2%,  1%, 0) scale(1.04); }
+    }
+
+    /* Progress bar */
+    .progressWrap{
+      margin: 10px 0 14px 0;
+      padding: 10px 12px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.20);
+      border-radius: 14px;
+      backdrop-filter: blur(12px);
+    }
+    .progressTop{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:12px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.78);
+    }
+    .progressBar{
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.14);
+      overflow:hidden;
+      margin-top: 8px;
+    }
+    .progressFill{
+      height:100%;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(124,58,237,.95), rgba(34,211,238,.85), rgba(34,197,94,.75));
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.12) inset, 0 10px 24px rgba(0,0,0,.30);
+      transition: width .35s ease;
+    }
+
+    /* Step highlight when done */
+    .step.done{
+      border-color: rgba(34,197,94,.35);
+      box-shadow: 0 0 0 1px rgba(34,197,94,.10) inset, 0 20px 60px rgba(0,0,0,.22);
+    }
+    .step.done .badge{
+      background: linear-gradient(135deg, rgba(34,197,94,.88), rgba(34,211,238,.55));
+    }
+
+    /* Toast styling + pop */
+    #toast{
+      position: sticky;
+      top: 10px;
+      z-index: 5;
+      padding: 12px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.28);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 18px 50px rgba(0,0,0,.28);
+      transform: translateY(0);
+      transition: transform .18s ease, opacity .18s ease;
+    }
+    .toastPulse{
+      animation: toastPop .24s ease-out;
+    }
+    @keyframes toastPop{
+      0%{ transform: translateY(-6px); opacity: .6; }
+      100%{ transform: translateY(0); opacity: 1; }
+    }
+
+    /* Confetti */
+    .confetti{
+      position:fixed; inset:0; pointer-events:none; z-index:99999;
+      overflow:hidden;
+    }
+    .confetti i{
+      position:absolute;
+      width:10px; height:14px;
+      background: rgba(255,255,255,0.85);
+      border-radius: 3px;
+      top:-20px;
+      animation: fall 1.2s linear forwards;
+    }
+    @keyframes fall{
+      to{ transform: translateY(110vh) rotate(420deg); opacity: 0.9; }
+    }
   </style>
 </head>
 
@@ -1805,6 +1935,15 @@ CUSTOMER_HTML = r"""
       </div>
     </div>
 
+    <!-- NEW: progress bar -->
+    <div class="progressWrap">
+      <div class="progressTop">
+        <div id="progressText">Progress: 0/4</div>
+        <div id="progressHint" style="opacity:.85;">Start with “I’m Here”.</div>
+      </div>
+      <div class="progressBar"><div class="progressFill" id="progressFill"></div></div>
+    </div>
+
     <div class="card">
       <div class="cardInner">
 
@@ -1815,7 +1954,7 @@ CUSTOMER_HTML = r"""
         <div class="steps">
 
           <!-- Step 1 -->
-          <div class="step">
+          <div class="step" id="step1">
             <div class="stepHead">
               <div class="stepTitle"><div class="badge">1</div> I’m here</div>
               <div style="color:var(--muted); font-size:12px;">Check-in</div>
@@ -1839,7 +1978,7 @@ CUSTOMER_HTML = r"""
           </div>
 
           <!-- Step 2 -->
-          <div class="step">
+          <div class="step" id="step2">
             <div class="stepHead">
               <div class="stepTitle"><div class="badge">2</div> Connect</div>
               <div style="color:var(--muted); font-size:12px;">Station code</div>
@@ -1860,7 +1999,7 @@ CUSTOMER_HTML = r"""
           </div>
 
           <!-- Step 3 -->
-          <div class="step">
+          <div class="step" id="step3">
             <div class="stepHead">
               <div class="stepTitle"><div class="badge">3</div> Order + Voice</div>
               <div style="color:var(--muted); font-size:12px;">Chat / WebRTC</div>
@@ -1907,7 +2046,7 @@ CUSTOMER_HTML = r"""
           </div>
 
           <!-- Step 4 -->
-          <div class="step">
+          <div class="step" id="step4">
             <div class="stepHead">
               <div class="stepTitle"><div class="badge">4</div> Payment</div>
               <div style="color:var(--muted); font-size:12px;">Secure request</div>
@@ -1975,6 +2114,58 @@ const paymentArea = document.getElementById("paymentArea");
 const callLiveEl = document.getElementById("callLive");
 const btnHangup = document.getElementById("btnHangup");
 const remoteAudio = document.getElementById("remoteAudio");
+
+/* ----------------------------
+   NEW: UI helpers
+-----------------------------*/
+const progressFill = document.getElementById("progressFill");
+const progressText = document.getElementById("progressText");
+const progressHint = document.getElementById("progressHint");
+
+const stepDone = { step1:false, step2:false, step3:false, step4:false };
+
+function toast(text){
+  toastEl.textContent = text;
+  toastEl.classList.remove("toastPulse");
+  void toastEl.offsetWidth; // restart animation
+  toastEl.classList.add("toastPulse");
+}
+
+function setStepDone(stepId, hintText){
+  const el = document.getElementById(stepId);
+  if (!el) return;
+  stepDone[stepId] = true;
+  el.classList.add("done");
+  updateProgress(hintText);
+}
+
+function updateProgress(hintText){
+  const total = 4;
+  const done = Object.values(stepDone).filter(Boolean).length;
+  const pct = Math.round((done/total) * 100);
+  if (progressFill) progressFill.style.width = pct + "%";
+  if (progressText) progressText.textContent = `Progress: ${done}/${total}`;
+  if (hintText && progressHint) progressHint.textContent = hintText;
+}
+
+function confettiBurst(){
+  const wrap = document.createElement("div");
+  wrap.className = "confetti";
+  document.body.appendChild(wrap);
+
+  const n = 38;
+  for(let i=0;i<n;i++){
+    const p = document.createElement("i");
+    p.style.left = (Math.random()*100) + "vw";
+    p.style.opacity = (0.7 + Math.random()*0.3);
+    p.style.transform = `rotate(${Math.random()*180}deg)`;
+    p.style.animationDelay = (Math.random()*0.15) + "s";
+    p.style.width = (8 + Math.random()*8) + "px";
+    p.style.height = (10 + Math.random()*12) + "px";
+    wrap.appendChild(p);
+  }
+  setTimeout(()=>wrap.remove(), 1600);
+}
 
 function clearBanners(){
   okBanner.style.display = "none";
@@ -2059,27 +2250,28 @@ homeWs.onopen = () => {
   wsStateEl.textContent = "WS: connected";
   wsDot.classList.add("ok");
   wsDot.classList.remove("err");
-  toastEl.textContent = "Connected. Step 1: Tap ‘I’m Here’.";
+  toast("Connected. Step 1: Tap ‘I’m Here’.");
+  updateProgress("Start with “I’m Here”.");
 };
 homeWs.onerror = () => {
   wsStateEl.textContent = "WS: error";
   wsDot.classList.add("err");
   wsDot.classList.remove("ok");
-  toastEl.textContent = "WebSocket error.";
+  toast("WebSocket error.");
 };
 homeWs.onclose = () => {
   wsStateEl.textContent = "WS: closed";
   wsDot.classList.remove("ok","err");
-  toastEl.textContent = "Disconnected. Refresh.";
+  toast("Disconnected. Refresh.");
 };
 
 homeWs.onmessage = (ev) => {
   const msg = JSON.parse(ev.data);
-  if (msg.type === "info") toastEl.textContent = msg.text;
+  if (msg.type === "info") toast(msg.text);
 
   if (msg.type === "payment_request") {
     paySessionId = msg.pay_session_id;
-    toastEl.textContent = "Payment request received — choose payment method.";
+    toast("Payment request received — choose payment method.");
     renderPaymentUI(msg);
   }
 };
@@ -2097,7 +2289,8 @@ async function checkIn(){
   const data = await res.json();
   if (data.error) return showError(data.error);
 
-  toastEl.textContent = `Checked in to ${data.lane_id}. Enter the station code to connect.`;
+  toast(`Checked in to ${data.lane_id}. Enter the station code to connect.`);
+  setStepDone("step1", "Enter the 4-digit station code.");
   openCodeModal();
 }
 
@@ -2118,7 +2311,8 @@ async function connect(){
 
   currentOrderId = data.order_id;
   statusEl.textContent = `Connected (Order ${currentOrderId})`;
-  toastEl.textContent = "Connected. Start ordering.";
+  toast("Connected. Start ordering.");
+  setStepDone("step2", "You’re connected — place your order (text or call).");
   showOk("Connected to cashier. You can order now.");
 
   joinOrderWs(currentOrderId);
@@ -2153,6 +2347,7 @@ function sendText(){
   const text = (box.value || "").trim();
   if (!text) return;
   orderWs.send(JSON.stringify({type:"chat", from:"CUSTOMER", text}));
+  setStepDone("step3", "Waiting for cashier to confirm total...");
   box.value = "";
 }
 
@@ -2338,7 +2533,7 @@ async function declinePay(){
   const res = await fetch(`/payment/${paySessionId}/decline`, { method:"POST" });
   const data = await res.json();
   if (data.error) return showError(data.error);
-  toastEl.textContent = "Declined: " + data.status;
+  toast("Declined: " + data.status);
 }
 
 async function doPay(payload){
@@ -2350,9 +2545,11 @@ async function doPay(payload){
   const data = await res.json();
   if (data.error) return showError(data.error);
 
-  toastEl.textContent = `Payment: ${data.status} (method: ${data.payment_method})`;
+  toast(`Payment: ${data.status} (method: ${data.payment_method})`);
 
   if (data.status === "APPROVED"){
+    confettiBurst();
+    setStepDone("step4", "Done — proceed to pickup window.");
     showPaidModal("✅ Payment done — move forward to pickup window to pick up your order.");
   }
 }
@@ -2366,6 +2563,7 @@ document.getElementById("custMsg").addEventListener("keydown", (e)=>{
 </body>
 </html>
 """
+
 
 
 
