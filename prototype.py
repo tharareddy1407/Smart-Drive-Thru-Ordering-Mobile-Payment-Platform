@@ -358,114 +358,443 @@ LANE_HTML_TEMPLATE = """
   <title>Lane __LANE_ID__</title>
 
   <style>
-    body { margin:0; font-family: Arial; background:#111a2e; color:#fff; padding:24px; }
-    h2 { margin:0 0 16px 0; }
-
-    .box {
-      max-width: 720px;
-      border: 1px solid rgba(255,255,255,.18);
-      background: rgba(255,255,255,.08);
-      border-radius: 18px;
-      padding: 18px;
-      backdrop-filter: blur(12px);
+    :root{
+      /* default = neutral */
+      --bgTop:#0b1220;
+      --bgBottom:#111a2e;
+      --card: rgba(255,255,255,.10);
+      --stroke: rgba(255,255,255,.16);
+      --text: rgba(255,255,255,.96);
+      --muted: rgba(255,255,255,.78);
+      --accent:#7c5cff;
+      --accent2:#22c55e;
+      --shadow: 0 22px 70px rgba(0,0,0,.34);
+      --radius: 22px;
     }
 
-    .big {
-      font-size: clamp(56px, 8vw, 96px);
+    /* ========= Brand Themes ========= */
+    /* McDonald's vibe (red + golden) */
+    body[data-brand="mcd"]{
+      --bgTop:#3b0b0b;
+      --bgBottom:#1a0707;
+      --accent:#ffb703;     /* golden */
+      --accent2:#fb8500;    /* orange */
+      --card: rgba(255,255,255,.10);
+      --stroke: rgba(255,255,255,.18);
+    }
+
+    /* Starbucks vibe (green + clean) */
+    body[data-brand”="starbucks"]{} /* (typo guard: ignore) */
+    body[data-brand="starbucks"]{
+      --bgTop:#0b2a1a;
+      --bgBottom:#06160e;
+      --accent:#22c55e;     /* green */
+      --accent2:#16a34a;    /* deeper green */
+      --card: rgba(255,255,255,.09);
+      --stroke: rgba(255,255,255,.16);
+    }
+
+    /* KFC vibe (red + white stripes feel) */
+    body[data-brand="kfc"]{
+      --bgTop:#3a0b13;
+      --bgBottom:#12070a;
+      --accent:#ff4d6d;     /* warm red/pink */
+      --accent2:#ffffff;    /* white */
+      --card: rgba(255,255,255,.10);
+      --stroke: rgba(255,255,255,.18);
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      color: var(--text);
+      overflow:hidden;
+
+      background:
+        radial-gradient(900px 520px at 15% 20%, color-mix(in srgb, var(--accent) 20%, transparent), transparent 60%),
+        radial-gradient(900px 520px at 85% 25%, color-mix(in srgb, var(--accent2) 18%, transparent), transparent 60%),
+        linear-gradient(180deg, var(--bgTop), var(--bgBottom));
+    }
+
+    /* KFC subtle diagonal stripes */
+    body[data-brand="kfc"] .bgStripe{
+      position:absolute; inset:-40px;
+      background:
+        repeating-linear-gradient(
+          135deg,
+          rgba(255,255,255,.08) 0px,
+          rgba(255,255,255,.08) 18px,
+          rgba(255,255,255,0) 18px,
+          rgba(255,255,255,0) 44px
+        );
+      opacity:.22;
+      pointer-events:none;
+      mask-image: radial-gradient(700px 420px at 50% 35%, #000 45%, transparent 75%);
+    }
+
+    /* McD dotted texture */
+    body[data-brand="mcd"] .bgDots{
+      position:absolute; inset:0;
+      background-image: radial-gradient(rgba(255,255,255,.11) 1px, transparent 1px);
+      background-size: 28px 28px;
+      opacity:.18;
+      pointer-events:none;
+      mask-image: radial-gradient(700px 420px at 50% 35%, #000 45%, transparent 75%);
+    }
+
+    /* Starbucks clean grid */
+    body[data-brand="starbucks"] .bgGrid{
+      position:absolute; inset:0;
+      background-image:
+        linear-gradient(to right, rgba(255,255,255,.07) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255,255,255,.07) 1px, transparent 1px);
+      background-size: 70px 70px;
+      opacity:.14;
+      pointer-events:none;
+      mask-image: radial-gradient(700px 420px at 50% 35%, #000 45%, transparent 75%);
+    }
+
+    .wrap{
+      position:relative;
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+      padding: 22px;
+    }
+
+    .topbar{
+      position:absolute;
+      top: 18px; left: 18px; right: 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .brandMark{
+      display:flex; align-items:center; gap:10px;
       font-weight: 900;
-      letter-spacing: 10px;
-      margin: 10px 0;
-      word-break: break-word;
+      letter-spacing:.2px;
+      opacity:.98;
+    }
+    .dot{
+      width: 12px; height: 12px; border-radius:999px;
+      background: radial-gradient(circle at 30% 30%, #fff, var(--accent));
+      box-shadow: 0 0 0 7px color-mix(in srgb, var(--accent) 22%, transparent);
     }
 
-    .muted { color: rgba(255,255,255,.78); }
-
-    .meta { display:flex; gap:12px; flex-wrap:wrap; margin-top:12px; }
-    .metaItem {
-      display:flex; align-items:center; gap:8px;
-      padding: 10px 12px;
-      border-radius: 14px;
-      background: rgba(0,0,0,.22);
-      border: 1px solid rgba(255,255,255,.12);
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 14px;
+      border-radius:999px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.16);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 12px 28px rgba(0,0,0,.22);
+      color: var(--muted);
       font-size: 14px;
     }
 
-    /* ✅ prevents the “big clock” issue */
-    .icon, .metaItem svg {
-      width: 18px !important;
-      height: 18px !important;
-      flex: 0 0 18px;
-      display: inline-block;
+    .laneBadge{
+      font-weight: 950;
+      letter-spacing: .9px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      color: #111;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+    }
+
+    .card{
+      width: min(920px, 100%);
+      border-radius: var(--radius);
+      background: var(--card);
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+      overflow:hidden;
+      position:relative;
+    }
+
+    .card::before{
+      content:"";
+      position:absolute; inset:-2px;
+      background:
+        radial-gradient(700px 220px at 15% 0%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 60%),
+        radial-gradient(700px 220px at 90% 10%, color-mix(in srgb, var(--accent2) 18%, transparent), transparent 60%);
+      pointer-events:none;
+    }
+
+    .inner{
+      position:relative;
+      padding: 32px;
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 18px;
+    }
+
+    @media (max-width: 860px){
+      .inner{ grid-template-columns: 1fr; padding: 22px; }
+    }
+
+    .title{
+      margin:0 0 8px 0;
+      font-size: 30px;
+      letter-spacing:.2px;
+    }
+
+    .subtitle{
+      margin:0 0 16px 0;
+      color: var(--muted);
+      line-height:1.5;
+      font-size: 16px;
+    }
+
+    .codeBox{
+      border-radius: 18px;
+      padding: 18px;
+      background: rgba(255,255,255,.94);
+      color: #111;
+      border: 1px solid rgba(0,0,0,.08);
+      box-shadow: 0 18px 45px rgba(0,0,0,.22);
+    }
+
+    body[data-brand="starbucks"] .codeBox{
+      background: rgba(255,255,255,.92);
+    }
+
+    .codeLabel{
+      display:flex; align-items:center; gap:10px;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      color: rgba(0,0,0,.65);
+      font-weight: 900;
+      margin-bottom: 10px;
+    }
+
+    .pulse{
+      width: 10px; height: 10px; border-radius:999px;
+      background: var(--accent);
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 35%, transparent);
+      animation: pulse 1.6s ease-out infinite;
+    }
+    @keyframes pulse{
+      0%{ box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 38%, transparent); }
+      100%{ box-shadow: 0 0 0 14px rgba(0,0,0,0); }
+    }
+
+    .code{
+      margin:0;
+      font-weight: 950;
+      letter-spacing: 12px;
+      line-height: 1.05;
+      font-size: clamp(58px, 7vw, 98px);
+      word-break: break-word;
     }
 
     @media (max-width: 420px){
-      .big { letter-spacing: 6px; }
-      body { padding: 16px; }
+      .code{ letter-spacing: 6px; }
+    }
+
+    .meta{
+      margin-top: 14px;
+      display:flex;
+      flex-wrap:wrap;
+      gap: 10px;
+      color: rgba(0,0,0,.68);
+      font-size: 14px;
+    }
+
+    .metaItem{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(0,0,0,.05);
+      border: 1px solid rgba(0,0,0,.08);
+      font-weight: 750;
+    }
+
+    /* ✅ prevents “big clock” icon issue */
+    .icon, .metaItem svg{
+      width: 18px !important;
+      height: 18px !important;
+      flex: 0 0 18px;
+      display:inline-block;
+    }
+
+    .right{
+      display:grid;
+      gap: 12px;
+      align-content:start;
+    }
+
+    .panel{
+      border-radius: 18px;
+      padding: 16px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.14);
+    }
+
+    .panel h4{
+      margin:0 0 8px 0;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: .35px;
+      color: rgba(255,255,255,.92);
+    }
+
+    .panel p{
+      margin:0;
+      color: var(--muted);
+      line-height:1.45;
+      font-size: 14px;
+    }
+
+    .footer{
+      position:relative;
+      padding: 14px 22px;
+      border-top: 1px solid rgba(255,255,255,.10);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      color: rgba(255,255,255,.72);
+      font-size: 13px;
+    }
+
+    .status{
+      display:inline-flex;
+      align-items:center;
+      gap: 10px;
+      font-weight: 900;
+    }
+
+    .statusDot{
+      width: 10px; height: 10px; border-radius:999px;
+      background: #22c55e;
+      box-shadow: 0 0 0 7px rgba(34,197,94,.18);
     }
   </style>
 </head>
 
-<body>
-  <h2>Drive-Thru Station — Lane __LANE_ID__ <span class="muted" style="font-size:14px" id="clock"></span></h2>
+<body data-brand="__BRAND__">
+  <div class="bgStripe"></div>
+  <div class="bgDots"></div>
+  <div class="bgGrid"></div>
 
-  <div class="box">
-    <div class="muted">Enter this code in the app to connect:</div>
-    <div class="big">__CODE__</div>
-
-    <div class="meta">
-      <div class="metaItem">
-        <svg class="icon" viewBox="0 0 24 24" fill="none">
-          <path d="M12 8v5l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="2"/>
-        </svg>
-        <span>Expires at <b id="expiresLocal">--</b></span>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brandMark">
+        <span class="dot"></span>
+        <span id="brandTitle">Drive-Thru Pairing</span>
       </div>
-
-      <div class="metaItem">
-        <svg class="icon" viewBox="0 0 24 24" fill="none">
-          <path d="M4 12a8 8 0 1 0 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <path d="M4 4v6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-        <span>Expires in <b id="expiresIn">--:--</b></span>
+      <div class="pill">
+        <span class="laneBadge">LANE __LANE_ID__</span>
+        <span id="clock">--:--:--</span>
       </div>
     </div>
 
-    <div class="muted" style="margin-top:10px;">Code rotates after a successful connect (order created).</div>
+    <div class="card">
+      <div class="inner">
+        <div>
+          <h2 class="title">Customer Pairing Code</h2>
+          <p class="subtitle">Ask the customer to enter this code in the mobile app to connect to <b>Lane __LANE_ID__</b>.</p>
+
+          <div class="codeBox">
+            <div class="codeLabel"><span class="pulse"></span> Active code</div>
+            <p class="code">__CODE__</p>
+
+            <div class="meta">
+              <div class="metaItem">
+                <svg class="icon" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 8v5l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                <span>Expires at <b id="expiresLocal">--</b></span>
+              </div>
+
+              <div class="metaItem">
+                <svg class="icon" viewBox="0 0 24 24" fill="none">
+                  <path d="M4 12a8 8 0 1 0 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M4 4v6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <span>Expires in <b id="expiresIn">--:--</b></span>
+              </div>
+            </div>
+
+            <div style="margin-top:10px; color:rgba(0,0,0,.62); font-weight:650;">
+              Code rotates after a successful connect (order created).
+            </div>
+          </div>
+        </div>
+
+        <div class="right">
+          <div class="panel">
+            <h4>How it works</h4>
+            <p>Once the customer connects and an order is created, this code rotates automatically for the next vehicle.</p>
+          </div>
+          <div class="panel">
+            <h4>Tip</h4>
+            <p>Keep this screen fullscreen for best visibility. Press <b>F11</b> (desktop).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div class="status"><span class="statusDot"></span> READY</div>
+        <div>Lane display • secure pairing</div>
+      </div>
+    </div>
   </div>
 
   <script>
-    // Local clock (works on phone too)
-    const clockEl = document.getElementById("clock");
-    function tickClock() {
-      const d = new Date();
-      clockEl.textContent = " • " + d.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"});
+    // Brand title
+    const brand = "__BRAND__";
+    const brandTitle = document.getElementById("brandTitle");
+    if (brandTitle){
+      if (brand === "mcd") brandTitle.textContent = "McDonald’s • Drive-Thru Pairing";
+      else if (brand === "starbucks") brandTitle.textContent = "Starbucks • Drive-Thru Pairing";
+      else if (brand === "kfc") brandTitle.textContent = "KFC • Drive-Thru Pairing";
+      else brandTitle.textContent = "Drive-Thru Pairing";
     }
-    tickClock();
-    setInterval(tickClock, 1000);
 
-    // ✅ expires_at must be ISO UTC like: 2026-01-20T04:17:02Z
-    const expiresIsoUtc = "__EXPIRES_AT__";
+    // Local clock (lane screen + phone)
+    const clockEl = document.getElementById("clock");
+    function tickClock(){
+      const d = new Date();
+      clockEl.textContent = d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit", second:"2-digit"});
+    }
+    tickClock(); setInterval(tickClock, 1000);
+
+    // Expiry: show in local time + countdown
+    const expiresIsoUtc = "__EXPIRES_AT__";  // must be ISO UTC like 2026-01-20T04:17:02Z
     const expiresDate = new Date(expiresIsoUtc);
 
     const expiresLocalEl = document.getElementById("expiresLocal");
     const expiresInEl = document.getElementById("expiresIn");
 
-    function formatMMSS(totalSeconds) {
-      const s = Math.max(0, Math.floor(totalSeconds));
+    function formatMMSS(sec){
+      const s = Math.max(0, Math.floor(sec));
       const mm = String(Math.floor(s/60)).padStart(2,"0");
       const ss = String(s%60).padStart(2,"0");
       return `${mm}:${ss}`;
     }
 
-    function updateExpiry() {
-      if (isNaN(expiresDate.getTime())) {
-        expiresLocalEl.textContent = expiresIsoUtc; // fallback
+    function updateExpiry(){
+      if (isNaN(expiresDate.getTime())){
+        expiresLocalEl.textContent = expiresIsoUtc;
         expiresInEl.textContent = "--:--";
         return;
       }
 
-      expiresLocalEl.textContent = expiresDate.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"});
-
+      expiresLocalEl.textContent = expiresDate.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit", second:"2-digit"});
       const diffSec = (expiresDate.getTime() - Date.now()) / 1000;
       expiresInEl.textContent = formatMMSS(diffSec);
 
@@ -475,12 +804,13 @@ LANE_HTML_TEMPLATE = """
     updateExpiry();
     setInterval(updateExpiry, 1000);
 
-    // refresh for rotation
+    // Keep your refresh for rotation
     setTimeout(()=>location.reload(), 5000);
   </script>
 </body>
 </html>
 """
+
 
 
 
