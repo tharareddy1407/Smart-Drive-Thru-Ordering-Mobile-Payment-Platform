@@ -157,7 +157,7 @@ HOME_HTML = """
       background-color:#0b1220;
       background-image:
         linear-gradient(rgba(0,0,0,0.10), rgba(0,0,0,0.22)),
-        url('/static/drive_thru_demo.png?v=400');
+        url('/static/Background.png?v=400');
       background-repeat:no-repeat;
       background-size: cover;            /* ✅ removes black borders */
       background-position: center 18%;   /* ✅ keeps SMART visible */
