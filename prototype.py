@@ -384,29 +384,369 @@ LANE_HTML_TEMPLATE = """
 <html>
 <head>
   <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Lane {lane_id} Code</title>
+
   <style>
-    body {{ font-family: Arial; margin: 24px; }}
-    .big {{ font-size: 64px; font-weight: 800; letter-spacing: 6px; }}
-    .box {{ padding: 18px; border: 1px solid #ddd; border-radius: 12px; max-width: 560px; }}
-    .muted {{ color:#666; }}
+    :root {{
+      --bg1:#0b1220;
+      --bg2:#111a2e;
+      --accent:#7c5cff;
+      --accent2:#22c55e;
+      --text:#eaf0ff;
+      --muted: rgba(234,240,255,.72);
+      --card: rgba(255,255,255,.08);
+      --stroke: rgba(255,255,255,.16);
+      --shadow: 0 18px 50px rgba(0,0,0,.45);
+      --radius: 22px;
+    }}
+
+    * {{ box-sizing: border-box; }}
+    body {{
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color: var(--text);
+      min-height: 100vh;
+      overflow: hidden;
+
+      /* Option A: gradient-only background (no image needed) */
+      background:
+        radial-gradient(1200px 600px at 20% 15%, rgba(124,92,255,.28), transparent 60%),
+        radial-gradient(900px 500px at 85% 25%, rgba(34,197,94,.22), transparent 55%),
+        radial-gradient(1000px 650px at 50% 110%, rgba(59,130,246,.18), transparent 60%),
+        linear-gradient(160deg, var(--bg1), var(--bg2));
+
+      /* Option B: use your lane background image (uncomment & set URL)
+      background:
+        linear-gradient(160deg, rgba(11,18,32,.88), rgba(17,26,46,.78)),
+        url("/static/lane-bg.jpg") center/cover no-repeat;
+      */
+    }}
+
+    /* subtle moving grid */
+    .grid {{
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(to right, rgba(255,255,255,.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255,255,255,.06) 1px, transparent 1px);
+      background-size: 70px 70px;
+      opacity: .18;
+      transform: translate3d(0,0,0);
+      animation: drift 14s linear infinite;
+      pointer-events: none;
+      mask-image: radial-gradient(700px 400px at 50% 30%, #000 40%, transparent 70%);
+    }}
+    @keyframes drift {{
+      0% {{ transform: translate(0,0); }}
+      100% {{ transform: translate(-70px, -70px); }}
+    }}
+
+    .wrap {{
+      position: relative;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 28px;
+    }}
+
+    .topbar {{
+      position: absolute;
+      top: 22px; left: 22px; right: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }}
+
+    .brand {{
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700;
+      letter-spacing: .3px;
+      opacity: .95;
+    }}
+    .dot {{
+      width: 12px; height: 12px; border-radius: 99px;
+      background: radial-gradient(circle at 30% 30%, #fff, var(--accent));
+      box-shadow: 0 0 0 6px rgba(124,92,255,.14);
+    }}
+
+    .pill {{
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.06);
+      border-radius: 999px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 30px rgba(0,0,0,.22);
+      font-size: 14px;
+      color: var(--muted);
+    }}
+    .laneBadge {{
+      color: var(--text);
+      font-weight: 800;
+      letter-spacing: .8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(124,92,255,.35), rgba(34,197,94,.22));
+      border: 1px solid rgba(255,255,255,.18);
+    }}
+
+    .card {{
+      width: min(860px, 100%);
+      border-radius: var(--radius);
+      background: var(--card);
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      overflow: hidden;
+      position: relative;
+    }}
+
+    .card::before {{
+      content:"";
+      position:absolute; inset:-2px;
+      background: radial-gradient(600px 180px at 20% 10%, rgba(124,92,255,.22), transparent 60%),
+                  radial-gradient(520px 180px at 90% 30%, rgba(34,197,94,.18), transparent 60%);
+      pointer-events:none;
+    }}
+
+    .cardInner {{
+      position: relative;
+      padding: 34px;
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 26px;
+    }}
+
+    @media (max-width: 820px) {{
+      .cardInner {{ grid-template-columns: 1fr; }}
+    }}
+
+    .title {{
+      font-size: 28px;
+      margin: 0 0 6px 0;
+      letter-spacing: .2px;
+    }}
+    .subtitle {{
+      margin: 0 0 18px 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }}
+
+    .codeBox {{
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(0,0,0,.20);
+      padding: 18px 18px 16px 18px;
+      position: relative;
+      overflow: hidden;
+    }}
+
+    .codeLabel {{
+      font-size: 13px;
+      color: rgba(234,240,255,.78);
+      letter-spacing: .35px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }}
+    .pulse {{
+      width: 10px; height: 10px; border-radius: 99px;
+      background: var(--accent2);
+      box-shadow: 0 0 0 0 rgba(34,197,94,.45);
+      animation: pulse 1.6s ease-out infinite;
+    }}
+    @keyframes pulse {{
+      0% {{ box-shadow: 0 0 0 0 rgba(34,197,94,.45); }}
+      100% {{ box-shadow: 0 0 0 14px rgba(34,197,94,0); }}
+    }}
+
+    .code {{
+      font-size: clamp(56px, 7vw, 92px);
+      font-weight: 900;
+      letter-spacing: 10px;
+      line-height: 1.05;
+      margin: 0;
+      text-shadow: 0 10px 25px rgba(0,0,0,.35);
+    }}
+
+    .meta {{
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 14px;
+    }}
+
+    .metaItem {{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+    }}
+
+    .icon {{
+      width: 18px;
+      height: 18px;
+      opacity: .9;
+    }}
+
+    .right {{
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }}
+
+    .panel {{
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      padding: 16px;
+    }}
+
+    .panel h4 {{
+      margin: 0 0 8px 0;
+      font-size: 14px;
+      letter-spacing: .3px;
+      color: rgba(234,240,255,.9);
+      text-transform: uppercase;
+    }}
+
+    .panel p {{
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: 14px;
+    }}
+
+    .footer {{
+      padding: 14px 22px;
+      border-top: 1px solid rgba(255,255,255,.10);
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      color: rgba(234,240,255,.65);
+      font-size: 13px;
+      gap: 10px;
+    }}
+
+    .kbd {{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      background: rgba(0,0,0,.25);
+      border: 1px solid rgba(255,255,255,.14);
+      padding: 4px 8px;
+      border-radius: 10px;
+      color: rgba(234,240,255,.85);
+    }}
   </style>
 </head>
+
 <body>
-  <h2>Drive-Thru Station — Lane {lane_id}</h2>
-  <div class="box">
-    <div class="muted">Enter this code in the app to connect:</div>
-    <div class="big">{code}</div>
-    <div class="muted">Valid until: {expires_at}</div>
-    <div class="muted">Code rotates after a successful connect (order created).</div>
+  <div class="grid"></div>
+
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <span class="dot"></span>
+        <span>EasyPay • Drive-Thru Station</span>
+      </div>
+      <div class="pill">
+        <span class="laneBadge">LANE {lane_id}</span>
+        <span id="clock">--:--:--</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="cardInner">
+        <div>
+          <h2 class="title">Customer Pairing Code</h2>
+          <p class="subtitle">
+            Ask the customer to enter this code in the mobile app to connect to <b>Lane {lane_id}</b>.
+          </p>
+
+          <div class="codeBox">
+            <div class="codeLabel">
+              <span class="pulse"></span>
+              Active code
+            </div>
+            <p class="code">{code}</p>
+
+            <div class="meta">
+              <div class="metaItem">
+                <svg class="icon" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 8v5l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="2"/>
+                </svg>
+                <span>Expires at <b id="expires">{expires_at}</b></span>
+              </div>
+
+              <div class="metaItem">
+                <svg class="icon" viewBox="0 0 24 24" fill="none">
+                  <path d="M4 12a8 8 0 1 0 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M4 4v6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <span>Auto-refresh <span class="kbd">5s</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="right">
+          <div class="panel">
+            <h4>How it works</h4>
+            <p>After a successful connect (order created), the code rotates automatically for the next vehicle.</p>
+          </div>
+
+          <div class="panel">
+            <h4>Tip</h4>
+            <p>Keep this page fullscreen on the lane display for best visibility. (Press <span class="kbd">F11</span>)</p>
+          </div>
+
+          <!-- Optional: you can add a QR block later if you want -->
+          <!--
+          <div class="panel">
+            <h4>Quick Connect</h4>
+            <p>Scan QR in the app (optional feature).</p>
+          </div>
+          -->
+        </div>
+      </div>
+
+      <div class="footer">
+        <span>Status: <b style="color:rgba(34,197,94,.95)">READY</b></span>
+        <span class="muted">Lane display • secure pairing</span>
+      </div>
+    </div>
   </div>
+
   <script>
+    // Pretty clock (local)
+    const clockEl = document.getElementById("clock");
+    function tickClock() {{
+      const d = new Date();
+      const hh = String(d.getHours()).padStart(2,"0");
+      const mm = String(d.getMinutes()).padStart(2,"0");
+      const ss = String(d.getSeconds()).padStart(2,"0");
+      clockEl.textContent = `${{hh}}:${{mm}}:${{ss}}`;
+    }}
+    tickClock();
+    setInterval(tickClock, 1000);
+
     // Auto-refresh so the screen updates if/when the code rotates.
     setTimeout(()=>location.reload(), 5000);
   </script>
 </body>
 </html>
 """
+
 
 # -----------------------------------------------------------------------------
 # CASHIER UI
