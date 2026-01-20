@@ -159,7 +159,7 @@ HOME_HTML = """"<!doctype html>
     .hero {
       min-height: 100svh; /* fixes mobile viewport bug */
       width: 100%;
-      background-image: url("/static/drive_thru_bg.png");
+      background-image: url("/BG.png");
       background-size: contain;        /* IMPORTANT */
       background-position: center top; /* keeps SMART visible */
       background-repeat: no-repeat;
