@@ -146,202 +146,269 @@ HOME_HTML = """
   <style>
     :root{
       --bg: #0b1220;
-      --text: #0b0f18;
-      --muted: rgba(17,24,39,0.70);
-      --white: rgba(255,255,255,0.92);
-      --glass: rgba(255,255,255,0.70);
-      --glass2: rgba(255,255,255,0.22);
-      --stroke: rgba(255,255,255,0.22);
+      --glass: rgba(255,255,255,0.10);
+      --glass2: rgba(255,255,255,0.14);
+      --stroke: rgba(255,255,255,0.18);
       --shadow: 0 18px 50px rgba(0,0,0,0.22);
-      --radius: 20px;
+      --shadow2: 0 26px 70px rgba(0,0,0,0.28);
+      --radius: 18px;
+      --textOnDark: rgba(255,255,255,0.94);
+      --mutedOnDark: rgba(255,255,255,0.82);
     }
 
-    *{ box-sizing:border-box; }
-    html, body{ height:100%; margin:0; font-family: Arial, sans-serif; }
+    *{ box-sizing: border-box; }
+    html, body{ height: 100%; margin: 0; font-family: Arial, sans-serif; }
 
-    /* ✅ Top nav */
-    .nav{
+    /* ✅ Background stays visible */
+    body{
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(circle at 20% 10%, rgba(0,0,0,0.08), rgba(0,0,0,0.22) 55%, rgba(0,0,0,0.32)),
+        url('/static/drive_thru_demo.png?v=101');
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-position: center top;
+      overflow-x: hidden;
+    }
+
+    /* ✅ Top bar (minimal) */
+    .topbar{
       position: sticky;
       top: 0;
       z-index: 50;
-      background: rgba(255,255,255,0.82);
-      backdrop-filter: blur(14px) saturate(140%);
-      -webkit-backdrop-filter: blur(14px) saturate(140%);
-      border-bottom: 1px solid rgba(0,0,0,0.06);
+      padding: 14px 14px;
+      background: rgba(10,14,24,0.10);
+      backdrop-filter: blur(12px) saturate(140%);
+      -webkit-backdrop-filter: blur(12px) saturate(140%);
+      border-bottom: 1px solid rgba(255,255,255,0.10);
     }
-    .navInner{
+    .topbarInner{
       width: min(1180px, 96vw);
       margin: 0 auto;
-      padding: 12px 10px;
       display:flex;
       align-items:center;
-      justify-content:space-between;
+      justify-content: space-between;
       gap: 14px;
     }
     .brand{
       display:flex;
       align-items:center;
       gap: 10px;
+      color: var(--textOnDark);
       font-weight: 900;
-      letter-spacing: -0.2px;
-      color: #111827;
+      letter-spacing: -0.3px;
+      text-shadow: 0 12px 28px rgba(0,0,0,0.35);
+      white-space: nowrap;
     }
-    .brandDot{
+    .brandMark{
       width: 12px; height: 12px; border-radius: 999px;
       background: linear-gradient(135deg, #22c55e, #3b82f6);
-      box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+      box-shadow: 0 12px 26px rgba(0,0,0,0.25);
     }
-
-    .navLinks{
+    .topActions{
       display:flex;
-      gap: 18px;
+      gap: 10px;
       align-items:center;
-      color:#111827;
-      font-weight: 700;
-      font-size: 14px;
     }
-    .navLinks a{
+    .chip{
       text-decoration:none;
-      color:#111827;
-      opacity: 0.8;
-    }
-    .navLinks a:hover{ opacity:1; text-decoration: underline; }
-
-    .navCTA{
-      display:flex;
-      gap:10px;
-      align-items:center;
-    }
-    .pillBtn{
-      border: 0;
+      color: var(--textOnDark);
+      font-weight: 800;
+      font-size: 13px;
+      padding: 9px 12px;
       border-radius: 999px;
-      padding: 10px 14px;
-      font-weight: 900;
-      cursor:pointer;
-      text-decoration:none;
-      display:inline-flex;
-      align-items:center;
-      gap: 8px;
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.14);
+      backdrop-filter: blur(12px) saturate(140%);
+      -webkit-backdrop-filter: blur(12px) saturate(140%);
+      transition: transform .12s ease, background .12s ease, border .12s ease;
     }
-    .pillBtn.primary{
-      background: #ef4444;
-      color: #fff;
-      box-shadow: 0 14px 30px rgba(239,68,68,0.25);
-    }
-    .pillBtn.primary:hover{ filter: brightness(0.95); }
-    .pillBtn.ghost{
-      background: rgba(0,0,0,0.06);
-      color:#111827;
+    .chip:hover{
+      transform: translateY(-1px);
+      background: rgba(255,255,255,0.14);
+      border-color: rgba(255,255,255,0.22);
     }
 
-    /* ✅ Page background + hero */
-    .heroWrap{
+    /* ✅ Hero layout */
+    .page{
       min-height: calc(100vh - 58px);
-      background:
-        linear-gradient(90deg, rgba(255,255,255,0.88) 0%, rgba(255,255,255,0.88) 46%, rgba(255,255,255,0.0) 46%),
-        url('/static/drive_thru_demo.png?v=99') right center / cover no-repeat;
-      background-color: var(--bg);
+      padding: 28px 14px 40px 14px;
       display:flex;
-      align-items: stretch;
+      justify-content:center;
+      align-items:flex-start;
+    }
+    .wrap{
+      width: min(1180px, 96vw);
+      margin-top: 34px;
     }
 
     .hero{
-      width: min(1180px, 96vw);
-      margin: 0 auto;
-      padding: 36px 10px 44px 10px;
       display:grid;
-      grid-template-columns: 1.05fr 0.95fr;
-      gap: 24px;
-      align-items:center;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+      align-items:start;
     }
 
-    /* left content */
-    .left{
-      padding: 6px 0;
+    /* Left: headline + supporting text */
+    .heroText{
+      padding: 6px 4px;
+      color: var(--textOnDark);
+      text-shadow: 0 14px 34px rgba(0,0,0,0.45);
     }
-    .kicker{
-      font-weight: 900;
-      color: rgba(17,24,39,0.75);
-      letter-spacing: 0.6px;
-      font-size: 12px;
-      text-transform: uppercase;
-      margin-bottom: 10px;
-    }
-    .h1{
-      font-size: clamp(34px, 5vw, 58px);
+    .heroText h1{
+      margin: 0 0 10px 0;
+      font-size: clamp(28px, 4.6vw, 54px);
+      letter-spacing: -0.9px;
       line-height: 1.02;
-      margin: 0 0 14px 0;
-      color: #111827;
-      letter-spacing: -1px;
-      font-weight: 900;
     }
-    .sub{
-      margin: 0 0 22px 0;
-      color: rgba(17,24,39,0.75);
+    .heroText p{
+      margin: 0 0 18px 0;
       font-size: clamp(14px, 2.2vw, 18px);
       line-height: 1.45;
-      max-width: 600px;
+      color: var(--mutedOnDark);
+      max-width: 720px;
     }
 
-    /* CTA card (DoorDash style) */
-    .ctaCard{
-      background: rgba(255,255,255,0.94);
+    /* Right: feature pills */
+    .miniPanel{
       border-radius: var(--radius);
+      padding: 14px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      backdrop-filter: blur(18px) saturate(150%);
+      -webkit-backdrop-filter: blur(18px) saturate(150%);
       box-shadow: var(--shadow);
-      border: 1px solid rgba(0,0,0,0.06);
-      padding: 18px;
-      width: min(560px, 96%);
+      color: var(--textOnDark);
     }
-    .ctaTitle{
-      font-size: 16px;
+    .miniTitle{
       font-weight: 900;
       letter-spacing: -0.2px;
-      margin: 0 0 12px 0;
-      color:#111827;
+      margin: 0 0 10px 0;
+      font-size: 15px;
     }
-
-    /* ✅ 3 aligned CTA buttons */
-    .ctaGrid{
-      display:grid;
-      grid-template-columns: 1fr;
+    .pills{
+      display:flex;
+      flex-wrap: wrap;
       gap: 10px;
     }
-    .ctaBtn{
+    .pill{
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.16);
+      border: 1px solid rgba(255,255,255,0.14);
+      font-size: 13px;
+      font-weight: 800;
+      color: rgba(255,255,255,0.92);
       display:flex;
       align-items:center;
-      justify-content:space-between;
-      gap: 10px;
+      gap: 8px;
+    }
+    .dot{
+      width: 7px; height: 7px; border-radius: 999px;
+      background: rgba(255,255,255,0.85);
+      opacity: 0.85;
+    }
 
-      padding: 14px 14px;
-      border-radius: 14px;
+    /* ✅ Interactive tiles */
+    .tiles{
+      margin-top: 16px;
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .tile{
+      border-radius: 18px;
+      padding: 16px;
       text-decoration:none;
+      color: rgba(255,255,255,0.94);
 
-      background: rgba(17,24,39,0.04);
-      border: 1px solid rgba(17,24,39,0.08);
-      color:#111827;
+      background: var(--glass);
+      border: 1px solid var(--stroke);
+      backdrop-filter: blur(22px) saturate(160%);
+      -webkit-backdrop-filter: blur(22px) saturate(160%);
+      box-shadow: var(--shadow);
+
+      position: relative;
+      overflow:hidden;
+
+      transition: transform .14s ease, box-shadow .14s ease, background .14s ease, border .14s ease;
+    }
+
+    .tile:before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: radial-gradient(circle at 20% 10%, rgba(255,255,255,0.14), rgba(255,255,255,0.02) 55%);
+      pointer-events:none;
+    }
+
+    .tile:hover{
+      transform: translateY(-3px);
+      box-shadow: var(--shadow2);
+      background: var(--glass2);
+      border-color: rgba(255,255,255,0.24);
+    }
+
+    .tileTop{
+      display:flex;
+      align-items:flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      position: relative;
+    }
+
+    .tileTitle{
+      font-size: 18px;
       font-weight: 900;
-      transition: transform .12s ease, background .12s ease, border .12s ease;
+      letter-spacing: -0.3px;
+      margin: 0;
     }
-    .ctaBtn:hover{
-      transform: translateY(-1px);
-      background: rgba(17,24,39,0.06);
-      border: 1px solid rgba(17,24,39,0.14);
+
+    .tag{
+      font-size: 12px;
+      font-weight: 900;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.16);
+      border: 1px solid rgba(255,255,255,0.14);
+      color: rgba(255,255,255,0.9);
+      white-space: nowrap;
     }
-    .ctaHint{
-      font-weight: 700;
-      color: rgba(17,24,39,0.65);
+
+    .tileDesc{
+      margin: 10px 0 0 0;
       font-size: 13px;
-      margin-top: 10px;
       line-height: 1.35;
-    }
-    .arrow{ font-size: 18px; opacity: 0.8; }
-
-    /* right side is purely visual spacer (like DoorDash image) */
-    .right{
-      height: 540px;
+      color: rgba(255,255,255,0.86);
+      position: relative;
     }
 
-    /* ✅ Lane modal */
+    .tileCTA{
+      margin-top: 14px;
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      position: relative;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(0,0,0,0.10);
+      border: 1px solid rgba(255,255,255,0.12);
+      font-weight: 900;
+    }
+    .tileCTA span{ opacity: 0.9; }
+    .arrow{ font-size: 18px; font-weight: 900; opacity: 0.85; }
+
+    /* Tip */
+    .tip{
+      margin-top: 12px;
+      text-align: left;
+      color: rgba(255,255,255,0.82);
+      text-shadow: 0 14px 34px rgba(0,0,0,0.45);
+      font-size: 13px;
+    }
+
+    /* ✅ Modal */
     .modalBack{
       display:none;
       position:fixed;
@@ -353,112 +420,148 @@ HOME_HTML = """
       z-index: 9999;
     }
     .modal{
-      width: min(520px, 94vw);
+      width: min(560px, 94vw);
       border-radius: 18px;
       padding: 18px;
-      background: rgba(255,255,255,0.92);
-      border: 1px solid rgba(0,0,0,0.08);
-      box-shadow: 0 22px 60px rgba(0,0,0,0.35);
-      color:#111827;
+      background: rgba(255,255,255,0.14);
+      border: 1px solid rgba(255,255,255,0.18);
+      backdrop-filter: blur(22px) saturate(160%);
+      -webkit-backdrop-filter: blur(22px) saturate(160%);
+      box-shadow: 0 26px 80px rgba(0,0,0,0.45);
+      color: rgba(255,255,255,0.96);
     }
-    .modalTitle{ font-weight: 900; font-size: 18px; margin: 0 0 10px 0; }
-    .laneBtns{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+    .modalTitle{
+      margin: 0 0 6px 0;
+      font-weight: 900;
+      font-size: 18px;
+      letter-spacing: -0.2px;
+    }
+    .modalSub{
+      margin: 0 0 12px 0;
+      color: rgba(255,255,255,0.85);
+      font-size: 14px;
+      line-height: 1.35;
+    }
+    .laneGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
     .laneBtn{
       text-decoration:none;
-      color:#111827;
+      color: rgba(255,255,255,0.96);
       padding: 12px 14px;
       border-radius: 14px;
-      background: rgba(17,24,39,0.04);
-      border: 1px solid rgba(17,24,39,0.10);
+      background: rgba(0,0,0,0.14);
+      border: 1px solid rgba(255,255,255,0.16);
       text-align:center;
       font-weight: 900;
+      transition: transform .12s ease, background .12s ease, border .12s ease;
     }
-    .laneBtn:hover{ background: rgba(17,24,39,0.06); border-color: rgba(17,24,39,0.16); }
-    .modalFooter{ display:flex; justify-content:flex-end; margin-top:12px; }
+    .laneBtn:hover{
+      transform: translateY(-1px);
+      background: rgba(0,0,0,0.20);
+      border-color: rgba(255,255,255,0.24);
+    }
+    .modalFooter{
+      display:flex;
+      justify-content:flex-end;
+      margin-top: 12px;
+    }
     .closeBtn{
-      border:0;
-      border-radius: 12px;
+      background: rgba(0,0,0,0.18);
+      border: 1px solid rgba(255,255,255,0.14);
+      color: rgba(255,255,255,0.95);
       padding: 10px 12px;
-      background: rgba(17,24,39,0.08);
+      border-radius: 12px;
+      cursor: pointer;
       font-weight: 900;
-      cursor:pointer;
-      color:#111827;
     }
 
     /* ✅ Responsive */
     @media (max-width: 980px){
-      .heroWrap{
-        background:
-          linear-gradient(rgba(255,255,255,0.92), rgba(255,255,255,0.92)),
-          url('/static/drive_thru_demo.png?v=99') center / cover no-repeat;
-      }
       .hero{ grid-template-columns: 1fr; }
-      .right{ display:none; }
-      .ctaCard{ width: 100%; }
-      .navLinks{ display:none; }
+      .tiles{ grid-template-columns: 1fr; }
+      .wrap{ margin-top: 18px; }
     }
-
     @media (max-width: 560px){
-      .laneBtns{ grid-template-columns: 1fr; }
+      .laneGrid{ grid-template-columns: 1fr; }
     }
   </style>
 </head>
 
 <body>
-  <!-- Top Nav -->
-  <div class="nav">
-    <div class="navInner">
+  <div class="topbar">
+    <div class="topbarInner">
       <div class="brand">
-        <span class="brandDot"></span>
-        Smart Drive-Thru
+        <span class="brandMark"></span>
+        Smart Drive-Thru Demo
       </div>
-
-      <div class="navLinks">
-        <a href="#how">How it works</a>
-        <a href="/customer">Customer</a>
-        <a href="/cashier">Cashier</a>
-      </div>
-
-      <div class="navCTA">
-        <a class="pillBtn ghost" href="/lane/L1">Lane</a>
-        <a class="pillBtn primary" href="/customer">Start Demo</a>
+      <div class="topActions">
+        <a class="chip" href="/customer">Customer</a>
+        <a class="chip" href="/cashier">Cashier</a>
       </div>
     </div>
   </div>
 
-  <!-- Hero -->
-  <div class="heroWrap">
-    <div class="hero">
-      <div class="left">
-        <div class="kicker">Real-time demo</div>
-        <h1 class="h1">Order & Pay — Without Opening the Window</h1>
-        <p class="sub">
-          Real-time voice ordering, secure lane-based connection, and mobile payment —
-          all without opening the car window until pickup.
-        </p>
+  <div class="page">
+    <div class="wrap">
 
-        <div class="ctaCard" id="how">
-          <div class="ctaTitle">Launch a demo view</div>
+      <div class="hero">
+        <div class="heroText">
+          <h1>Order, Voice, Pay — Seamlessly</h1>
+          <p>
+            Real-time voice ordering, secure lane-based connection, and mobile payment —
+            all without opening the car window until pickup.
+          </p>
+        </div>
 
-          <div class="ctaGrid">
-            <a class="ctaBtn" href="#" onclick="openLanePicker(); return false;">
-              Lane Display <span class="arrow">→</span>
-            </a>
-            <a class="ctaBtn" href="/customer">
-              Customer Portal <span class="arrow">→</span>
-            </a>
-            <a class="ctaBtn" href="/cashier">
-              Cashier Console <span class="arrow">→</span>
-            </a>
-          </div>
-
-          <div class="ctaHint">
-            Tip: Use phone for Customer and laptop for Cashier. WebRTC mic needs HTTPS (or localhost).
+        <div class="miniPanel">
+          <div class="miniTitle">What this demo shows</div>
+          <div class="pills">
+            <div class="pill"><span class="dot"></span> Lane code connect</div>
+            <div class="pill"><span class="dot"></span> Chat + WebRTC call</div>
+            <div class="pill"><span class="dot"></span> Mobile payment request</div>
+            <div class="pill"><span class="dot"></span> Cashier console</div>
           </div>
         </div>
       </div>
 
-      <div class="right"></div>
+      <div class="tiles">
+        <a class="tile" href="#" onclick="openLanePicker(); return false;">
+          <div class="tileTop">
+            <div>
+              <p class="tileTitle">Lane</p>
+            </div>
+            <span class="tag">Display</span>
+          </div>
+          <p class="tileDesc">Open a lane screen to get the rotating 4-digit station code.</p>
+          <div class="tileCTA"><span>Open lane display</span><span class="arrow">→</span></div>
+        </a>
+
+        <a class="tile" href="/customer">
+          <div class="tileTop">
+            <p class="tileTitle">Customer</p>
+            <span class="tag">Mobile</span>
+          </div>
+          <p class="tileDesc">Check-in, enter code, chat/call with cashier, and pay securely.</p>
+          <div class="tileCTA"><span>Open customer portal</span><span class="arrow">→</span></div>
+        </a>
+
+        <a class="tile" href="/cashier">
+          <div class="tileTop">
+            <p class="tileTitle">Cashier</p>
+            <span class="tag">POS + Agent</span>
+          </div>
+          <p class="tileDesc">Join the order, confirm total, and send payment request.</p>
+          <div class="tileCTA"><span>Open cashier console</span><span class="arrow">→</span></div>
+        </a>
+      </div>
+
+      <div class="tip">
+        Tip: Use phone for Customer and laptop for Cashier. WebRTC mic needs HTTPS (or localhost).
+      </div>
+
     </div>
   </div>
 
@@ -466,11 +569,9 @@ HOME_HTML = """
   <div id="laneModal" class="modalBack" onclick="closeLanePicker(event)">
     <div class="modal" onclick="event.stopPropagation()">
       <div class="modalTitle">Choose a Lane</div>
-      <div style="color: rgba(17,24,39,0.70); font-size: 14px; margin-bottom: 12px;">
-        Open the lane display to show the rotating 4-digit station code.
-      </div>
+      <div class="modalSub">Open the lane display to show the rotating 4-digit station code.</div>
 
-      <div class="laneBtns">
+      <div class="laneGrid">
         <a class="laneBtn" href="/lane/L1">Lane L1</a>
         <a class="laneBtn" href="/lane/L2">Lane L2</a>
       </div>
@@ -488,6 +589,7 @@ HOME_HTML = """
 </body>
 </html>
 """
+
 
 
 
