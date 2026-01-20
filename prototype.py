@@ -3,49 +3,38 @@ from typing import Dict, List
 from uuid import uuid4
 from pathlib import Path
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi import Request, HTTPException
 from fastapi.templating import Jinja2Templates
 
-
-# -----------------------------------------------------------------------------
-# App (✅ create app FIRST)
-# -----------------------------------------------------------------------------
 app = FastAPI(
     title="Smart Drive-Thru Ordering Platform (Real-Time Voice Ordering, Secure Lane Connection & Mobile Payment)"
 )
 
-# -----------------------------------------------------------------------------
-# Static files (✅ serve background image from /static)
-# Put your background image here:
-#   ./static/bg.jpg   (or bg.png)
-# -----------------------------------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
+TEMPLATES_DIR = BASE_DIR / "templates"
 
-# ✅ Mount ALWAYS (so you notice issues early). If folder missing, create it.
+# Ensure directories exist (helps in fresh deployments)
+STATIC_DIR.mkdir(parents=True, exist_ok=True)
+TEMPLATES_DIR.mkdir(parents=True, exist_ok=True)
+
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
-VALID_LANES = {"L1", "L2"}  # keep this consistent with your UI
+VALID_LANES = {"L1", "L2"}
 
 @app.get("/lane/{lane_id}", response_class=HTMLResponse)
 async def lane_screen(request: Request, lane_id: str):
     lane_id = lane_id.upper()
-
     if lane_id not in VALID_LANES:
-      raise HTTPException(status_code=404, detail=f"Unknown lane: {lane_id}")
+        raise HTTPException(status_code=404, detail=f"Unknown lane: {lane_id}")
 
-    # If you use any in-memory dict like lanes[lane_id], validate before access:
-    # if lane_id not in lanes: initialize or raise 404
-    # lanes.setdefault(lane_id, {"code": "----"})
-
-    return templates.TemplateResponse("lane.html", {
-        "request": request,
-        "lane_id": lane_id,
-    })
+    return templates.TemplateResponse(
+        "lane.html",
+        {"request": request, "lane_id": lane_id},
+    )
 
 # -----------------------------------------------------------------------------
 # In-memory stores (demo only)
