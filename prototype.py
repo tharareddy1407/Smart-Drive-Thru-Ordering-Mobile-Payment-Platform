@@ -148,30 +148,19 @@ HOME_HTML = """
       --shadow: 0 20px 60px rgba(0,0,0,0.25);
       --text: rgba(255,255,255,0.96);
     }
-
     *{ box-sizing: border-box; }
     html, body{ height:100%; margin:0; font-family: Arial, sans-serif; }
 
-    /* ✅ Fill screen (no borders) */
+    /* ✅ Default (laptop/tablet): fill screen, no black borders */
     body{
       background-color:#0b1220;
       background-image:
         linear-gradient(rgba(0,0,0,0.10), rgba(0,0,0,0.22)),
-        url('/static/Background.png?v=400');
+        url('/static/Background.png?v=500');
       background-repeat:no-repeat;
-      background-size: cover;            /* ✅ removes black borders */
-      background-position: center 18%;   /* ✅ keeps SMART visible */
+      background-size: cover;
+      background-position: center 18%;
       overflow-x:hidden;
-    }
-
-    /* ✅ On tall screens, show more top */
-    @media (min-height: 900px){
-      body{ background-position: center 12%; }
-    }
-
-    /* ✅ On small screens, move focus up */
-    @media (max-width: 520px){
-      body{ background-position: center 10%; }
     }
 
     .page{
@@ -182,10 +171,9 @@ HOME_HTML = """
       padding: 18px;
     }
 
-    /* ✅ Place buttons below the headline lines */
     .wrap{
       width: min(1100px, 96vw);
-      margin-top: clamp(220px, 32vh, 360px); /* responsive vertical placement */
+      margin-top: clamp(220px, 32vh, 360px);
       display:flex;
       flex-direction:column;
       align-items:center;
@@ -202,7 +190,6 @@ HOME_HTML = """
 
     .circleWrap{ position: relative; display:inline-flex; }
 
-    /* ✅ Darker professional circles */
     .circleBtn{
       width: 86px;
       height: 86px;
@@ -223,6 +210,7 @@ HOME_HTML = """
       backdrop-filter: blur(16px) saturate(160%);
       -webkit-backdrop-filter: blur(16px) saturate(160%);
       box-shadow: 0 14px 34px rgba(0,0,0,0.22);
+
       transition: transform .12s ease, background .12s ease, border .12s ease;
       user-select:none;
     }
@@ -238,7 +226,6 @@ HOME_HTML = """
       border-color: rgba(255,255,255,0.40);
     }
 
-    /* ✅ Popover */
     .popover{
       position:absolute;
       top: calc(100% + 12px);
@@ -259,7 +246,6 @@ HOME_HTML = """
       display:none;
       z-index: 9999;
     }
-
     .popover.show{ display:block; }
 
     .popover:before{
@@ -274,18 +260,8 @@ HOME_HTML = """
       border-top: 1px solid rgba(255,255,255,0.18);
     }
 
-    .popTitle{
-      font-weight: 900;
-      font-size: 14px;
-      margin: 0 0 6px 0;
-    }
-
-    .popText{
-      margin: 0;
-      font-size: 13px;
-      line-height: 1.35;
-      color: rgba(255,255,255,0.90);
-    }
+    .popTitle{ font-weight: 900; font-size: 14px; margin: 0 0 6px 0; }
+    .popText{ margin: 0; font-size: 13px; line-height: 1.35; color: rgba(255,255,255,0.90); }
 
     .popActions{
       margin-top: 10px;
@@ -303,26 +279,41 @@ HOME_HTML = """
       border-radius: 12px;
       background: rgba(255,255,255,0.10);
       border: 1px solid rgba(255,255,255,0.16);
-      transition: transform .12s ease, background .12s ease, border .12s ease;
-    }
-
-    .popLink:hover{
-      transform: translateY(-1px);
-      background: rgba(255,255,255,0.14);
-      border-color: rgba(255,255,255,0.22);
     }
 
     .tip{
-      margin-top: 12px;
+      margin-top: 10px;
       font-size: 13px;
       color: rgba(255,255,255,0.86);
       text-shadow: 0 12px 28px rgba(0,0,0,0.45);
       text-align:center;
     }
 
-    /* ✅ Mobile: popover fixed at bottom */
+    /* ✅ PHONE FIX:
+       - show full image (no missing parts) using contain
+       - allow page to scroll if image is taller
+       - place buttons BELOW "car window until pickup" line using viewport-based top margin
+    */
     @media (max-width: 520px){
-      .circleBtn{ width: 80px; height: 80px; font-size: 13px; }
+      body{
+        background-size: contain;            /* ✅ full image visible */
+        background-position: center top;
+        background-color:#0b1220;
+      }
+
+      .page{
+        min-height: 100vh;
+        padding: 14px;
+      }
+
+      /* 👇 This moves buttons below the center-line text on your image */
+      .wrap{
+        margin-top: 46vh;  /* ✅ buttons below “car window until pickup” line */
+      }
+
+      .circleBtn{ width: 78px; height: 78px; font-size: 13px; }
+
+      /* popover fixed at bottom so it never goes off screen */
       .popover{
         position: fixed;
         left: 50%;
@@ -418,6 +409,7 @@ HOME_HTML = """
 </body>
 </html>
 """
+
 
 
 
