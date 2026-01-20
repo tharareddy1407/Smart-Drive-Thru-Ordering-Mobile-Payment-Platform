@@ -519,7 +519,7 @@ async function refreshOrders(){
   updateSummaryFromSelected();
 
   // ✅ progress
-  setStepDone("refresh", "Now select the order and click “Join”.");
+  setStepDone("refresh", "Click Refresh, select an order, and then click ‘Join”.");
 }
 refreshOrders();
 
