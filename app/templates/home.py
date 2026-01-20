@@ -301,6 +301,7 @@ HOME_HTML = """
   pointer-events: none;
 }
 
+
     @media (max-width: 520px){
       body{ overflow:auto; }
       .circleRow{ margin-top: 150px; gap: 18px; }

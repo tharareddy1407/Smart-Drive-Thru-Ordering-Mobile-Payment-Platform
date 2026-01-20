@@ -281,6 +281,7 @@ CASHIER_HTML = r"""
   z-index: 999;
   pointer-events: none;
 }
+
     /* Log */
     #log{
       margin-top:12px;
