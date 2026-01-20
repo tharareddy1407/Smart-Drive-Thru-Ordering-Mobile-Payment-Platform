@@ -159,9 +159,17 @@ HOME_HTML = """
     linear-gradient(rgba(0,0,0,0.10), rgba(0,0,0,0.22)),
     url('/static/BG.png?v=2');
   background-repeat: no-repeat;
-  background-size: contain;
-  background-position: center center;
+  background-size: cover;
+  background-position: center;
 }
+
+/* Tall screens / mobile */
+@media (max-aspect-ratio: 4/3) {
+  body {
+    background-size: contain;
+  }
+}
+
 
     .hero{
       min-height: 100svh;
