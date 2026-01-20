@@ -164,7 +164,7 @@ HOME_HTML = """
       background-color: var(--bg);
       background-image:
         radial-gradient(circle at 20% 10%, rgba(0,0,0,0.08), rgba(0,0,0,0.22) 55%, rgba(0,0,0,0.32)),
-        url('/static/drive_thru_demo.png?v=101');
+        url('/static/Background?v=101');
       background-repeat: no-repeat;
       background-size: cover;
       background-position: center top;
@@ -491,41 +491,14 @@ HOME_HTML = """
 </head>
 
 <body>
-  <div class="topbar">
-    <div class="topbarInner">
-      <div class="brand">
-        <span class="brandMark"></span>
-        Smart Drive-Thru Demo
-      </div>
-      <div class="topActions">
-        <a class="chip" href="/customer">Customer</a>
-        <a class="chip" href="/cashier">Cashier</a>
-      </div>
-    </div>
-  </div>
+  
 
   <div class="page">
     <div class="wrap">
 
-      <div class="hero">
-        <div class="heroText">
-          <h1>Order, Voice, Pay — Seamlessly</h1>
-          <p>
-            Real-time voice ordering, secure lane-based connection, and mobile payment —
-            all without opening the car window until pickup.
-          </p>
-        </div>
+      
 
-        <div class="miniPanel">
-          <div class="miniTitle">What this demo shows</div>
-          <div class="pills">
-            <div class="pill"><span class="dot"></span> Lane code connect</div>
-            <div class="pill"><span class="dot"></span> Chat + WebRTC call</div>
-            <div class="pill"><span class="dot"></span> Mobile payment request</div>
-            <div class="pill"><span class="dot"></span> Cashier console</div>
-          </div>
-        </div>
-      </div>
+        
 
       <div class="tiles">
         <a class="tile" href="#" onclick="openLanePicker(); return false;">
