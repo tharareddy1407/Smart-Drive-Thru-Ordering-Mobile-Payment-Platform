@@ -153,7 +153,7 @@ HOME_HTML = """
       --shadow2: 0 26px 70px rgba(0,0,0,0.28);
       --radius: 18px;
       --textOnDark: rgba(255,255,255,0.94);
-      --mutedOnDark: rgba(255,255,255,0.82);
+      --mutedOnDark: rgba(255,255,255,0.84);
     }
 
     *{ box-sizing: border-box; }
@@ -164,96 +164,33 @@ HOME_HTML = """
       background-color: var(--bg);
       background-image:
         radial-gradient(circle at 20% 10%, rgba(0,0,0,0.08), rgba(0,0,0,0.22) 55%, rgba(0,0,0,0.32)),
-        url('/static/Background.png?v=101');
+        url('/static/Background.png?v=120');
       background-repeat: no-repeat;
       background-size: cover;
       background-position: center top;
       overflow-x: hidden;
     }
 
-    /* ✅ Top bar (minimal) */
-    .topbar{
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      padding: 14px 14px;
-      background: rgba(10,14,24,0.10);
-      backdrop-filter: blur(12px) saturate(140%);
-      -webkit-backdrop-filter: blur(12px) saturate(140%);
-      border-bottom: 1px solid rgba(255,255,255,0.10);
-    }
-    .topbarInner{
-      width: min(1180px, 96vw);
-      margin: 0 auto;
-      display:flex;
-      align-items:center;
-      justify-content: space-between;
-      gap: 14px;
-    }
-    .brand{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      color: var(--textOnDark);
-      font-weight: 900;
-      letter-spacing: -0.3px;
-      text-shadow: 0 12px 28px rgba(0,0,0,0.35);
-      white-space: nowrap;
-    }
-    .brandMark{
-      width: 12px; height: 12px; border-radius: 999px;
-      background: linear-gradient(135deg, #22c55e, #3b82f6);
-      box-shadow: 0 12px 26px rgba(0,0,0,0.25);
-    }
-    .topActions{
-      display:flex;
-      gap: 10px;
-      align-items:center;
-    }
-    .chip{
-      text-decoration:none;
-      color: var(--textOnDark);
-      font-weight: 800;
-      font-size: 13px;
-      padding: 9px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.10);
-      border: 1px solid rgba(255,255,255,0.14);
-      backdrop-filter: blur(12px) saturate(140%);
-      -webkit-backdrop-filter: blur(12px) saturate(140%);
-      transition: transform .12s ease, background .12s ease, border .12s ease;
-    }
-    .chip:hover{
-      transform: translateY(-1px);
-      background: rgba(255,255,255,0.14);
-      border-color: rgba(255,255,255,0.22);
-    }
-
-    /* ✅ Hero layout */
+    /* ✅ Layout */
     .page{
-      min-height: calc(100vh - 58px);
+      min-height: 100vh;
       padding: 28px 14px 40px 14px;
       display:flex;
       justify-content:center;
       align-items:flex-start;
     }
+
     .wrap{
       width: min(1180px, 96vw);
-      margin-top: 34px;
+      margin-top: 130px; /* pushes content below SMART title */
     }
 
-    .hero{
-      display:grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: 18px;
-      align-items:start;
-    }
-
-    /* Left: headline + supporting text */
+    /* ✅ Headline (only this) */
     .heroText{
-      padding: 6px 4px;
       color: var(--textOnDark);
       text-shadow: 0 14px 34px rgba(0,0,0,0.45);
+      text-align: left;
+      max-width: 820px;
     }
     .heroText h1{
       margin: 0 0 10px 0;
@@ -266,59 +203,18 @@ HOME_HTML = """
       font-size: clamp(14px, 2.2vw, 18px);
       line-height: 1.45;
       color: var(--mutedOnDark);
-      max-width: 720px;
     }
 
-    /* Right: feature pills */
-    .miniPanel{
-      border-radius: var(--radius);
-      padding: 14px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.14);
-      backdrop-filter: blur(18px) saturate(150%);
-      -webkit-backdrop-filter: blur(18px) saturate(150%);
-      box-shadow: var(--shadow);
-      color: var(--textOnDark);
-    }
-    .miniTitle{
-      font-weight: 900;
-      letter-spacing: -0.2px;
-      margin: 0 0 10px 0;
-      font-size: 15px;
-    }
-    .pills{
-      display:flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    .pill{
-      padding: 10px 12px;
-      border-radius: 999px;
-      background: rgba(0,0,0,0.16);
-      border: 1px solid rgba(255,255,255,0.14);
-      font-size: 13px;
-      font-weight: 800;
-      color: rgba(255,255,255,0.92);
-      display:flex;
-      align-items:center;
-      gap: 8px;
-    }
-    .dot{
-      width: 7px; height: 7px; border-radius: 999px;
-      background: rgba(255,255,255,0.85);
-      opacity: 0.85;
-    }
-
-    /* ✅ Interactive tiles */
+    /* ✅ Three tiles only */
     .tiles{
-      margin-top: 16px;
+      margin-top: 10px;
       display:grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 14px;
     }
 
     .tile{
-      border-radius: 18px;
+      border-radius: var(--radius);
       padding: 16px;
       text-decoration:none;
       color: rgba(255,255,255,0.94);
@@ -396,13 +292,11 @@ HOME_HTML = """
       border: 1px solid rgba(255,255,255,0.12);
       font-weight: 900;
     }
-    .tileCTA span{ opacity: 0.9; }
+
     .arrow{ font-size: 18px; font-weight: 900; opacity: 0.85; }
 
-    /* Tip */
     .tip{
       margin-top: 12px;
-      text-align: left;
       color: rgba(255,255,255,0.82);
       text-shadow: 0 14px 34px rgba(0,0,0,0.45);
       font-size: 13px;
@@ -480,59 +374,32 @@ HOME_HTML = """
 
     /* ✅ Responsive */
     @media (max-width: 980px){
-      .hero{ grid-template-columns: 1fr; }
+      .wrap{ margin-top: 90px; }
       .tiles{ grid-template-columns: 1fr; }
-      .wrap{ margin-top: 18px; }
     }
     @media (max-width: 560px){
+      .wrap{ margin-top: 70px; }
       .laneGrid{ grid-template-columns: 1fr; }
     }
   </style>
 </head>
 
 <body>
-  <div class="topbar">
-    <div class="topbarInner">
-      <div class="brand">
-        <span class="brandMark"></span>
-        Smart Drive-Thru Demo
-      </div>
-      <div class="topActions">
-        <a class="chip" href="/customer">Customer</a>
-        <a class="chip" href="/cashier">Cashier</a>
-      </div>
-    </div>
-  </div>
-
   <div class="page">
     <div class="wrap">
 
-      <div class="hero">
-        <div class="heroText">
-          <h1>Order, Voice, Pay — Seamlessly</h1>
-          <p>
-            Real-time voice ordering, secure lane-based connection, and mobile payment —
-            all without opening the car window until pickup.
-          </p>
-        </div>
-
-        <div class="miniPanel">
-          <div class="miniTitle">What this demo shows</div>
-          <div class="pills">
-            <div class="pill"><span class="dot"></span> Lane code connect</div>
-            <div class="pill"><span class="dot"></span> Chat + WebRTC call</div>
-            <div class="pill"><span class="dot"></span> Mobile payment request</div>
-            <div class="pill"><span class="dot"></span> Cashier console</div>
-          </div>
-        </div>
+      <div class="heroText">
+        <h1>Order, Voice, Pay — Seamlessly</h1>
+        <p>
+          Real-time voice ordering, secure lane-based connection, and mobile payment —
+          all without opening the car window until pickup.
+        </p>
       </div>
 
       <div class="tiles">
         <a class="tile" href="#" onclick="openLanePicker(); return false;">
           <div class="tileTop">
-            <div>
-              <p class="tileTitle">Lane</p>
-            </div>
+            <p class="tileTitle">Lane</p>
             <span class="tag">Display</span>
           </div>
           <p class="tileDesc">Open a lane screen to get the rotating 4-digit station code.</p>
@@ -589,6 +456,7 @@ HOME_HTML = """
 </body>
 </html>
 """
+
 
 
 
