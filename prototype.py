@@ -1441,146 +1441,520 @@ function hangupCall(){
 
 
 # -----------------------------------------------------------------------------
-# CUSTOMER UI
-# - Check-in & connect via lane code
-# - Chat (text)
-# - Initiate voice call (WebRTC) with agent
-# - Payment selection UI
+# CUSTOMER UI (Responsive, modern, “QSR-style”)
+# - Mobile-first (sticky action bar, bottom sheets feel)
+# - Desktop: 2-column layout for Order/Status
+# - Clean glass/gradient background + accessible contrast
 # -----------------------------------------------------------------------------
 CUSTOMER_HTML = r"""
 <!doctype html>
 <html>
 <head>
   <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Customer Portal</title>
+
   <style>
-    body { font-family: Arial; margin: 24px; }
-    .box { padding: 14px; border: 1px solid #ddd; border-radius: 10px; max-width: 900px; }
-    .row { display:flex; gap:12px; }
-    .col { flex:1; }
-    input,select,textarea { padding:8px; width:100%; margin:6px 0 12px 0; }
-    button { padding:10px 14px; cursor:pointer; margin-right:10px; margin-top:6px; }
-    .pill { display:inline-block; padding:2px 8px; border:1px solid #ccc; border-radius:999px; font-size:12px; margin-left:8px; }
-    .chat { background:#fff; border:1px solid #ddd; border-radius:10px; padding:10px; height:240px; overflow:auto; }
-    .msg { margin:6px 0; }
-    .msg b { display:inline-block; width:88px; }
-    .section { margin-top:14px; padding-top:10px; border-top:1px solid #eee; }
-    .muted { color:#666; font-size:12px; }
-    .method { padding: 10px; border: 1px solid #ddd; border-radius: 10px; margin-top: 10px; background:#fff; }
-    .divider { height:1px; background:#e5e5e5; margin:12px 0; }
-    .bannerOk { display:none; margin-top:10px; padding:10px; border-radius:10px; border:1px solid #cce5cc; background:#f2fff2; font-weight:700; }
-    .bannerErr { display:none; margin-top:10px; padding:10px; border-radius:10px; border:1px solid #f0c2c2; background:#fff2f2; font-weight:700; }
-    .callLive { display:none; margin-top:10px; padding:10px; border-radius:10px; border:1px solid #cce5cc; background:#f2fff2; font-weight:700; }
+    :root{
+      --bg:#070b14;
+      --card: rgba(255,255,255,0.08);
+      --card2: rgba(255,255,255,0.10);
+      --stroke: rgba(255,255,255,0.14);
+      --text: rgba(255,255,255,0.94);
+      --muted: rgba(255,255,255,0.70);
+      --shadow: 0 18px 60px rgba(0,0,0,.40);
+      --shadow2: 0 10px 24px rgba(0,0,0,.30);
+      --ok:#22c55e;
+      --warn:#f59e0b;
+      --err:#ef4444;
+      --accent:#7c3aed;
+      --accent2:#22d3ee;
+
+      --r:18px;
+      --r2:14px;
+      --pad:16px;
+      --pad2:12px;
+      --max: 1080px;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; background:var(--bg); color:var(--text); }
+    a{ color:inherit; }
+
+    /* Background (brand-neutral; works for any restaurant) */
+    body{
+      background:
+        radial-gradient(1200px 700px at 15% 5%, rgba(124,58,237,.35), transparent 55%),
+        radial-gradient(900px 600px at 85% 15%, rgba(34,211,238,.28), transparent 55%),
+        radial-gradient(900px 700px at 50% 110%, rgba(34,197,94,.18), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0)),
+        var(--bg);
+      background-attachment: fixed;
+      overflow-x:hidden;
+    }
+
+    /* Optional: if you later add real background images */
+    /* 
+    body{
+      background-image:
+        linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.75)),
+        url('/static/bg_desktop.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat:no-repeat;
+    }
+    @media (max-width: 640px){
+      body{
+        background-image:
+          linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.80)),
+          url('/static/bg_mobile.jpg');
+      }
+    }
+    */
+
+    .wrap{ max-width: var(--max); margin: 0 auto; padding: 18px 14px 86px; } /* extra bottom for mobile sticky bar */
+    @media (min-width: 900px){
+      .wrap{ padding: 26px 18px 26px; }
+    }
+
+    /* Top header */
+    .topbar{
+      display:flex; align-items:flex-start; justify-content:space-between;
+      gap:12px; margin-bottom: 12px;
+    }
+    .brand{
+      display:flex; flex-direction:column; gap:4px;
+    }
+    .brand h1{ margin:0; font-size: 18px; letter-spacing:.2px; }
+    .brand .sub{ color:var(--muted); font-size: 12px; }
+    @media (min-width: 700px){
+      .brand h1{ font-size: 20px; }
+    }
+
+    .chips{ display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end; }
+    .chip{
+      display:inline-flex; align-items:center; gap:8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow2);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .dot{ width:8px; height:8px; border-radius:999px; background: var(--warn); box-shadow: 0 0 0 3px rgba(245,158,11,.20); }
+    .dot.ok{ background: var(--ok); box-shadow: 0 0 0 3px rgba(34,197,94,.18); }
+    .dot.err{ background: var(--err); box-shadow: 0 0 0 3px rgba(239,68,68,.20); }
+
+    /* Main card */
+    .card{
+      border: 1px solid var(--stroke);
+      background: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.06));
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      backdrop-filter: blur(12px);
+    }
+    .cardInner{ padding: var(--pad); }
+
+    /* Step blocks */
+    .steps{
+      display:grid;
+      gap: 12px;
+    }
+    @media (min-width: 900px){
+      .steps{ gap: 14px; }
+    }
+
+    .step{
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,0.06);
+      border-radius: var(--r2);
+      overflow:hidden;
+    }
+    .stepHead{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px;
+      padding: 12px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.18);
+    }
+    .stepTitle{
+      display:flex; align-items:center; gap:10px;
+      font-weight:800;
+      letter-spacing:.2px;
+    }
+    .badge{
+      width:26px; height:26px; border-radius:10px;
+      display:grid; place-items:center;
+      background: linear-gradient(135deg, rgba(124,58,237,.55), rgba(34,211,238,.45));
+      border: 1px solid rgba(255,255,255,0.18);
+      box-shadow: 0 10px 22px rgba(0,0,0,.25);
+      font-size: 13px;
+    }
+    .stepBody{ padding: 12px; }
+
+    /* Layout inside steps */
+    .row{ display:flex; gap:12px; flex-wrap:wrap; }
+    .col{ flex:1; min-width: 220px; }
+    .col.tight{ flex:0 0 auto; }
+
+    label{ display:block; color:var(--muted); font-size: 12px; margin-bottom: 6px; }
+    input, select, textarea{
+      width:100%;
+      padding: 12px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.18);
+      outline: none;
+      background: rgba(10,14,24,0.55);
+      color: var(--text);
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.10);
+    }
+    input::placeholder, textarea::placeholder{ color: rgba(255,255,255,0.45); }
+    textarea{ resize: vertical; min-height: 100px; }
+
+    /* Buttons */
+    .btn{
+      appearance:none; border:none;
+      padding: 11px 14px;
+      border-radius: 12px;
+      cursor:pointer;
+      font-weight: 800;
+      letter-spacing: .2px;
+      color: rgba(255,255,255,.95);
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.18);
+      box-shadow: 0 12px 24px rgba(0,0,0,.25);
+      transition: transform .08s ease, filter .08s ease, background .08s ease;
+      user-select:none;
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    }
+    .btn:hover{ filter: brightness(1.08); }
+    .btn:active{ transform: translateY(1px); }
+    .btn[disabled]{ opacity:.55; cursor:not-allowed; }
+
+    .btnPrimary{
+      background: linear-gradient(135deg, rgba(124,58,237,.95), rgba(34,211,238,.80));
+      border: 1px solid rgba(255,255,255,0.18);
+    }
+    .btnOk{ background: linear-gradient(135deg, rgba(34,197,94,.85), rgba(34,211,238,.55)); }
+    .btnDanger{ background: linear-gradient(135deg, rgba(239,68,68,.90), rgba(245,158,11,.60)); }
+    .btnGhost{ background: rgba(255,255,255,0.07); }
+
+    .btnWide{ width: 100%; }
+
+    .help{ color: var(--muted); font-size: 12px; margin-top: 10px; line-height: 1.35; }
+
+    /* Banners */
+    .banner{
+      display:none;
+      margin-top: 10px;
+      padding: 12px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(0,0,0,0.22);
+    }
+    .banner.ok{ border-color: rgba(34,197,94,.45); background: rgba(34,197,94,.12); }
+    .banner.err{ border-color: rgba(239,68,68,.45); background: rgba(239,68,68,.10); }
+
+    /* Order + status grid */
+    .grid2{
+      display:grid;
+      gap:12px;
+      grid-template-columns: 1fr;
+      align-items:start;
+    }
+    @media (min-width: 900px){
+      .grid2{ grid-template-columns: 1.2fr 0.8fr; }
+    }
+
+    /* Chat */
+    .chat{
+      background: rgba(0,0,0,0.22);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 14px;
+      padding: 10px;
+      height: 260px;
+      overflow:auto;
+    }
+    .msg{ margin: 8px 0; display:flex; gap:10px; }
+    .who{
+      flex:0 0 auto;
+      font-size: 11px;
+      color: rgba(255,255,255,0.80);
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.06);
+      align-self:flex-start;
+      max-width: 120px;
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+    .bubble{
+      flex: 1;
+      padding: 10px 10px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.06);
+      line-height: 1.35;
+      font-size: 13px;
+      word-break: break-word;
+    }
+    .msg.customer .bubble{ background: rgba(124,58,237,0.18); border-color: rgba(124,58,237,0.35); }
+    .msg.cashier .bubble{ background: rgba(34,211,238,0.14); border-color: rgba(34,211,238,0.30); }
+    .msg.system .bubble{ background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.14); color: rgba(255,255,255,0.86); }
+
+    .callLive{
+      display:none;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(34,197,94,.45);
+      background: rgba(34,197,94,.12);
+      font-weight:800;
+    }
+
+    /* Status card */
+    .statusCard{
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.20);
+      border-radius: 14px;
+      padding: 12px;
+    }
+    .statusLabel{ color: var(--muted); font-size: 12px; }
+    .statusValue{ margin-top: 6px; font-weight: 900; letter-spacing: .2px; }
+    .statusHint{ margin-top: 10px; color: var(--muted); font-size: 12px; line-height: 1.35; }
+
+    /* Payment area */
+    .paymentArea{
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.20);
+      border-radius: 14px;
+      padding: 12px;
+    }
+    .payTitle{ font-weight: 900; margin: 0 0 8px 0; letter-spacing:.2px; }
+    .method{
+      padding: 12px;
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 14px;
+      margin-top: 10px;
+      background: rgba(255,255,255,0.06);
+    }
+    .method h4{ margin: 0 0 10px 0; font-size: 13px; letter-spacing:.2px; }
+    .divider{ height:1px; background: rgba(255,255,255,0.12); margin: 12px 0; }
+
+    /* Mobile sticky action bar */
+    .stickyBar{
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+      background: rgba(0,0,0,0.60);
+      backdrop-filter: blur(14px);
+      border-top: 1px solid rgba(255,255,255,0.14);
+      display:flex;
+      gap:10px;
+      z-index: 1000;
+    }
+    @media (min-width: 900px){
+      .stickyBar{ display:none; }
+      .wrap{ padding-bottom: 26px; }
+    }
+
+    /* Modals (kept, but styled to match) */
+    .modal{
+      display:none; position:fixed; inset:0;
+      background: rgba(0,0,0,0.60);
+      align-items:center; justify-content:center;
+      z-index: 9998;
+      padding: 14px;
+    }
+    .modalBox{
+      width: min(560px, 100%);
+      background: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.06));
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+    .modalBox h3{ margin: 0 0 10px 0; }
+    .modalBox .text{ color: rgba(255,255,255,0.86); margin-bottom: 12px; line-height:1.35; }
+    .modalRow{ display:flex; gap:10px; flex-wrap:wrap; }
+    .modalActions{ display:flex; justify-content:flex-end; margin-top: 12px; gap:10px; }
+
+    /* Tiny helpers */
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    .sp{ height: 8px; }
   </style>
 </head>
+
 <body>
-  <h2>Customer Portal (Drive-Thru Mode)</h2>
-
-  <div class="box">
-    <div>
-      <b>Customer ID:</b> <span id="cust"></span>
-      <span id="wsState" class="pill">WS: connecting…</span>
-    </div>
-
-    <div id="toast" style="font-weight:bold; margin-top:10px;">Loading…</div>
-    <div id="okBanner" class="bannerOk">✅ Connected to cashier. You can order now.</div>
-    <div id="errBanner" class="bannerErr"></div>
-
-    <div class="section">
-      <h3>Step 1 — I’m here in Drive-Thru</h3>
-      <div class="row">
-        <div class="col">
-          <label>Lane:</label>
-          <select id="lane">
-            <option value="L1">Lane L1</option>
-            <option value="L2">Lane L2</option>
-          </select>
-        </div>
-        <div class="col" style="flex:0.6">
-          <label>&nbsp;</label>
-          <button onclick="checkIn()">I’m Here</button>
-        </div>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <h1>Customer Portal <span style="opacity:.8;">(Drive-Thru Mode)</span></h1>
+        <div class="sub">Connect • Order • Call • Pay — without opening the window</div>
       </div>
-      <div class="muted">After check-in, you'll be prompted to enter the station code to connect.</div>
-    </div>
 
-    <div class="section">
-      <h3>Step 2 — Enter Station Code</h3>
-      <div class="row">
-        <div class="col">
-          <input id="code" placeholder="Enter 4-digit lane code (shown at station)" />
-        </div>
-        <div class="col" style="flex:0.6">
-          <button onclick="connect()">Connect</button>
-        </div>
-      </div>
-      <div class="muted">
-        Lane display: /lane/L1 or /lane/L2 (code valid 10 minutes, rotates after successful connect)
+      <div class="chips">
+        <div class="chip"><span class="dot" id="wsDot"></span><span id="wsState">WS: connecting…</span></div>
+        <div class="chip"><span style="opacity:.85;">Customer</span> <span class="mono" id="cust"></span></div>
       </div>
     </div>
 
-    <div class="section">
-      <h3>Step 3 — Order + Voice Call</h3>
-      <div class="row">
-        <div class="col">
-          <div class="chat" id="chat"></div>
-          <input id="custMsg" placeholder="Type your order..." />
-          <div>
-            <button onclick="sendText()">Send Text</button>
-            <button onclick="requestCall()">📞 Call Agent</button>
-            <button onclick="hangupCall()" id="btnHangup" disabled>Hang up</button>
+    <div class="card">
+      <div class="cardInner">
+
+        <div id="toast" style="font-weight:900; letter-spacing:.2px;">Loading…</div>
+        <div id="okBanner" class="banner ok">✅ Connected to cashier. You can order now.</div>
+        <div id="errBanner" class="banner err"></div>
+
+        <div class="steps">
+
+          <!-- Step 1 -->
+          <div class="step">
+            <div class="stepHead">
+              <div class="stepTitle"><div class="badge">1</div> I’m here</div>
+              <div style="color:var(--muted); font-size:12px;">Check-in</div>
+            </div>
+            <div class="stepBody">
+              <div class="row">
+                <div class="col">
+                  <label>Lane</label>
+                  <select id="lane">
+                    <option value="L1">Lane L1</option>
+                    <option value="L2">Lane L2</option>
+                  </select>
+                </div>
+                <div class="col tight" style="min-width: 160px;">
+                  <label>&nbsp;</label>
+                  <button class="btn btnPrimary btnWide" onclick="checkIn()">I’m Here</button>
+                </div>
+              </div>
+              <div class="help">After check-in, you’ll enter the 4-digit station code shown at the lane display.</div>
+            </div>
           </div>
 
-          <div id="callLive" class="callLive">✅ Call connected (audio live)</div>
-          <audio id="remoteAudio" autoplay playsinline></audio>
+          <!-- Step 2 -->
+          <div class="step">
+            <div class="stepHead">
+              <div class="stepTitle"><div class="badge">2</div> Connect</div>
+              <div style="color:var(--muted); font-size:12px;">Station code</div>
+            </div>
+            <div class="stepBody">
+              <div class="row">
+                <div class="col">
+                  <label>4-digit station code</label>
+                  <input id="code" inputmode="numeric" placeholder="Enter 4-digit lane code" />
+                </div>
+                <div class="col tight" style="min-width: 160px;">
+                  <label>&nbsp;</label>
+                  <button class="btn btnOk btnWide" onclick="connect()">Connect</button>
+                </div>
+              </div>
+              <div class="help">Lane display: <span class="mono">/lane/L1</span> or <span class="mono">/lane/L2</span> (code valid 10 minutes; rotates after successful connect)</div>
+            </div>
+          </div>
 
-          <div class="muted">Voice call uses WebRTC. Chrome recommended.</div>
-        </div>
+          <!-- Step 3 -->
+          <div class="step">
+            <div class="stepHead">
+              <div class="stepTitle"><div class="badge">3</div> Order + Voice</div>
+              <div style="color:var(--muted); font-size:12px;">Chat / WebRTC</div>
+            </div>
 
-        <div class="col" style="flex:0.8">
-          <div class="muted">Status:</div>
-          <div id="status" style="font-weight:bold;">Not connected</div>
-          <div class="muted" style="margin-top:10px;">After cashier confirms total, payment options appear.</div>
-        </div>
-      </div>
-    </div>
+            <div class="stepBody">
+              <div class="grid2">
+                <div>
+                  <div class="chat" id="chat"></div>
+                  <div class="sp"></div>
+                  <div class="row">
+                    <div class="col">
+                      <label>Message</label>
+                      <input id="custMsg" placeholder="Type your order… (e.g., 2 spicy chicken sandwiches, no pickles)" />
+                    </div>
+                  </div>
 
-    <div class="section">
-      <h3>Step 4 — Payment</h3>
-      <div id="paymentArea" class="muted">Waiting for cashier to confirm total…</div>
-    </div>
+                  <div class="row" style="margin-top:10px;">
+                    <div class="col">
+                      <button class="btn btnPrimary btnWide" onclick="sendText()">Send Text</button>
+                    </div>
+                    <div class="col">
+                      <button class="btn btnGhost btnWide" onclick="requestCall()">📞 Call Agent</button>
+                    </div>
+                    <div class="col">
+                      <button class="btn btnDanger btnWide" onclick="hangupCall()" id="btnHangup" disabled>Hang up</button>
+                    </div>
+                  </div>
+
+                  <div id="callLive" class="callLive">✅ Call connected (audio live)</div>
+                  <audio id="remoteAudio" autoplay playsinline></audio>
+                  <div class="help">Voice call uses WebRTC (Chrome recommended). If mic permission is blocked, refresh and allow microphone.</div>
+                </div>
+
+                <div class="statusCard">
+                  <div class="statusLabel">Status</div>
+                  <div id="status" class="statusValue">Not connected</div>
+                  <div class="statusHint">
+                    Once cashier confirms total, payment options will appear in Step 4.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 4 -->
+          <div class="step">
+            <div class="stepHead">
+              <div class="stepTitle"><div class="badge">4</div> Payment</div>
+              <div style="color:var(--muted); font-size:12px;">Secure request</div>
+            </div>
+            <div class="stepBody">
+              <div id="paymentArea" class="paymentArea" style="color:var(--muted);">
+                Waiting for cashier to confirm total…
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /steps -->
+      </div><!-- /cardInner -->
+    </div><!-- /card -->
+  </div><!-- /wrap -->
+
+  <!-- Mobile sticky quick actions (shows only on phone) -->
+  <div class="stickyBar">
+    <button class="btn btnGhost" style="flex:1;" onclick="openCodeModal()">Enter Code</button>
+    <button class="btn btnPrimary" style="flex:1;" onclick="sendText()">Send</button>
+    <button class="btn btnGhost" style="flex:1;" onclick="requestCall()">📞 Call</button>
   </div>
 
   <!-- Code modal (shown after check-in) -->
-  <div id="codeModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6);
-       align-items:center; justify-content:center; z-index:9998;">
-    <div style="background:#fff; border-radius:16px; padding:20px; width:min(520px, 92vw);
-         box-shadow:0 10px 30px rgba(0,0,0,0.25);">
-      <h3 style="margin:0 0 10px 0;">Connect to Cashier</h3>
-      <div style="color:#333; margin-bottom:14px;">
-        ✅ You're checked in. Please enter the <b>4-digit station code</b> to connect with the cashier.
+  <div id="codeModal" class="modal">
+    <div class="modalBox">
+      <h3 style="margin:0 0 8px 0;">Connect to Cashier</h3>
+      <div class="text">✅ You’re checked in. Enter the <b>4-digit station code</b> shown at the lane display.</div>
+      <div class="modalRow">
+        <input id="codeModalInput" inputmode="numeric" placeholder="Enter 4-digit code" style="flex:1; min-width: 220px;" />
+        <button class="btn btnOk" onclick="connectFromModal()">Connect</button>
       </div>
-      <div style="display:flex; gap:10px;">
-        <input id="codeModalInput" placeholder="Enter 4-digit code" style="padding:10px; flex:1;" />
-        <button onclick="connectFromModal()" style="padding:10px 14px; cursor:pointer;">Connect</button>
-      </div>
-      <div style="display:flex; justify-content:flex-end; margin-top:12px;">
-        <button onclick="closeCodeModal()" style="padding:8px 12px; cursor:pointer;">Close</button>
+      <div class="modalActions">
+        <button class="btn btnGhost" onclick="closeCodeModal()">Close</button>
       </div>
     </div>
   </div>
 
   <!-- Payment success modal -->
-  <div id="paidModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6);
-       align-items:center; justify-content:center; z-index:9999;">
-    <div style="background:#fff; border-radius:16px; padding:22px; width:min(520px, 92vw);
-         text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.25);">
+  <div id="paidModal" class="modal" style="z-index:9999;">
+    <div class="modalBox" style="text-align:center;">
       <div style="font-size:44px;">✅</div>
       <h2 style="margin:10px 0 6px 0;">Payment Completed</h2>
-      <div id="paidText" style="font-size:16px; color:#333; margin:10px 0 18px 0;">
+      <div id="paidText" class="text" style="margin:10px 0 16px 0;">
         Move forward to the pickup window to collect your order.
       </div>
-      <button onclick="closePaidModal()" style="padding:10px 14px; cursor:pointer;">OK</button>
+      <button class="btn btnPrimary" onclick="closePaidModal()">OK</button>
     </div>
   </div>
 
@@ -1589,6 +1963,8 @@ const WS_PROTO = location.protocol === "https:" ? "wss" : "ws";
 
 const custEl = document.getElementById("cust");
 const wsStateEl = document.getElementById("wsState");
+const wsDot = document.getElementById("wsDot");
+
 const toastEl = document.getElementById("toast");
 const okBanner = document.getElementById("okBanner");
 const errBanner = document.getElementById("errBanner");
@@ -1615,11 +1991,25 @@ function showOk(text){
   okBanner.style.display = "block";
   errBanner.style.display = "none";
 }
+
 function chat(who, text){
-  const div = document.createElement("div");
-  div.className = "msg";
-  div.innerHTML = `<b>${who}:</b> ${text}`;
-  chatEl.appendChild(div);
+  const row = document.createElement("div");
+  const w = (who||"SYSTEM").toUpperCase();
+
+  row.className = "msg " + (w.includes("CUSTOMER") ? "customer" : (w.includes("CASHIER") ? "cashier" : "system"));
+
+  const whoEl = document.createElement("div");
+  whoEl.className = "who";
+  whoEl.textContent = w;
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+  bubble.textContent = text;
+
+  row.appendChild(whoEl);
+  row.appendChild(bubble);
+
+  chatEl.appendChild(row);
   chatEl.scrollTop = chatEl.scrollHeight;
 }
 
@@ -1664,12 +2054,24 @@ let paySessionId = null;
 
 // Connect “home” websocket (push notifications like payment requests)
 homeWs = new WebSocket(`${WS_PROTO}://${location.host}/ws/customer/${customerId}`);
+
 homeWs.onopen = () => {
   wsStateEl.textContent = "WS: connected";
+  wsDot.classList.add("ok");
+  wsDot.classList.remove("err");
   toastEl.textContent = "Connected. Step 1: Tap ‘I’m Here’.";
 };
-homeWs.onerror = () => { wsStateEl.textContent = "WS: error"; toastEl.textContent = "WebSocket error."; };
-homeWs.onclose = () => { wsStateEl.textContent = "WS: closed"; toastEl.textContent = "Disconnected. Refresh."; };
+homeWs.onerror = () => {
+  wsStateEl.textContent = "WS: error";
+  wsDot.classList.add("err");
+  wsDot.classList.remove("ok");
+  toastEl.textContent = "WebSocket error.";
+};
+homeWs.onclose = () => {
+  wsStateEl.textContent = "WS: closed";
+  wsDot.classList.remove("ok","err");
+  toastEl.textContent = "Disconnected. Refresh.";
+};
 
 homeWs.onmessage = (ev) => {
   const msg = JSON.parse(ev.data);
@@ -1695,7 +2097,7 @@ async function checkIn(){
   const data = await res.json();
   if (data.error) return showError(data.error);
 
-  toastEl.textContent = `Checked in to ${data.lane_id}. Please enter the station code to connect.`;
+  toastEl.textContent = `Checked in to ${data.lane_id}. Enter the station code to connect.`;
   openCodeModal();
 }
 
@@ -1747,10 +2149,11 @@ function joinOrderWs(orderId){
 
 function sendText(){
   if (!orderWs) return showError("Connect first (Step 2).");
-  const text = document.getElementById("custMsg").value.trim();
+  const box = document.getElementById("custMsg");
+  const text = (box.value || "").trim();
   if (!text) return;
   orderWs.send(JSON.stringify({type:"chat", from:"CUSTOMER", text}));
-  document.getElementById("custMsg").value = "";
+  box.value = "";
 }
 
 // --------------------
@@ -1819,7 +2222,6 @@ async function ensurePeerConnection(){
     }
   };
 
-  // Request mic and attach to peer connection
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
   stream.getAudioTracks().forEach(t => pc.addTrack(t, stream));
 }
@@ -1854,37 +2256,40 @@ async function fetchCards(){
 }
 
 function renderPaymentUI(msg){
+  paymentArea.style.color = "rgba(255,255,255,0.92)";
   paymentArea.innerHTML = `
-    <div><b>${msg.merchant_name}</b></div>
-    <div>Order: <b>${msg.order_id}</b></div>
-    <div>Total: <b>$${(msg.amount_cents/100).toFixed(2)} ${msg.currency}</b></div>
+    <div class="payTitle">${msg.merchant_name}</div>
+    <div style="color:rgba(255,255,255,0.78); font-size:12px;">Order <span class="mono">${msg.order_id}</span> • Total <b>$${(msg.amount_cents/100).toFixed(2)} ${msg.currency}</b></div>
 
     <div class="method">
       <h4>Saved Card</h4>
       <select id="savedCardSelect"><option>Loading…</option></select>
-      <button onclick="paySaved()">Pay</button>
+      <div style="margin-top:10px;">
+        <button class="btn btnOk btnWide" onclick="paySaved()">Pay</button>
+      </div>
     </div>
 
     <div class="method">
       <h4>Add New Card</h4>
-      <div class="muted">Demo only (no real charge).</div>
+      <div style="color:rgba(255,255,255,0.70); font-size:12px; margin-bottom:10px;">Demo only (no real charge).</div>
+
       <div class="row">
-        <div class="col"><input id="newCardNumber" placeholder="Card number (e.g., 4242...)" /></div>
+        <div class="col"><input id="newCardNumber" placeholder="Card number (e.g., 4242…)" /></div>
         <div class="col"><input id="newCardExp" placeholder="MM/YY" /></div>
       </div>
       <div class="row">
-        <div class="col"><input id="newCardName" placeholder="Name" /></div>
+        <div class="col"><input id="newCardName" placeholder="Name on card" /></div>
         <div class="col"><input id="newCardCvv" placeholder="CVV" /></div>
       </div>
-      <button onclick="payNew()">Add & Pay</button>
+      <button class="btn btnPrimary btnWide" onclick="payNew()">Add & Pay</button>
     </div>
 
-    <div class="method"><h4>Google Pay</h4><button onclick="payWallet('google_pay')">Pay with Google Pay</button></div>
-    <div class="method"><h4>PayPal</h4><button onclick="payWallet('paypal')">Pay with PayPal</button></div>
-    <div class="method"><h4>Other Wallet</h4><button onclick="payWallet('other_wallet')">Pay with Other Wallet</button></div>
+    <div class="method"><h4>Google Pay</h4><button class="btn btnGhost btnWide" onclick="payWallet('google_pay')">Pay with Google Pay</button></div>
+    <div class="method"><h4>PayPal</h4><button class="btn btnGhost btnWide" onclick="payWallet('paypal')">Pay with PayPal</button></div>
+    <div class="method"><h4>Other Wallet</h4><button class="btn btnGhost btnWide" onclick="payWallet('other_wallet')">Pay with Other Wallet</button></div>
 
     <div class="divider"></div>
-    <button onclick="declinePay()">Decline</button>
+    <button class="btn btnDanger btnWide" onclick="declinePay()">Decline</button>
   `;
   loadCards();
 }
@@ -1951,10 +2356,17 @@ async function doPay(payload){
     showPaidModal("✅ Payment done — move forward to pickup window to pick up your order.");
   }
 }
+
+// Small UX: allow Enter to send message on desktop
+document.getElementById("custMsg").addEventListener("keydown", (e)=>{
+  if(e.key === "Enter"){ e.preventDefault(); sendText(); }
+});
 </script>
+
 </body>
 </html>
 """
+
 
 
 # -----------------------------------------------------------------------------
