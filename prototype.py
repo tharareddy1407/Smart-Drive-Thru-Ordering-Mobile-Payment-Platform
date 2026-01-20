@@ -152,16 +152,31 @@ HOME_HTML = """
     *{ box-sizing: border-box; }
     html, body{ height:100%; margin:0; font-family: Arial, sans-serif; }
 
-    /* ✅ background aligned */
+    /* ✅ “Zoom out” so SMART is not cut off (no cropping) */
     body{
       background-color:#0b1220;
-      background-image: url('/static/drive_thru_demo.png?v=250');
+      background-image:
+        linear-gradient(rgba(0,0,0,0.15), rgba(0,0,0,0.25)),
+        url('/static/Background.png?v=300');
       background-repeat:no-repeat;
-      background-size: cover;
-      background-position: center center;
-      overflow-x:hidden;
+
+      /* ✅ key: show full image */
+      background-size: contain;
+      background-position: center top;
+
+      /* if screen is bigger than image, keep it centered nicely */
+      background-attachment: scroll;
     }
 
+    /* ✅ On very wide screens, keep full image visible (still no crop) */
+    @media (min-width: 1100px){
+      body{
+        background-size: contain;
+        background-position: center top;
+      }
+    }
+
+    /* ✅ Page layout */
     .page{
       min-height:100vh;
       display:flex;
@@ -170,10 +185,10 @@ HOME_HTML = """
       padding: 18px;
     }
 
-    /* ✅ push buttons BELOW the image text lines */
+    /* ✅ Place buttons below the banner area */
     .wrap{
       width: min(1100px, 96vw);
-      margin-top: 320px;  /* 👈 increase/decrease if needed */
+      margin-top: 340px;  /* move up/down if needed */
       display:flex;
       flex-direction:column;
       align-items:center;
@@ -195,12 +210,16 @@ HOME_HTML = """
       justify-content:center;
     }
 
+    /* ✅ Darker, professional circle buttons */
     .circleBtn{
       width: 86px;
       height: 86px;
       border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.25);
-      background: rgba(255,255,255,0.14);
+      border: 1px solid rgba(255,255,255,0.22);
+
+      /* darker glass */
+      background: rgba(0,0,0,0.28);
+
       color: var(--text);
       cursor: pointer;
 
@@ -214,24 +233,25 @@ HOME_HTML = """
 
       backdrop-filter: blur(16px) saturate(160%);
       -webkit-backdrop-filter: blur(16px) saturate(160%);
-      box-shadow: 0 14px 34px rgba(0,0,0,0.18);
+      box-shadow: 0 14px 34px rgba(0,0,0,0.22);
 
-      transition: transform .12s ease, background .12s ease, border .12s ease;
+      transition: transform .12s ease, background .12s ease, border .12s ease, box-shadow .12s ease;
       user-select:none;
     }
 
     .circleBtn:hover{
       transform: translateY(-2px);
-      background: rgba(255,255,255,0.18);
-      border-color: rgba(255,255,255,0.35);
+      background: rgba(0,0,0,0.36);
+      border-color: rgba(255,255,255,0.32);
+      box-shadow: 0 22px 55px rgba(0,0,0,0.30);
     }
 
     .circleBtn.active{
-      background: rgba(255,255,255,0.22);
-      border-color: rgba(255,255,255,0.40);
+      background: rgba(0,0,0,0.42);
+      border-color: rgba(255,255,255,0.38);
     }
 
-    /* ✅ popover */
+    /* ✅ Popover */
     .popover{
       position:absolute;
       top: calc(100% + 12px);
@@ -241,7 +261,7 @@ HOME_HTML = """
       padding: 12px;
       border-radius: 14px;
 
-      background: rgba(0,0,0,0.62);
+      background: rgba(0,0,0,0.68);
       border: 1px solid rgba(255,255,255,0.18);
       box-shadow: var(--shadow);
 
@@ -262,7 +282,7 @@ HOME_HTML = """
       left: 50%;
       transform: translateX(-50%) rotate(45deg);
       width: 14px; height: 14px;
-      background: rgba(0,0,0,0.62);
+      background: rgba(0,0,0,0.68);
       border-left: 1px solid rgba(255,255,255,0.18);
       border-top: 1px solid rgba(255,255,255,0.18);
     }
@@ -308,19 +328,23 @@ HOME_HTML = """
     .tip{
       margin-top: 12px;
       font-size: 13px;
-      color: rgba(255,255,255,0.82);
+      color: rgba(255,255,255,0.86);
       text-shadow: 0 12px 28px rgba(0,0,0,0.45);
       text-align:center;
     }
 
-    /* ✅ Mobile: render popovers fixed + centered so they never hide off-screen */
+    /* ✅ Responsive placement */
     @media (max-width: 520px){
-      .wrap{ margin-top: 240px; }
+      /* show full image and keep buttons visible */
+      .wrap{ margin-top: 260px; }
+      .circleBtn{ width: 80px; height: 80px; font-size: 13px; }
+
+      /* popover fixed at bottom for mobile */
       .popover{
         position: fixed;
         left: 50%;
-        top: auto;
         bottom: 18px;
+        top: auto;
         transform: translateX(-50%);
         width: min(420px, 92vw);
       }
@@ -334,10 +358,8 @@ HOME_HTML = """
     <div class="wrap">
 
       <div class="circleRow">
-
         <div class="circleWrap">
-          <button type="button" class="circleBtn" id="btnLane"
-                  onclick="togglePop(event, 'lane')">Lane</button>
+          <button type="button" class="circleBtn" id="btnLane" onclick="togglePop(event,'lane')">Lane</button>
           <div class="popover" id="popLane">
             <div class="popTitle">Lane</div>
             <p class="popText">Open a lane screen to get the rotating 4-digit station code.</p>
@@ -349,8 +371,7 @@ HOME_HTML = """
         </div>
 
         <div class="circleWrap">
-          <button type="button" class="circleBtn" id="btnCustomer"
-                  onclick="togglePop(event, 'customer')">Customer</button>
+          <button type="button" class="circleBtn" id="btnCustomer" onclick="togglePop(event,'customer')">Customer</button>
           <div class="popover" id="popCustomer">
             <div class="popTitle">Customer</div>
             <p class="popText">Check-in, enter code, chat/call with cashier, and pay securely.</p>
@@ -361,8 +382,7 @@ HOME_HTML = """
         </div>
 
         <div class="circleWrap">
-          <button type="button" class="circleBtn" id="btnCashier"
-                  onclick="togglePop(event, 'cashier')">Cashier</button>
+          <button type="button" class="circleBtn" id="btnCashier" onclick="togglePop(event,'cashier')">Cashier</button>
           <div class="popover" id="popCashier">
             <div class="popTitle">Cashier</div>
             <p class="popText">Join the order, confirm total, and send payment request.</p>
@@ -371,7 +391,6 @@ HOME_HTML = """
             </div>
           </div>
         </div>
-
       </div>
 
       <div class="tip">
@@ -393,20 +412,17 @@ HOME_HTML = """
 
     function togglePop(ev, which){
       ev.stopPropagation();
-
       const map = {
         lane: ["btnLane","popLane"],
         customer: ["btnCustomer","popCustomer"],
         cashier: ["btnCashier","popCashier"]
       };
-
       const [btnId, popId] = map[which];
       const pop = document.getElementById(popId);
       const btn = document.getElementById(btnId);
 
       const isOpen = pop.classList.contains("show");
       hideAll();
-
       if (!isOpen){
         pop.classList.add("show");
         btn.classList.add("active");
@@ -419,6 +435,7 @@ HOME_HTML = """
 </body>
 </html>
 """
+
 
 
 
