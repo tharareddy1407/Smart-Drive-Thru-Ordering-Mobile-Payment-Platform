@@ -11,6 +11,9 @@ app = FastAPI(
     title="Smart Drive-Thru Ordering Platform (Real-Time Voice Ordering, Secure Lane Connection & Mobile Payment)"
 )
 
+# -----------------------------------------------------------------------------
+# Paths + Static
+# -----------------------------------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
 
@@ -20,48 +23,34 @@ STATIC_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 VALID_LANES = {"L1", "L2"}
+
 # -----------------------------------------------------------------------------
 # In-memory stores (demo only)
 # -----------------------------------------------------------------------------
-# Customer “home” websocket for push-like notifications (payment requests, info)
-customer_home_ws: Dict[str, WebSocket] = {}  # customer_id -> ws
+customer_home_ws: Dict[str, WebSocket] = {}      # customer_id -> ws
+order_customer_ws: Dict[str, WebSocket] = {}     # order_id -> ws
+order_cashier_ws: Dict[str, WebSocket] = {}      # order_id -> ws
 
-# Order chat websockets (two parties)
-order_customer_ws: Dict[str, WebSocket] = {}  # order_id -> ws
-order_cashier_ws: Dict[str, WebSocket] = {}   # order_id -> ws
+lane_codes: Dict[str, dict] = {}                 # lane_id -> {code, expires_at}
+checkins: Dict[str, dict] = {}                   # customer_id -> {lane_id, ts}
 
-# Lane codes and check-ins
-lane_codes: Dict[str, dict] = {}  # lane_id -> {code, expires_at}
-checkins: Dict[str, dict] = {}    # customer_id -> {lane_id, ts}
+orders: Dict[str, dict] = {}                     # order_id -> order
+payments: Dict[str, dict] = {}                   # pay_session_id -> payment session
 
-# Orders + payments
-orders: Dict[str, dict] = {}      # order_id -> order
-payments: Dict[str, dict] = {}    # pay_session_id -> payment session
+customer_cards: Dict[str, List[dict]] = {}       # customer_id -> list[card]
 
-# Demo saved cards per customer
-customer_cards: Dict[str, List[dict]] = {}  # customer_id -> list[card]
-
-# -----------------------------------------------------------------------------
-# ✅ WebRTC signaling websockets (server relays JSON between customer/cashier)
-# -----------------------------------------------------------------------------
-call_ws: Dict[str, Dict[str, WebSocket]] = {}  # order_id -> {"customer": ws, "cashier": ws}
-
+call_ws: Dict[str, Dict[str, WebSocket]] = {}    # order_id -> {"customer": ws, "cashier": ws}
 
 # -----------------------------------------------------------------------------
 # Helpers
 # -----------------------------------------------------------------------------
 def utcnow() -> datetime:
-    """Return the current UTC timestamp."""
     return datetime.utcnow()
 
-
 def money(cents: int) -> str:
-    """Format cents to dollars (string). Example: 1384 -> '13.84'."""
     return f"{cents/100:.2f}"
 
-
 def ensure_demo_cards(customer_id: str) -> None:
-    """Seed demo saved cards for a customer (once)."""
     if customer_id in customer_cards:
         return
     customer_cards[customer_id] = [
@@ -69,44 +58,26 @@ def ensure_demo_cards(customer_id: str) -> None:
         {"card_id": "card_demo_2", "brand": "MASTERCARD", "last4": "4444", "exp": "08/28"},
     ]
 
-
 def rotate_lane_code(lane_id: str) -> dict:
-    """
-    Force a new 4-digit code immediately.
-    Code is valid for 10 minutes from creation.
-    """
     code = f"{uuid4().int % 10000:04d}"
     rec = {"lane_id": lane_id, "code": code, "expires_at": utcnow() + timedelta(minutes=10)}
     lane_codes[lane_id] = rec
     return rec
 
-
 def current_lane_code(lane_id: str) -> dict:
-    """
-    Return the current lane code if valid; otherwise rotate and return a new code.
-    """
     rec = lane_codes.get(lane_id)
     if rec and utcnow() < rec["expires_at"]:
         return rec
     return rotate_lane_code(lane_id)
 
-
 async def push_customer(customer_id: str, payload: dict) -> bool:
-    """
-    Send a JSON message to the customer's “home” websocket.
-    Returns False if no websocket is connected for that customer.
-    """
     ws = customer_home_ws.get(customer_id)
     if not ws:
         return False
     await ws.send_json(payload)
     return True
 
-
 async def relay_order(order_id: str, payload: dict) -> None:
-    """
-    Broadcast a JSON message to both customer and cashier order websockets (if present).
-    """
     cws = order_customer_ws.get(order_id)
     pws = order_cashier_ws.get(order_id)
     if cws:
@@ -114,19 +85,12 @@ async def relay_order(order_id: str, payload: dict) -> None:
     if pws:
         await pws.send_json(payload)
 
-
 async def relay_call(order_id: str, sender_role: str, payload: dict) -> None:
-    """
-    Relay a WebRTC signaling payload from one role to the other.
-    Role must be 'customer' or 'cashier'.
-    """
     peers = call_ws.get(order_id) or {}
     target_role = "cashier" if sender_role == "customer" else "customer"
     target_ws = peers.get(target_role)
     if target_ws:
         await target_ws.send_json(payload)
-
-
 # ----------------------------------------------------------------------------
 # HTML Pages
 # ----------------------------------------------------------------------------
