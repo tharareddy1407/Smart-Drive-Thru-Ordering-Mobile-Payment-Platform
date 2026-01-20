@@ -3,10 +3,9 @@ from typing import Dict, List
 from uuid import uuid4
 from pathlib import Path
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, HTTPException
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 
 app = FastAPI(
     title="Smart Drive-Thru Ordering Platform (Real-Time Voice Ordering, Secure Lane Connection & Mobile Payment)"
@@ -14,28 +13,13 @@ app = FastAPI(
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
-TEMPLATES_DIR = BASE_DIR / "templates"
 
-# Ensure directories exist (helps in fresh deployments)
+# Ensure static dir exists (prevents startup crash on fresh deploy)
 STATIC_DIR.mkdir(parents=True, exist_ok=True)
-TEMPLATES_DIR.mkdir(parents=True, exist_ok=True)
 
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
-templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 VALID_LANES = {"L1", "L2"}
-
-@app.get("/lane/{lane_id}", response_class=HTMLResponse)
-async def lane_screen(request: Request, lane_id: str):
-    lane_id = lane_id.upper()
-    if lane_id not in VALID_LANES:
-        raise HTTPException(status_code=404, detail=f"Unknown lane: {lane_id}")
-
-    return templates.TemplateResponse(
-        "lane.html",
-        {"request": request, "lane_id": lane_id},
-    )
-
 # -----------------------------------------------------------------------------
 # In-memory stores (demo only)
 # -----------------------------------------------------------------------------
