@@ -154,26 +154,25 @@ HOME_HTML = """
     html, body{ height:100%; font-family: Arial, sans-serif; }
 
     body{
-  background-color:#0b1220;
-  background-image:
-    linear-gradient(rgba(0,0,0,0.10), rgba(0,0,0,0.22)),
-    url('/static/BG-desktop.png');
-  background-repeat:no-repeat;
-  background-size: contain;
-  background-position: center center;
-}
+      background-color:#0b1220;
+      background-image:
+        linear-gradient(rgba(0,0,0,0.10), rgba(0,0,0,0.22)),
+        url('/static/BG-desktop.png');
+      background-repeat:no-repeat;
+      background-size: contain;
+      background-position: center center;
+    }
 
-/* Mobile background */
-@media (max-width: 768px){
-  body{
-    background-image:
-      linear-gradient(rgba(0,0,0,0.10), rgba(0,0,0,0.22)),
-      url('/static/BG-mobile.png');
-    background-size: contain;
-    background-position: center top;
-  }
-}
-
+    /* Mobile background */
+    @media (max-width: 768px){
+      body{
+        background-image:
+          linear-gradient(rgba(0,0,0,0.10), rgba(0,0,0,0.22)),
+          url('/static/BG-mobile.png');
+        background-size: contain;
+        background-position: center top;
+      }
+    }
 
     .hero{
       min-height: 100svh;
@@ -334,48 +333,60 @@ HOME_HTML = """
           box.innerHTML = `
             <b>Lane:</b> Open a lane screen to get the rotating 4-digit station code.
             <div class="actions">
-              <a class="linkBtn" href="/lane/L1">Open Lane L1 →</a>
-              <a class="linkBtn" href="/lane/L2">Open Lane L2 →</a>
+              <a class="linkBtn" href="/lane/L1" target="_blank" rel="noopener">Open Lane L1 →</a>
+              <a class="linkBtn" href="/lane/L2" target="_blank" rel="noopener">Open Lane L2 →</a>
             </div>
           `;
         } else if(role === "customer"){
           box.innerHTML = `
             <b>Customer:</b> Check-in, enter code, chat/call with cashier, and pay securely.
             <div class="actions">
-              <a class="linkBtn" href="/customer">Open Customer Portal →</a>
+              <a class="linkBtn" href="/customer" target="_blank" rel="noopener">Open Customer Portal →</a>
             </div>
           `;
         } else if(role === "cashier"){
           box.innerHTML = `
             <b>Cashier:</b> Join the order, confirm total, and send payment request.
             <div class="actions">
-              <a class="linkBtn" href="/cashier">Open Cashier Console →</a>
+              <a class="linkBtn" href="/cashier" target="_blank" rel="noopener">Open Cashier Console →</a>
             </div>
           `;
         }
       }
 
-      // Show popover on hover (desktop)
-      buttons.forEach(btn => {
-        btn.addEventListener("mouseenter", () => {
-          render(btn.dataset.role);
-        });
+      function openRole(role){
+        if(role === "lane"){
+          // Default lane open on click (L1). User can still choose L2 from popover.
+          window.open("/lane/L1", "_blank", "noopener,noreferrer");
+        } else if(role === "customer"){
+          window.open("/customer", "_blank", "noopener,noreferrer");
+        } else if(role === "cashier"){
+          window.open("/cashier", "_blank", "noopener,noreferrer");
+        }
+      }
 
-        // Keep click working too (optional)
-        btn.addEventListener("click", () => {
-          render(btn.dataset.role);
-        });
+      // Hover shows popover (desktop), click opens new tab
+      buttons.forEach(btn => {
+        btn.addEventListener("mouseenter", () => render(btn.dataset.role));
+        btn.addEventListener("focus", () => render(btn.dataset.role)); // keyboard-friendly
+        btn.addEventListener("click", () => openRole(btn.dataset.role));
       });
 
       // Hide popover when cursor leaves BOTH buttons and popover area
-      area.addEventListener("mouseleave", () => {
-        box.classList.remove("show");
+      area.addEventListener("mouseleave", () => box.classList.remove("show"));
+
+      // Hide popover if user taps elsewhere (mobile/desktop)
+      document.addEventListener("click", (e) => {
+        if(!area.contains(e.target)){
+          box.classList.remove("show");
+        }
       });
     });
   </script>
 </body>
 </html>
 """
+
 
 
 
@@ -388,375 +399,102 @@ LANE_HTML_TEMPLATE = """
   <title>Lane {lane_id} Code</title>
 
   <style>
-    :root {{
-      /* Fast-food friendly palette (warm + welcoming) */
-      --bgTop: #3a2313;
-      --bgBottom: #1a0f08;
+    /* keep your existing CSS... */
 
-      --accent: #ffb703;     /* warm yellow */
-      --accent2: #fb8500;    /* orange */
-
-      --text: #ffffff;
-      --muted: rgba(255,255,255,.78);
-
-      --card: rgba(255,255,255,.10);
-      --stroke: rgba(255,255,255,.18);
-      --shadow: 0 18px 55px rgba(0,0,0,.45);
-
-      --radius: 22px;
-    }}
-
-    * {{ box-sizing: border-box; }}
-
-    body {{
-      margin: 0;
-      min-height: 100vh;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      color: var(--text);
-      overflow: hidden;
-
-      /* Warm, friendly background (no image needed) */
-      background:
-        radial-gradient(900px 520px at 15% 20%, rgba(255,183,3,.20), transparent 60%),
-        radial-gradient(900px 520px at 85% 25%, rgba(251,133,0,.18), transparent 60%),
-        linear-gradient(180deg, var(--bgTop), var(--bgBottom));
-    }}
-
-    /* subtle decorative dots */
-    .sprinkle {{
-      position: absolute; inset: 0;
-      background-image: radial-gradient(rgba(255,255,255,.10) 1px, transparent 1px);
-      background-size: 28px 28px;
-      opacity: .18;
-      pointer-events: none;
-      mask-image: radial-gradient(700px 420px at 50% 35%, #000 45%, transparent 75%);
-    }}
-
-    .wrap {{
-      position: relative;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      padding: 28px;
-    }}
-
-    .topbar {{
-      position: absolute;
-      top: 18px; left: 18px; right: 18px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-    }}
-
-    .brand {{
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: 800;
-      letter-spacing: .2px;
-      opacity: .98;
-    }}
-
-    .logo {{
-      width: 14px; height: 14px; border-radius: 999px;
-      background: radial-gradient(circle at 30% 30%, #fff, var(--accent2));
-      box-shadow: 0 0 0 7px rgba(251,133,0,.18);
-    }}
-
-    .pill {{
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 14px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.10);
-      border: 1px solid rgba(255,255,255,.16);
-      backdrop-filter: blur(10px);
-      color: var(--muted);
-      font-size: 14px;
-      box-shadow: 0 12px 28px rgba(0,0,0,.22);
-    }}
-
-    .laneBadge {{
-      font-weight: 900;
-      letter-spacing: .9px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      color: #1a0f08;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-    }}
-
-    .card {{
-      width: min(920px, 100%);
-      border-radius: var(--radius);
-      background: var(--card);
-      border: 1px solid var(--stroke);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(16px);
-      overflow: hidden;
-      position: relative;
-    }}
-
-    .card::before {{
-      content:"";
-      position:absolute; inset:-2px;
-      background:
-        radial-gradient(700px 220px at 15% 0%, rgba(255,183,3,.22), transparent 60%),
-        radial-gradient(700px 220px at 90% 10%, rgba(251,133,0,.18), transparent 60%);
-      pointer-events:none;
-    }}
-
-    .inner {{
-      position: relative;
-      padding: 34px;
-      display: grid;
-      grid-template-columns: 1.2fr .8fr;
-      gap: 22px;
-    }}
-
-    @media (max-width: 860px) {{
-      .inner {{ grid-template-columns: 1fr; }}
-    }}
-
-    .title {{
-      margin: 0 0 8px 0;
-      font-size: 30px;
-      letter-spacing: .2px;
-    }}
-
-    .subtitle {{
-      margin: 0 0 18px 0;
-      color: var(--muted);
-      line-height: 1.5;
-      font-size: 16px;
-    }}
-
-    .codeBox {{
-      border-radius: 18px;
-      padding: 18px;
-      background: rgba(255,255,255,.92);
-      color: #1a0f08;
-      border: 1px solid rgba(0,0,0,.08);
-      box-shadow: 0 18px 45px rgba(0,0,0,.22);
-    }}
-
-    .codeLabel {{
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 13px;
-      text-transform: uppercase;
-      letter-spacing: .4px;
-      color: rgba(26,15,8,.75);
-      margin-bottom: 10px;
-      font-weight: 800;
-    }}
-
-    .pulse {{
-      width: 10px; height: 10px; border-radius: 999px;
-      background: var(--accent2);
-      box-shadow: 0 0 0 0 rgba(251,133,0,.35);
-      animation: pulse 1.6s ease-out infinite;
-    }}
-
-    @keyframes pulse {{
-      0% {{ box-shadow: 0 0 0 0 rgba(251,133,0,.40); }}
-      100% {{ box-shadow: 0 0 0 14px rgba(251,133,0,0); }}
-    }}
-
-    .code {{
-      margin: 0;
-      font-weight: 950;
-      letter-spacing: 12px;
-      line-height: 1.05;
-      font-size: clamp(58px, 7vw, 98px);
-    }}
-
-    .meta {{
-      margin-top: 14px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      color: rgba(26,15,8,.75);
-      font-size: 14px;
-    }}
-
-    .metaItem {{
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 12px;
-      border-radius: 14px;
-      background: rgba(26,15,8,.06);
-      border: 1px solid rgba(26,15,8,.08);
-      font-weight: 650;
-    }}
-
-    .icon {{
-      width: 18px;
-      height: 18px;
-      opacity: .9;
-    }}
-
-    .right {{
-      display: grid;
-      gap: 14px;
-      align-content: start;
-    }}
-
-    .panel {{
-      border-radius: 18px;
-      padding: 16px;
-      background: rgba(255,255,255,.10);
-      border: 1px solid rgba(255,255,255,.14);
-    }}
-
-    .panel h4 {{
-      margin: 0 0 8px 0;
-      font-size: 13px;
-      text-transform: uppercase;
-      letter-spacing: .35px;
-      color: rgba(255,255,255,.92);
-    }}
-
-    .panel p {{
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.45;
-      font-size: 14px;
-    }}
-
-    .kbd {{
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      background: rgba(0,0,0,.25);
-      border: 1px solid rgba(255,255,255,.14);
-      padding: 4px 8px;
-      border-radius: 10px;
-      color: rgba(255,255,255,.85);
-    }}
-
-    .footer {{
-      position: relative;
-      padding: 14px 22px;
-      border-top: 1px solid rgba(255,255,255,.10);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      color: rgba(255,255,255,.70);
-      font-size: 13px;
-    }}
-
-    .status {{
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-    }}
-
-    .statusDot {{
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      background: #22c55e;
-      box-shadow: 0 0 0 7px rgba(34,197,94,.18);
-    }}
+    /* Phone-safe tweaks */
+    .code { letter-spacing: 10px; word-break: break-word; }
+    @media (max-width: 420px){
+      .code { letter-spacing: 6px; }
+    }
   </style>
 </head>
 
 <body>
-  <div class="sprinkle"></div>
+  <!-- keep your existing HTML... -->
 
-  <div class="wrap">
-    <div class="topbar">
-      <div class="brand">
-        <span class="logo"></span>
-        <span>Drive-Thru Pairing</span>
-      </div>
-      <div class="pill">
-        <span class="laneBadge">LANE {lane_id}</span>
-        <span id="clock">--:--:--</span>
-      </div>
+  <!-- Replace your expires element with these ids -->
+  <div class="meta">
+    <div class="metaItem">
+      <svg class="icon" viewBox="0 0 24 24" fill="none">
+        <path d="M12 8v5l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="2"/>
+      </svg>
+      <span>Expires at <b id="expiresLocal">--</b></span>
     </div>
 
-    <div class="card">
-      <div class="inner">
-        <div>
-          <h2 class="title">Connect on Mobile</h2>
-          <p class="subtitle">
-            Ask the customer to enter this code in the app to connect to <b>Lane {lane_id}</b>.
-          </p>
-
-          <div class="codeBox">
-            <div class="codeLabel">
-              <span class="pulse"></span>
-              Active code
-            </div>
-
-            <p class="code">{code}</p>
-
-            <div class="meta">
-              <div class="metaItem">
-                <svg class="icon" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 8v5l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                  <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="2"/>
-                </svg>
-                <span>Expires at <b id="expires">{expires_at}</b></span>
-              </div>
-
-              <div class="metaItem">
-                <svg class="icon" viewBox="0 0 24 24" fill="none">
-                  <path d="M4 12a8 8 0 1 0 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                  <path d="M4 4v6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-                <span>Auto-refresh every <span class="kbd">5s</span></span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="right">
-          <div class="panel">
-            <h4>How it works</h4>
-            <p>Once a customer connects and an order is created, the code rotates automatically for the next vehicle.</p>
-          </div>
-
-          <div class="panel">
-            <h4>Lane tip</h4>
-            <p>Keep this display fullscreen for best visibility. Press <span class="kbd">F11</span>.</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="footer">
-        <div class="status">
-          <span class="statusDot"></span>
-          <span>Status: <b>READY</b></span>
-        </div>
-        <span>Secure lane pairing • EasyPay</span>
-      </div>
+    <div class="metaItem">
+      <svg class="icon" viewBox="0 0 24 24" fill="none">
+        <path d="M4 12a8 8 0 1 0 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M4 4v6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span>Expires in <b id="expiresIn">--:--</b></span>
     </div>
   </div>
 
   <script>
-    // Pretty clock (local)
+    // ---- 1) Local clock (works on phone + lane screen)
     const clockEl = document.getElementById("clock");
-    function tickClock() {{
+    function tickClock() {
       const d = new Date();
       const hh = String(d.getHours()).padStart(2,"0");
       const mm = String(d.getMinutes()).padStart(2,"0");
       const ss = String(d.getSeconds()).padStart(2,"0");
-      clockEl.textContent = `${{hh}}:${{mm}}:${{ss}}`;
-    }}
+      if (clockEl) clockEl.textContent = `${hh}:${mm}:${ss}`;
+    }
     tickClock();
     setInterval(tickClock, 1000);
 
-    // Auto-refresh so the screen updates if/when the code rotates.
+    // ---- 2) Expires time: convert UTC ISO to LOCAL time in the browser
+    // IMPORTANT: backend should pass ISO UTC, e.g. 2026-01-20T04:17:02Z
+    const expiresIsoUtc = "{expires_at}";
+    const expiresDate = new Date(expiresIsoUtc); // browser converts to local automatically
+
+    const expiresLocalEl = document.getElementById("expiresLocal");
+    const expiresInEl = document.getElementById("expiresIn");
+
+    function formatLocal(dt) {
+      // Uses device locale + timezone (phone-safe)
+      return dt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    }
+
+    function formatMMSS(totalSeconds) {
+      const s = Math.max(0, Math.floor(totalSeconds));
+      const mm = String(Math.floor(s / 60)).padStart(2, "0");
+      const ss = String(s % 60).padStart(2, "0");
+      return `${mm}:${ss}`;
+    }
+
+    function updateExpiry() {
+      if (isNaN(expiresDate.getTime())) {
+        // If parsing fails, show raw string so it's obvious
+        if (expiresLocalEl) expiresLocalEl.textContent = expiresIsoUtc;
+        if (expiresInEl) expiresInEl.textContent = "--:--";
+        return;
+      }
+
+      if (expiresLocalEl) expiresLocalEl.textContent = formatLocal(expiresDate);
+
+      const now = new Date();
+      const diffSec = (expiresDate.getTime() - now.getTime()) / 1000;
+      if (expiresInEl) expiresInEl.textContent = formatMMSS(diffSec);
+
+      // Optional: if expired, refresh sooner
+      if (diffSec <= 0) {
+        // Try to fetch the rotated code quickly
+        setTimeout(() => location.reload(), 800);
+      }
+    }
+
+    updateExpiry();
+    setInterval(updateExpiry, 1000);
+
+    // ---- 3) Keep your 5s refresh (still fine)
     setTimeout(()=>location.reload(), 5000);
   </script>
 </body>
 </html>
 """
+
 
 
 
