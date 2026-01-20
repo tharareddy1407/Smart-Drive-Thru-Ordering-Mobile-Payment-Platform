@@ -153,17 +153,15 @@ HOME_HTML = """
     *{ box-sizing:border-box; margin:0; padding:0; }
     html, body{ height:100%; font-family: Arial, sans-serif; }
 
-  body {
-  background-color: #0b1220;
-  background-image:
-    linear-gradient(rgba(0,0,0,0.10), rgba(0,0,0,0.22)),
-    url('/static/BG.png?v=2');
-  background-repeat: no-repeat;
-  background-size: contain;
-  background-position: center center;
-}
-
-
+    body{
+      background-color:#0b1220;
+      background-image:
+        linear-gradient(rgba(0,0,0,0.10), rgba(0,0,0,0.22)),
+        url('/static/BG.png?v=2');
+      background-repeat:no-repeat;
+      background-size: contain;
+      background-position: center center;
+    }
 
     .hero{
       min-height: 100svh;
@@ -174,6 +172,16 @@ HOME_HTML = """
       padding: 18px;
       text-align:center;
       position: relative;
+    }
+
+    /* Wrap buttons + popover together so we can close popover
+       when the cursor leaves this whole area */
+    .interactionArea{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      width: 100%;
     }
 
     .circleRow{
@@ -286,13 +294,15 @@ HOME_HTML = """
 <body>
   <div class="hero">
 
-    <div class="circleRow">
-      <button type="button" class="circleBtn" data-role="lane">Lane</button>
-      <button type="button" class="circleBtn" data-role="customer">Customer</button>
-      <button type="button" class="circleBtn" data-role="cashier">Cashier</button>
-    </div>
+    <div class="interactionArea">
+      <div class="circleRow">
+        <button type="button" class="circleBtn" data-role="lane">Lane</button>
+        <button type="button" class="circleBtn" data-role="customer">Customer</button>
+        <button type="button" class="circleBtn" data-role="cashier">Cashier</button>
+      </div>
 
-    <div class="popover" id="infoBox"></div>
+      <div class="popover" id="infoBox"></div>
+    </div>
 
     <div class="tip">
       Tip: Use phone for Customer and laptop for Cashier. WebRTC mic needs HTTPS (or localhost).
@@ -303,6 +313,7 @@ HOME_HTML = """
     document.addEventListener("DOMContentLoaded", () => {
       const box = document.getElementById("infoBox");
       const buttons = document.querySelectorAll(".circleBtn");
+      const area = document.querySelector(".interactionArea");
 
       function render(role){
         box.classList.add("show");
@@ -332,29 +343,27 @@ HOME_HTML = """
         }
       }
 
+      // Show popover on hover (desktop)
       buttons.forEach(btn => {
-        btn.addEventListener("click", () => {
-          const role = btn.getAttribute("data-role");
-          render(role);
+        btn.addEventListener("mouseenter", () => {
+          render(btn.dataset.role);
         });
+
+        // Keep click working too (optional)
+        btn.addEventListener("click", () => {
+          render(btn.dataset.role);
+        });
+      });
+
+      // Hide popover when cursor leaves BOTH buttons and popover area
+      area.addEventListener("mouseleave", () => {
+        box.classList.remove("show");
       });
     });
   </script>
 </body>
 </html>
 """
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
