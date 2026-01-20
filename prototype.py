@@ -156,7 +156,7 @@ HOME_HTML = """
       background-color:#0b1220;
       background-image:
         linear-gradient(rgba(0,0,0,0.10), rgba(0,0,0,0.22)),
-        url('/static/Bg.png?v=500');
+        url('/static/BG.png?v=500');
       background-repeat:no-repeat;
       background-size: cover;
       background-position: center 18%;
