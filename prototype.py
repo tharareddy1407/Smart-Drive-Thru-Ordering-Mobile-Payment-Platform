@@ -152,31 +152,28 @@ HOME_HTML = """
     *{ box-sizing: border-box; }
     html, body{ height:100%; margin:0; font-family: Arial, sans-serif; }
 
-    /* ✅ “Zoom out” so SMART is not cut off (no cropping) */
+    /* ✅ Fill screen (no borders) */
     body{
       background-color:#0b1220;
       background-image:
-        linear-gradient(rgba(0,0,0,0.15), rgba(0,0,0,0.25)),
-        url('/static/Background.png?v=300');
+        linear-gradient(rgba(0,0,0,0.10), rgba(0,0,0,0.22)),
+        url('/static/drive_thru_demo.png?v=400');
       background-repeat:no-repeat;
-
-      /* ✅ key: show full image */
-      background-size: contain;
-      background-position: center top;
-
-      /* if screen is bigger than image, keep it centered nicely */
-      background-attachment: scroll;
+      background-size: cover;            /* ✅ removes black borders */
+      background-position: center 18%;   /* ✅ keeps SMART visible */
+      overflow-x:hidden;
     }
 
-    /* ✅ On very wide screens, keep full image visible (still no crop) */
-    @media (min-width: 1100px){
-      body{
-        background-size: contain;
-        background-position: center top;
-      }
+    /* ✅ On tall screens, show more top */
+    @media (min-height: 900px){
+      body{ background-position: center 12%; }
     }
 
-    /* ✅ Page layout */
+    /* ✅ On small screens, move focus up */
+    @media (max-width: 520px){
+      body{ background-position: center 10%; }
+    }
+
     .page{
       min-height:100vh;
       display:flex;
@@ -185,10 +182,10 @@ HOME_HTML = """
       padding: 18px;
     }
 
-    /* ✅ Place buttons below the banner area */
+    /* ✅ Place buttons below the headline lines */
     .wrap{
       width: min(1100px, 96vw);
-      margin-top: 340px;  /* move up/down if needed */
+      margin-top: clamp(220px, 32vh, 360px); /* responsive vertical placement */
       display:flex;
       flex-direction:column;
       align-items:center;
@@ -203,23 +200,15 @@ HOME_HTML = """
       flex-wrap:wrap;
     }
 
-    .circleWrap{
-      position: relative;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-    }
+    .circleWrap{ position: relative; display:inline-flex; }
 
-    /* ✅ Darker, professional circle buttons */
+    /* ✅ Darker professional circles */
     .circleBtn{
       width: 86px;
       height: 86px;
       border-radius: 999px;
       border: 1px solid rgba(255,255,255,0.22);
-
-      /* darker glass */
-      background: rgba(0,0,0,0.28);
-
+      background: rgba(0,0,0,0.30);
       color: var(--text);
       cursor: pointer;
 
@@ -234,21 +223,19 @@ HOME_HTML = """
       backdrop-filter: blur(16px) saturate(160%);
       -webkit-backdrop-filter: blur(16px) saturate(160%);
       box-shadow: 0 14px 34px rgba(0,0,0,0.22);
-
-      transition: transform .12s ease, background .12s ease, border .12s ease, box-shadow .12s ease;
+      transition: transform .12s ease, background .12s ease, border .12s ease;
       user-select:none;
     }
 
     .circleBtn:hover{
       transform: translateY(-2px);
-      background: rgba(0,0,0,0.36);
+      background: rgba(0,0,0,0.38);
       border-color: rgba(255,255,255,0.32);
-      box-shadow: 0 22px 55px rgba(0,0,0,0.30);
     }
 
     .circleBtn.active{
-      background: rgba(0,0,0,0.42);
-      border-color: rgba(255,255,255,0.38);
+      background: rgba(0,0,0,0.46);
+      border-color: rgba(255,255,255,0.40);
     }
 
     /* ✅ Popover */
@@ -261,7 +248,7 @@ HOME_HTML = """
       padding: 12px;
       border-radius: 14px;
 
-      background: rgba(0,0,0,0.68);
+      background: rgba(0,0,0,0.70);
       border: 1px solid rgba(255,255,255,0.18);
       box-shadow: var(--shadow);
 
@@ -282,7 +269,7 @@ HOME_HTML = """
       left: 50%;
       transform: translateX(-50%) rotate(45deg);
       width: 14px; height: 14px;
-      background: rgba(0,0,0,0.68);
+      background: rgba(0,0,0,0.70);
       border-left: 1px solid rgba(255,255,255,0.18);
       border-top: 1px solid rgba(255,255,255,0.18);
     }
@@ -333,13 +320,9 @@ HOME_HTML = """
       text-align:center;
     }
 
-    /* ✅ Responsive placement */
+    /* ✅ Mobile: popover fixed at bottom */
     @media (max-width: 520px){
-      /* show full image and keep buttons visible */
-      .wrap{ margin-top: 260px; }
       .circleBtn{ width: 80px; height: 80px; font-size: 13px; }
-
-      /* popover fixed at bottom for mobile */
       .popover{
         position: fixed;
         left: 50%;
@@ -435,6 +418,7 @@ HOME_HTML = """
 </body>
 </html>
 """
+
 
 
 
