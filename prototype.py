@@ -144,223 +144,331 @@ HOME_HTML = """
   <title>Smart Drive-Thru Ordering Platform</title>
 
   <style>
-    html, body { height: 100%; margin: 0; font-family: Arial, sans-serif; }
-
-    /* ✅ Always show the FULL image (no cropping) on all devices */
-    body {
-      background-color: #0b1220;
-      background-image:
-        linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.35)),
-        url('/static/Background.png?v=60');
-      background-repeat: no-repeat;
-      background-size: contain;      /* ✅ key: no cropping */
-      background-position: center top;
+    :root{
+      --bg: #0b1220;
+      --text: #0b0f18;
+      --muted: rgba(17,24,39,0.70);
+      --white: rgba(255,255,255,0.92);
+      --glass: rgba(255,255,255,0.70);
+      --glass2: rgba(255,255,255,0.22);
+      --stroke: rgba(255,255,255,0.22);
+      --shadow: 0 18px 50px rgba(0,0,0,0.22);
+      --radius: 20px;
     }
 
-    /* ✅ Page layout */
-    .page {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      padding: 14px 14px 28px 14px;
-      box-sizing: border-box;
-    }
+    *{ box-sizing:border-box; }
+    html, body{ height:100%; margin:0; font-family: Arial, sans-serif; }
 
-    /* ✅ Buttons always at TOP */
-    .topbar {
-      width: min(1180px, 96vw);
-      margin: 0 auto;
-      padding-top: 10px;
-
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      flex-wrap: wrap;
-
+    /* ✅ Top nav */
+    .nav{
       position: sticky;
       top: 0;
       z-index: 50;
-
-      /* light glass strip behind buttons (still transparent) */
-      backdrop-filter: blur(16px) saturate(140%);
-      -webkit-backdrop-filter: blur(16px) saturate(140%);
+      background: rgba(255,255,255,0.82);
+      backdrop-filter: blur(14px) saturate(140%);
+      -webkit-backdrop-filter: blur(14px) saturate(140%);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    .navInner{
+      width: min(1180px, 96vw);
+      margin: 0 auto;
+      padding: 12px 10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 14px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      font-weight: 900;
+      letter-spacing: -0.2px;
+      color: #111827;
+    }
+    .brandDot{
+      width: 12px; height: 12px; border-radius: 999px;
+      background: linear-gradient(135deg, #22c55e, #3b82f6);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.12);
     }
 
-    .actionBtn {
-      width: min(340px, 92vw);
-      text-decoration: none;
-      color: rgba(255,255,255,0.96);
-      border-radius: 18px;
-      padding: 14px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
+    .navLinks{
+      display:flex;
+      gap: 18px;
+      align-items:center;
+      color:#111827;
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .navLinks a{
+      text-decoration:none;
+      color:#111827;
+      opacity: 0.8;
+    }
+    .navLinks a:hover{ opacity:1; text-decoration: underline; }
 
-      background: rgba(255,255,255,0.10);
-      border: 1px solid rgba(255,255,255,0.16);
+    .navCTA{
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    .pillBtn{
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-weight: 900;
+      cursor:pointer;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+    }
+    .pillBtn.primary{
+      background: #ef4444;
+      color: #fff;
+      box-shadow: 0 14px 30px rgba(239,68,68,0.25);
+    }
+    .pillBtn.primary:hover{ filter: brightness(0.95); }
+    .pillBtn.ghost{
+      background: rgba(0,0,0,0.06);
+      color:#111827;
+    }
 
-      backdrop-filter: blur(22px) saturate(160%);
-      -webkit-backdrop-filter: blur(22px) saturate(160%);
+    /* ✅ Page background + hero */
+    .heroWrap{
+      min-height: calc(100vh - 58px);
+      background:
+        linear-gradient(90deg, rgba(255,255,255,0.88) 0%, rgba(255,255,255,0.88) 46%, rgba(255,255,255,0.0) 46%),
+        url('/static/drive_thru_demo.png?v=99') right center / cover no-repeat;
+      background-color: var(--bg);
+      display:flex;
+      align-items: stretch;
+    }
 
-      box-shadow: 0 14px 34px rgba(0,0,0,0.18);
+    .hero{
+      width: min(1180px, 96vw);
+      margin: 0 auto;
+      padding: 36px 10px 44px 10px;
+      display:grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 24px;
+      align-items:center;
+    }
+
+    /* left content */
+    .left{
+      padding: 6px 0;
+    }
+    .kicker{
+      font-weight: 900;
+      color: rgba(17,24,39,0.75);
+      letter-spacing: 0.6px;
+      font-size: 12px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .h1{
+      font-size: clamp(34px, 5vw, 58px);
+      line-height: 1.02;
+      margin: 0 0 14px 0;
+      color: #111827;
+      letter-spacing: -1px;
+      font-weight: 900;
+    }
+    .sub{
+      margin: 0 0 22px 0;
+      color: rgba(17,24,39,0.75);
+      font-size: clamp(14px, 2.2vw, 18px);
+      line-height: 1.45;
+      max-width: 600px;
+    }
+
+    /* CTA card (DoorDash style) */
+    .ctaCard{
+      background: rgba(255,255,255,0.94);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(0,0,0,0.06);
+      padding: 18px;
+      width: min(560px, 96%);
+    }
+    .ctaTitle{
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: -0.2px;
+      margin: 0 0 12px 0;
+      color:#111827;
+    }
+
+    /* ✅ 3 aligned CTA buttons */
+    .ctaGrid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    .ctaBtn{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+
+      padding: 14px 14px;
+      border-radius: 14px;
+      text-decoration:none;
+
+      background: rgba(17,24,39,0.04);
+      border: 1px solid rgba(17,24,39,0.08);
+      color:#111827;
+      font-weight: 900;
       transition: transform .12s ease, background .12s ease, border .12s ease;
     }
+    .ctaBtn:hover{
+      transform: translateY(-1px);
+      background: rgba(17,24,39,0.06);
+      border: 1px solid rgba(17,24,39,0.14);
+    }
+    .ctaHint{
+      font-weight: 700;
+      color: rgba(17,24,39,0.65);
+      font-size: 13px;
+      margin-top: 10px;
+      line-height: 1.35;
+    }
+    .arrow{ font-size: 18px; opacity: 0.8; }
 
-    .actionBtn:hover {
-      transform: translateY(-2px);
-      background: rgba(255,255,255,0.14);
-      border: 1px solid rgba(255,255,255,0.22);
+    /* right side is purely visual spacer (like DoorDash image) */
+    .right{
+      height: 540px;
     }
 
-    .left {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      text-align: left;
-    }
-
-    .labelRow { display: flex; align-items: center; gap: 10px; }
-
-    .label { font-weight: 900; font-size: 16px; letter-spacing: -0.2px; }
-
-    .pill {
-      font-size: 12px;
-      padding: 3px 10px;
-      border-radius: 999px;
-      background: rgba(0,0,0,0.14);
-      border: 1px solid rgba(255,255,255,0.14);
-      color: rgba(255,255,255,0.9);
-    }
-
-    .desc {
-      font-size: 12.5px;
-      color: rgba(255,255,255,0.84);
-      line-height: 1.25;
-    }
-
-    .arrow { font-size: 20px; font-weight: 900; opacity: 0.9; }
-
-    /* ✅ Spacer so buttons don’t overlap the image top text */
-    .spacer {
-      height: 10px;
-    }
-
-    /* ✅ Lane chooser modal */
-    .modalBack {
-      display: none;
-      position: fixed;
-      inset: 0;
+    /* ✅ Lane modal */
+    .modalBack{
+      display:none;
+      position:fixed;
+      inset:0;
       background: rgba(0,0,0,0.55);
-      align-items: center;
-      justify-content: center;
+      align-items:center;
+      justify-content:center;
       padding: 18px;
       z-index: 9999;
     }
-
-    .modal {
+    .modal{
       width: min(520px, 94vw);
       border-radius: 18px;
       padding: 18px;
-      background: rgba(255,255,255,0.14);
-      border: 1px solid rgba(255,255,255,0.18);
-      backdrop-filter: blur(22px) saturate(160%);
-      -webkit-backdrop-filter: blur(22px) saturate(160%);
+      background: rgba(255,255,255,0.92);
+      border: 1px solid rgba(0,0,0,0.08);
       box-shadow: 0 22px 60px rgba(0,0,0,0.35);
-      color: #fff;
+      color:#111827;
     }
-
-    .modalTitle {
-      font-weight: 900;
-      font-size: 18px;
-      margin: 0 0 10px 0;
-    }
-
-    .laneBtns {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 12px;
-    }
-
-    .laneBtn {
-      text-decoration: none;
-      color: rgba(255,255,255,0.96);
+    .modalTitle{ font-weight: 900; font-size: 18px; margin: 0 0 10px 0; }
+    .laneBtns{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+    .laneBtn{
+      text-decoration:none;
+      color:#111827;
       padding: 12px 14px;
       border-radius: 14px;
-      background: rgba(0,0,0,0.10);
-      border: 1px solid rgba(255,255,255,0.16);
-      text-align: center;
+      background: rgba(17,24,39,0.04);
+      border: 1px solid rgba(17,24,39,0.10);
+      text-align:center;
       font-weight: 900;
-      transition: transform .12s ease, background .12s ease;
     }
-
-    .laneBtn:hover {
-      transform: translateY(-1px);
-      background: rgba(0,0,0,0.18);
-    }
-
-    .modalFooter {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: 12px;
-    }
-
-    .closeBtn {
-      background: rgba(0,0,0,0.18);
-      border: 1px solid rgba(255,255,255,0.16);
-      color: #fff;
-      padding: 10px 12px;
+    .laneBtn:hover{ background: rgba(17,24,39,0.06); border-color: rgba(17,24,39,0.16); }
+    .modalFooter{ display:flex; justify-content:flex-end; margin-top:12px; }
+    .closeBtn{
+      border:0;
       border-radius: 12px;
-      cursor: pointer;
-      font-weight: 800;
+      padding: 10px 12px;
+      background: rgba(17,24,39,0.08);
+      font-weight: 900;
+      cursor:pointer;
+      color:#111827;
     }
 
-    /* ✅ Mobile: keep full image visible + stack buttons nicely */
-    @media (max-width: 560px) {
-      .actionBtn { width: 94vw; }
-      .laneBtns { grid-template-columns: 1fr; }
+    /* ✅ Responsive */
+    @media (max-width: 980px){
+      .heroWrap{
+        background:
+          linear-gradient(rgba(255,255,255,0.92), rgba(255,255,255,0.92)),
+          url('/static/drive_thru_demo.png?v=99') center / cover no-repeat;
+      }
+      .hero{ grid-template-columns: 1fr; }
+      .right{ display:none; }
+      .ctaCard{ width: 100%; }
+      .navLinks{ display:none; }
+    }
+
+    @media (max-width: 560px){
+      .laneBtns{ grid-template-columns: 1fr; }
     }
   </style>
 </head>
 
 <body>
-  <div class="page">
+  <!-- Top Nav -->
+  <div class="nav">
+    <div class="navInner">
+      <div class="brand">
+        <span class="brandDot"></span>
+        Smart Drive-Thru
+      </div>
 
-    <div class="topbar">
-      <a class="actionBtn" href="#" onclick="openLanePicker(); return false;">
-        <div class="left">
-          <div class="labelRow"><div class="label">Lane</div><div class="pill">Display</div></div>
-          <div class="desc">Open a lane screen to get the rotating station code.</div>
-        </div>
-        <div class="arrow">→</div>
-      </a>
+      <div class="navLinks">
+        <a href="#how">How it works</a>
+        <a href="/customer">Customer</a>
+        <a href="/cashier">Cashier</a>
+      </div>
 
-      <a class="actionBtn" href="/customer">
-        <div class="left">
-          <div class="labelRow"><div class="label">Customer</div><div class="pill">Mobile</div></div>
-          <div class="desc">Check-in, enter code, chat/call, and pay securely.</div>
-        </div>
-        <div class="arrow">→</div>
-      </a>
-
-      <a class="actionBtn" href="/cashier">
-        <div class="left">
-          <div class="labelRow"><div class="label">Cashier</div><div class="pill">POS + Agent</div></div>
-          <div class="desc">Join order, confirm total, and request payment.</div>
-        </div>
-        <div class="arrow">→</div>
-      </a>
+      <div class="navCTA">
+        <a class="pillBtn ghost" href="/lane/L1">Lane</a>
+        <a class="pillBtn primary" href="/customer">Start Demo</a>
+      </div>
     </div>
+  </div>
 
-    <div class="spacer"></div>
+  <!-- Hero -->
+  <div class="heroWrap">
+    <div class="hero">
+      <div class="left">
+        <div class="kicker">Real-time demo</div>
+        <h1 class="h1">Order & Pay — Without Opening the Window</h1>
+        <p class="sub">
+          Real-time voice ordering, secure lane-based connection, and mobile payment —
+          all without opening the car window until pickup.
+        </p>
+
+        <div class="ctaCard" id="how">
+          <div class="ctaTitle">Launch a demo view</div>
+
+          <div class="ctaGrid">
+            <a class="ctaBtn" href="#" onclick="openLanePicker(); return false;">
+              Lane Display <span class="arrow">→</span>
+            </a>
+            <a class="ctaBtn" href="/customer">
+              Customer Portal <span class="arrow">→</span>
+            </a>
+            <a class="ctaBtn" href="/cashier">
+              Cashier Console <span class="arrow">→</span>
+            </a>
+          </div>
+
+          <div class="ctaHint">
+            Tip: Use phone for Customer and laptop for Cashier. WebRTC mic needs HTTPS (or localhost).
+          </div>
+        </div>
+      </div>
+
+      <div class="right"></div>
+    </div>
   </div>
 
   <!-- Lane picker modal -->
   <div id="laneModal" class="modalBack" onclick="closeLanePicker(event)">
     <div class="modal" onclick="event.stopPropagation()">
       <div class="modalTitle">Choose a Lane</div>
-      <div class="desc">Open the lane display to show the rotating 4-digit station code.</div>
+      <div style="color: rgba(17,24,39,0.70); font-size: 14px; margin-bottom: 12px;">
+        Open the lane display to show the rotating 4-digit station code.
+      </div>
 
       <div class="laneBtns">
         <a class="laneBtn" href="/lane/L1">Lane L1</a>
@@ -374,16 +482,13 @@ HOME_HTML = """
   </div>
 
   <script>
-    function openLanePicker() {
-      document.getElementById("laneModal").style.display = "flex";
-    }
-    function closeLanePicker() {
-      document.getElementById("laneModal").style.display = "none";
-    }
+    function openLanePicker(){ document.getElementById("laneModal").style.display = "flex"; }
+    function closeLanePicker(){ document.getElementById("laneModal").style.display = "none"; }
   </script>
 </body>
 </html>
 """
+
 
 
 
