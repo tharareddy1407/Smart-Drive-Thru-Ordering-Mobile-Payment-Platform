@@ -288,6 +288,18 @@ HOME_HTML = """
       text-align:left;
       margin-top: 8px;
     }
+    
+    .footerCopyright{
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: rgba(255,255,255,0.55);
+  letter-spacing: .2px;
+  z-index: 999;
+  pointer-events: none;
+}
 
     @media (max-width: 520px){
       body{ overflow:auto; }
@@ -413,6 +425,10 @@ HOME_HTML = """
       });
     });
   </script>
+  <footer class="footerCopyright">
+  © <span id="year"></span> Thara Reddy Kankanala. All rights reserved.
+</footer>
+
 </body>
 </html>
 """
