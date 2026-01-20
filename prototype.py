@@ -6,6 +6,9 @@ from pathlib import Path
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi import Request, HTTPException
+from fastapi.templating import Jinja2Templates
+
 
 # -----------------------------------------------------------------------------
 # App (✅ create app FIRST)
@@ -24,6 +27,25 @@ STATIC_DIR = BASE_DIR / "static"
 
 # ✅ Mount ALWAYS (so you notice issues early). If folder missing, create it.
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+templates = Jinja2Templates(directory="templates")
+
+VALID_LANES = {"L1", "L2"}  # keep this consistent with your UI
+
+@app.get("/lane/{lane_id}", response_class=HTMLResponse)
+async def lane_screen(request: Request, lane_id: str):
+    lane_id = lane_id.upper()
+
+    if lane_id not in VALID_LANES:
+      raise HTTPException(status_code=404, detail=f"Unknown lane: {lane_id}")
+
+    # If you use any in-memory dict like lanes[lane_id], validate before access:
+    # if lane_id not in lanes: initialize or raise 404
+    # lanes.setdefault(lane_id, {"code": "----"})
+
+    return templates.TemplateResponse("lane.html", {
+        "request": request,
+        "lane_id": lane_id,
+    })
 
 # -----------------------------------------------------------------------------
 # In-memory stores (demo only)
